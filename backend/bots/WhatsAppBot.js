@@ -1,12 +1,11 @@
 /**
  * WhatsAppBot.js — Remote control via WhatsApp
  *
- * Features:
- *  - Receives text messages and voice notes from your own number
- *  - Forwards to the LLaMA orchestrator and replies
- *  - SILENCE MODE: say "callate" / "modo silencio" → bot stops responding
- *    Say "responde" / "actívate" / "despertá" → bot resumes
- *  - All .ogg audio transcribed locally with Whisper
+ * FIXES:
+ *  - Added logging of msg.from to debug number format issues
+ *  - Fixed fromMe filter (was using incorrect condition)
+ *  - Added number normalization before comparison
+ *  - Added debug mode that logs all received messages
  */
 
 const Bot = require("./Bot");
@@ -48,9 +47,12 @@ class WhatsAppBot extends Bot {
         this.orchestrator = orchestratorCallback;
         this.client = null;
         this.ready = false;
-        this.silenced = false; // 🔇 silence mode flag
+        this.silenced = false;
         this.sessionDir = path.resolve(__dirname, "../../.wwebjs_auth");
         this.allowedNumbers = this._loadAllowedNumbers();
+
+        // Debug: log every received message from/to for troubleshooting
+        this.debugMode = process.env.WHATSAPP_DEBUG === "true";
     }
 
     /* ── Allowed numbers ─────────────────────────────── */
@@ -60,18 +62,48 @@ class WhatsAppBot extends Bot {
         const numbers = raw
             .split(",")
             .map(n => n.trim())
-            .filter(Boolean)
-            .map(n => `${n}@c.us`);
+            .filter(Boolean);
 
         if (numbers.length === 0) {
             logger.warn("WhatsAppBot: WHATSAPP_ALLOWED_NUMBERS not set in .env");
+        } else {
+            logger.info(`WhatsAppBot: allowed numbers configured: ${numbers.length}`);
         }
         return numbers;
     }
 
+    /**
+     * FIX: Normalize and check both possible formats:
+     *   - "5491160597308@c.us"  (standard)
+     *   - "549116XXXXXXXX@c.us" (with country+mobile prefix)
+     *
+     * WhatsApp Web may return the number with or without '9' for mobile numbers.
+     * We strip the @c.us suffix and compare the digits portion.
+     */
     isAllowed(from) {
         if (this.allowedNumbers.length === 0) return false;
-        return this.allowedNumbers.includes(from);
+
+        // Extract just the number part (remove @c.us and any @s.whatsapp.net)
+        const fromDigits = from.replace(/@.*/, "").replace(/\D/g, "");
+
+        for (const allowed of this.allowedNumbers) {
+            const allowedDigits = allowed.replace(/@.*/, "").replace(/\D/g, "");
+
+            // Direct match
+            if (fromDigits === allowedDigits) return true;
+
+            // Try matching without the '9' mobile prefix (AR: 549 vs 54)
+            // Some accounts register as 541160XXXXXX instead of 5491160XXXXXX
+            if (fromDigits.startsWith("549") && allowedDigits.startsWith("54")) {
+                const withoutMobile = "54" + fromDigits.substring(3);
+                if (withoutMobile === allowedDigits) return true;
+            }
+            if (allowedDigits.startsWith("549") && fromDigits.startsWith("54")) {
+                const withoutMobile = "54" + allowedDigits.substring(3);
+                if (withoutMobile === fromDigits) return true;
+            }
+        }
+        return false;
     }
 
     /* ── Bot run() entry point ──────────────────────── */
@@ -110,6 +142,8 @@ class WhatsAppBot extends Bot {
             console.log("\n========= WHATSAPP QR =========\n");
             qrcode.generate(qr, { small: true });
             console.log("\n================================\n");
+            console.log("📱 After scanning, send a message from your phone to test.");
+            console.log(`   Configured numbers: ${this.allowedNumbers.join(", ")}`);
         });
 
         this.client.on("authenticated", () => {
@@ -119,6 +153,8 @@ class WhatsAppBot extends Bot {
         this.client.on("ready", () => {
             this.ready = true;
             logger.info("WhatsAppBot: ready ✅ Listening for messages...");
+            logger.info(`WhatsAppBot: allowed numbers = ${this.allowedNumbers.join(", ")}`);
+            logger.info("WhatsAppBot: TIP — if messages aren't received, set WHATSAPP_DEBUG=true in .env to log all message sources");
         });
 
         this.client.on("disconnected", (reason) => {
@@ -127,7 +163,19 @@ class WhatsAppBot extends Bot {
         });
 
         this.client.on("message", async (msg) => {
+            // ── FIX: Always log the from field so user can debug number format ──
+            if (this.debugMode || !this.isAllowed(msg.from)) {
+                logger.info(`WhatsAppBot DEBUG: message from="${msg.from}" fromMe=${msg.fromMe} type="${msg.type}" allowed=${this.isAllowed(msg.from)}`);
+            }
             await this._handleMessage(msg);
+        });
+
+        // Also listen to message_create to catch self-sent messages (when testing)
+        this.client.on("message_create", async (msg) => {
+            if (!msg.fromMe) return; // only process our own sent messages if in debug
+            if (this.debugMode) {
+                logger.info(`WhatsAppBot DEBUG: self-message from="${msg.from}" to="${msg.to}" body="${msg.body?.substring(0, 50)}"`);
+            }
         });
 
         await this.client.initialize();
@@ -147,7 +195,9 @@ class WhatsAppBot extends Bot {
     getStatus() {
         return [
             `WhatsAppBot: ${this.ready ? "🟢 conectado" : "🔴 desconectado"}`,
-            `Modo silencio: ${this.silenced ? "🔇 activo" : "🔊 inactivo"}`
+            `Modo silencio: ${this.silenced ? "🔇 activo" : "🔊 inactivo"}`,
+            `Números permitidos: ${this.allowedNumbers.join(", ")}`,
+            `Debug mode: ${this.debugMode ? "ON" : "OFF (set WHATSAPP_DEBUG=true para activar)"}`
         ].join("\n");
     }
 
@@ -155,16 +205,22 @@ class WhatsAppBot extends Bot {
 
     async _handleMessage(msg) {
         try {
-            // Only allowed numbers
-            if (!this.isAllowed(msg.from)) return;
+            // FIX: Simplified fromMe check — just skip anything we sent
+            if (msg.fromMe) return;
 
-            // Skip messages sent by the bot itself
-            if (msg.fromMe && !msg.id._serialized.includes("me")) return;
+            // Only allowed numbers
+            if (!this.isAllowed(msg.from)) {
+                if (this.debugMode) {
+                    logger.warn(`WhatsAppBot: BLOCKED message from ${msg.from} — not in allowed list`);
+                    logger.warn(`WhatsAppBot: Allowed numbers are: ${this.allowedNumbers.join(", ")}`);
+                    logger.warn(`WhatsAppBot: To fix: add "${msg.from.replace(/@.*/, "")}" to WHATSAPP_ALLOWED_NUMBERS in .env`);
+                }
+                return;
+            }
 
             let text = "";
 
             if (msg.hasMedia && msg.type === "ptt") {
-                // Voice note → transcribe
                 logger.info("WhatsAppBot: voice note received, transcribing...");
                 const media = await msg.downloadMedia();
                 text = await this._transcribeAudio(media.data, media.mimetype);
@@ -187,7 +243,7 @@ class WhatsAppBot extends Bot {
             if (SILENCE_TRIGGERS.some(r => r.test(text))) {
                 this.silenced = true;
                 logger.info("WhatsAppBot: silence mode ON");
-                await msg.reply("🔇 Modo silencio activado. Dile *'responde'* cuando quieras que vuelva.");
+                await msg.reply("🔇 Modo silencio activado. Decime *'responde'* cuando quieras que vuelva.");
                 return;
             }
 
@@ -198,7 +254,6 @@ class WhatsAppBot extends Bot {
                 return;
             }
 
-            // ─── Silenced: don't respond ─────────────────────
             if (this.silenced) {
                 logger.info(`WhatsAppBot: silenced — ignoring: "${text.substring(0, 50)}"`);
                 return;
@@ -232,7 +287,6 @@ class WhatsAppBot extends Bot {
 
             const { execSync } = require("child_process");
 
-            // Option A: whisper.cpp (fastest)
             const whisperBin = process.env.WHISPER_CPP_PATH;
             const whisperModel = process.env.WHISPER_MODEL_PATH;
 
@@ -244,7 +298,6 @@ class WhatsAppBot extends Bot {
                 return out.trim();
             }
 
-            // Option B: Python openai-whisper
             const pyOut = execSync(
                 `python -c "import whisper; m=whisper.load_model('base'); r=m.transcribe('${tmpFile.replace(/\\/g, "/")}',language='es'); print(r['text'])"`,
                 { timeout: 60000, encoding: "utf-8" }

@@ -8,50 +8,110 @@ const WELCOME = {
     bot: null
 };
 
-const AVATAR_USER = "T";
-const AVATAR_AI = "⚡";
-
 function MessageRow({ msg, isLast }) {
     const isUser = msg.role === "user";
     const isError = msg.role === "error";
     const isThinking = msg.role === "thinking";
 
-    const rowClass = isUser ? "message-row user"
-        : isError ? "message-row error"
-            : isThinking ? "message-row thinking"
-                : "message-row assistant";
+    if (isThinking) {
+        return (
+            <div style={{ display: "flex", justifyContent: "flex-start", padding: "8px 24px", maxWidth: "720px", margin: "0 auto", width: "100%" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <div style={{
+                        width: "30px", height: "30px", borderRadius: "50%",
+                        background: "var(--accent)", display: "flex", alignItems: "center",
+                        justifyContent: "center", fontSize: "14px", flexShrink: 0
+                    }}>⚡</div>
+                    <div style={{ display: "flex", gap: "5px", alignItems: "center", paddingTop: "2px" }}>
+                        {[0, 1, 2].map(i => (
+                            <span key={i} style={{
+                                width: "6px", height: "6px", borderRadius: "50%",
+                                background: "var(--accent)", display: "block",
+                                animation: `thinking 1.2s infinite ease-in-out both`,
+                                animationDelay: `${[-0.32, -0.16, 0][i]}s`
+                            }} />
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
+    if (isUser) {
+        // ── USER: right side, bubble style ──────────────────────
+        return (
+            <div style={{
+                display: "flex", justifyContent: "flex-end",
+                padding: "6px 24px",
+                animation: isLast ? "msg-in 0.2s ease both" : "none"
+            }}>
+                <div style={{
+                    display: "flex", alignItems: "flex-end", gap: "10px",
+                    maxWidth: "70%"
+                }}>
+                    <div style={{
+                        background: "var(--msg-user-bg)",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        borderRadius: "18px 18px 4px 18px",
+                        padding: "11px 16px",
+                        fontSize: "15px", lineHeight: "1.6",
+                        color: "var(--text-primary)",
+                        wordBreak: "break-word", whiteSpace: "pre-wrap"
+                    }}>
+                        {msg.content}
+                    </div>
+                    <div style={{
+                        width: "30px", height: "30px", borderRadius: "50%",
+                        background: "rgba(255,255,255,0.1)",
+                        border: "1px solid rgba(255,255,255,0.15)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)",
+                        flexShrink: 0
+                    }}>T</div>
+                </div>
+            </div>
+        );
+    }
+
+    // ── ASSISTANT / ERROR: left side ─────────────────────────
     return (
-        <div
-            className={rowClass}
-            style={{ animation: isLast ? "msg-in 0.2s ease both" : "none" }}
-        >
-            <div className="message-inner">
+        <div style={{
+            display: "flex", justifyContent: "flex-start",
+            padding: "8px 24px",
+            animation: isLast ? "msg-in 0.2s ease both" : "none"
+        }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", maxWidth: "72%" }}>
                 {/* Avatar */}
-                <div className={`msg-avatar ${isUser ? "user-avatar" : "ai-avatar"}`}>
-                    {isUser ? AVATAR_USER : isError ? "⚠" : isThinking ? "⚡" : AVATAR_AI}
+                <div style={{
+                    width: "30px", height: "30px", borderRadius: "50%",
+                    background: isError ? "#ef4444" : "var(--accent)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: "14px", flexShrink: 0, marginTop: "2px"
+                }}>
+                    {isError ? "⚠" : "⚡"}
                 </div>
 
                 {/* Content */}
-                <div className="message-content-wrap" style={{ flex: 1, minWidth: 0 }}>
-                    {isThinking ? (
-                        <div className="thinking-wrap">
-                            <span /><span /><span />
-                        </div>
-                    ) : (
-                        <div className={`message-content ${isError ? "error-content" : ""}`}>
-                            {msg.content}
-                        </div>
-                    )}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                        fontSize: "15px", lineHeight: "1.75",
+                        color: isError ? "#f87171" : "var(--text-primary)",
+                        fontFamily: isError ? "'DM Mono', monospace" : "inherit",
+                        fontSize: isError ? "13px" : "15px",
+                        wordBreak: "break-word", whiteSpace: "pre-wrap",
+                        paddingTop: "3px"
+                    }}>
+                        {msg.content}
+                    </div>
 
-                    {/* Intent / bot tag — only on successful AI replies */}
-                    {msg.intent && !isUser && !isError && (
-                        <div className="message-intent">
-                            <span className="intent-tag">↳ {msg.intent}</span>
+                    {msg.intent && !isError && (
+                        <div style={{
+                            marginTop: "8px", fontFamily: "'DM Mono', monospace",
+                            fontSize: "11px", color: "var(--text-muted)"
+                        }}>
+                            <span style={{ color: "var(--accent)", opacity: 0.7 }}>↳ {msg.intent}</span>
                             {msg.bot && msg.bot !== "unknown" && (
-                                <span style={{ marginLeft: "8px", opacity: 0.5 }}>
-                                    via {msg.bot}
-                                </span>
+                                <span style={{ marginLeft: "8px", opacity: 0.5 }}>via {msg.bot}</span>
                             )}
                         </div>
                     )}
@@ -68,12 +128,10 @@ function Chat() {
     const bottomRef = useRef(null);
     const textareaRef = useRef(null);
 
-    // Auto scroll
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
-    // Auto-resize textarea
     const handleInputChange = (e) => {
         setInput(e.target.value);
         const el = e.target;
@@ -88,10 +146,7 @@ function Chat() {
         setMessages(prev => [...prev, { role: "user", content: trimmed }]);
         setInput("");
 
-        // Reset textarea height
-        if (textareaRef.current) {
-            textareaRef.current.style.height = "auto";
-        }
+        if (textareaRef.current) textareaRef.current.style.height = "auto";
 
         setLoading(true);
 
@@ -107,8 +162,7 @@ function Chat() {
             setMessages(prev => [...prev, {
                 role: "error",
                 content: `Error de conexión: ${err.message}`,
-                intent: null,
-                bot: null
+                intent: null, bot: null
             }]);
         }
 
@@ -133,31 +187,18 @@ function Chat() {
                         LLaMA 13B · LM Studio · localhost:3001
                     </div>
                 </div>
-                <div style={{
-                    fontFamily: "'DM Mono', monospace",
-                    fontSize: "11px",
-                    color: "var(--text-muted)"
-                }}>
+                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "11px", color: "var(--text-muted)" }}>
                     {messages.length - 1} msgs
                 </div>
             </div>
 
             {/* Messages */}
-            <div className="chat-box">
+            <div className="chat-box" style={{ paddingTop: "16px" }}>
                 {messages.map((msg, i) => (
-                    <MessageRow
-                        key={i}
-                        msg={msg}
-                        isLast={i === messages.length - 1}
-                    />
+                    <MessageRow key={i} msg={msg} isLast={i === messages.length - 1} />
                 ))}
 
-                {loading && (
-                    <MessageRow
-                        msg={{ role: "thinking" }}
-                        isLast
-                    />
-                )}
+                {loading && <MessageRow msg={{ role: "thinking" }} isLast />}
 
                 <div ref={bottomRef} style={{ height: 1 }} />
             </div>

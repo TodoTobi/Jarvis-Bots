@@ -1,1 +1,40 @@
 [2026-02-26T22:29:47.431Z] [ERROR] ModelService generateIntent: connect ECONNREFUSED 100.117.165.109:1234
+[2026-02-26T22:45:03.458Z] [ERROR] ModelService generateIntent: Request failed with status code 400
+[2026-02-26T22:45:16.751Z] [ERROR] NetBot failed: "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-26T22:45:17.387Z] [ERROR] NetBot failed: "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-26T22:45:17.534Z] [ERROR] NetBot failed: "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-26T22:45:19.196Z] [ERROR] NetBot failed: "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-26T22:45:20.019Z] [ERROR] NetBot failed: "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-26T22:45:20.146Z] [ERROR] NetBot failed: "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-26T22:45:20.292Z] [ERROR] NetBot failed: "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-26T22:45:28.866Z] [ERROR] ModelService generateIntent: Request failed with status code 400
+[2026-02-26T22:46:29.253Z] [ERROR] WhatsAppBot start error: The browser is already running for C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\.wwebjs_auth\session. Use a different `userDataDir` or stop the running browser first.
+[2026-02-26T22:46:37.541Z] [ERROR] ModelService generateIntent: Request failed with status code 400
+[2026-02-26T22:51:01.624Z] [ERROR] ModelService generateIntent: Request failed with status code 400
+[2026-02-26T22:51:10.083Z] [ERROR] ModelService generateIntent: Request failed with status code 400
+[2026-02-26T22:52:22.300Z] [ERROR] ModelService generateIntent: Request failed with status code 400
+[2026-02-26T22:52:26.100Z] [ERROR] NetBot failed: "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-26T22:52:26.441Z] [ERROR] NetBot failed: "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-26T23:00:53.625Z] [ERROR] ModelService generateIntent: Request failed with status code 400
+[2026-02-26T23:12:36.068Z] [ERROR] ModelService generateIntent: Request failed with status code 400
+[2026-02-26T23:12:46.580Z] [ERROR] ModelService generateIntent: Request failed with status code 400
+[2026-02-26T23:12:47.067Z] [ERROR] ModelService generateIntent: Request failed with status code 400
+[2026-02-26T23:12:47.723Z] [ERROR] ModelService generateIntent: Request failed with status code 400
+[2026-02-26T23:12:48.122Z] [ERROR] ModelService generateIntent: Request failed with status code 400
+[2026-02-26T23:12:48.634Z] [ERROR] ModelService generateIntent: Request failed with status code 400
+[2026-02-26T23:12:48.681Z] [ERROR] ModelService generateIntent: Request failed with status code 400
+[2026-02-26T23:12:49.049Z] [ERROR] ModelService generateIntent: Request failed with status code 400
+[2026-02-26T23:12:49.400Z] [ERROR] ModelService generateIntent: Request failed with status code 400
+[2026-02-26T23:12:49.817Z] [ERROR] ModelService generateIntent: Request failed with status code 400
+[2026-02-26T23:13:00.489Z] [ERROR] ModelService generateIntent: Request failed with status code 400
+[2026-02-26T23:13:24.813Z] [ERROR] ModelService generateIntent: Request failed with status code 400
+[2026-02-26T23:14:42.150Z] [ERROR] ModelService generateIntent: Request failed with status code 400

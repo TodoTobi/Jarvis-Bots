@@ -1,9 +1,8 @@
 /**
  * ModelService.js — Communication layer with LM Studio (LLaMA 13B)
  *
- * Two modes:
- *  1. generateIntent(context) → parses JSON intent from model
- *  2. generateText(prompt)   → free-form text response
+ * FIX: Removed response_format: { type: "json_object" } — many models
+ *      don't support it and return HTTP 400. JSON is enforced via the prompt instead.
  */
 
 const axios = require("axios");
@@ -43,16 +42,21 @@ class ModelService {
                             role: "system",
                             content: [
                                 "Eres el orquestador de JarvisCore, un sistema de control local modular.",
-                                "Tu única tarea es analizar la instrucción del usuario y devolver un JSON con la intención y parámetros.",
-                                "IMPORTANTE: Responde ÚNICAMENTE con JSON válido. Sin explicaciones. Sin markdown. Sin comillas de código.",
+                                "Tu ÚNICA tarea es analizar la instrucción del usuario y devolver un JSON con la intención y parámetros.",
+                                "",
+                                "REGLA ABSOLUTA: Responde ÚNICAMENTE con JSON válido. Sin explicaciones. Sin markdown. Sin texto antes o después.",
+                                "Si no sabes qué intent usar, devuelve: {\"intent\":\"chat_response\",\"parameters\":{\"query\":\"[repite el mensaje del usuario]\"},\"priority\":\"normal\"}",
                                 "",
                                 "Estructura obligatoria:",
-                                '{"intent": "string", "parameters": {}, "priority": "low|normal|high", "notes": "opcional"}',
+                                "{\"intent\": \"string\", \"parameters\": {}, \"priority\": \"low|normal|high\"}",
                                 "",
-                                "Para ejecutar scripts .bat usa intent con prefijo bat_ y parameters.script con el key del script.",
-                                "Para media usa prefijo media_ con parameters.intent y parameters.query.",
-                                "Para dispositivos de red usa prefijo net_ con parameters.action y parameters.device.",
-                                "Para conversación general usa chat_response con parameters.query = pregunta del usuario."
+                                "EJEMPLOS (sigue este patrón exactamente):",
+                                "- 'poneme música de youtube' → {\"intent\":\"media_play_youtube\",\"parameters\":{\"query\":\"musica\"},\"priority\":\"normal\"}",
+                                "- 'subí el volumen' → {\"intent\":\"bat_exec\",\"parameters\":{\"script\":\"volume_up\"},\"priority\":\"normal\"}",
+                                "- 'abrí youtube en la tele' → {\"intent\":\"net_adb_youtube\",\"parameters\":{\"action\":\"adb_youtube\",\"device\":\"tv_living\",\"query\":\"\"},\"priority\":\"normal\"}",
+                                "- 'bloqueá la pantalla' → {\"intent\":\"bat_exec\",\"parameters\":{\"script\":\"system_lock\"},\"priority\":\"normal\"}",
+                                "- 'hola cómo estás' → {\"intent\":\"chat_response\",\"parameters\":{\"query\":\"hola cómo estás\"},\"priority\":\"normal\"}",
+                                "- 'abrí Discord' → {\"intent\":\"bat_exec\",\"parameters\":{\"script\":\"app_discord\"},\"priority\":\"normal\"}"
                             ].join("\n")
                         },
                         {
@@ -60,9 +64,9 @@ class ModelService {
                             content: fullContext.replace(/```/g, "").trim()
                         }
                     ],
-                    temperature: 0.2,
-                    max_tokens: 300,
-                    response_format: { type: "json_object" }
+                    temperature: 0.1,
+                    max_tokens: 256
+                    // ✅ NO response_format — not all models support it, causes HTTP 400
                 },
                 this._axiosConfig
             );
@@ -70,6 +74,8 @@ class ModelService {
             const raw = response.data?.choices?.[0]?.message?.content;
 
             if (!raw) throw new Error("Empty response from model");
+
+            logger.info(`ModelService raw response: ${raw.substring(0, 200)}`);
 
             const parsed = this._safeParse(raw);
             return this._validateIntent(parsed);
@@ -93,7 +99,7 @@ class ModelService {
                     messages: [
                         {
                             role: "system",
-                            content: "Eres Jarvis, un asistente de IA local. Responde de forma clara, directa y en el idioma del usuario."
+                            content: "Eres Jarvis, un asistente de IA local inteligente y directo. Respondé de forma clara y concisa en el idioma del usuario. Evitá respuestas largas a menos que sea necesario."
                         },
                         {
                             role: "user",
@@ -124,14 +130,27 @@ class ModelService {
 
     _safeParse(raw) {
         try {
-            const cleaned = raw
-                .replace(/```json/g, "")
-                .replace(/```/g, "")
-                .trim();
+            // Remove any markdown code fences or extra text before/after JSON
+            let cleaned = raw.trim();
+
+            // Strip ```json ... ``` or ``` ... ```
+            cleaned = cleaned.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
+
+            // Try to extract JSON object if there's text around it
+            const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                cleaned = jsonMatch[0];
+            }
+
             return JSON.parse(cleaned);
         } catch {
             logger.warn(`ModelService: invalid JSON from model: ${raw.substring(0, 200)}`);
-            return this._errorIntent("Invalid JSON from model", raw.substring(0, 200));
+            // If the model returned plain text instead of JSON, treat it as a chat response
+            return {
+                intent: "chat_response",
+                parameters: { query: raw.trim() },
+                priority: "normal"
+            };
         }
     }
 

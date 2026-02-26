@@ -33,3 +33,331 @@
 [2026-02-26T22:31:10.050Z] [INFO] JarvisCore backend running on http://localhost:3001
 [2026-02-26T22:31:10.051Z] [INFO] Routes: /api/chat | /api/bots | /api/devices | /api/scripts
 [2026-02-26T22:31:43.629Z] [INFO] GET /
+[2026-02-26T22:44:10.857Z] [INFO] InstructionLoader: loaded 8 md files from C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\md
+[2026-02-26T22:44:10.901Z] [INFO] BatBot: whitelist loaded (17 scripts)
+[2026-02-26T22:44:10.902Z] [INFO] NetBot: 2 devices loaded
+[2026-02-26T22:44:10.902Z] [INFO] BotManager initialized with 6 bots
+[2026-02-26T22:44:10.909Z] [INFO] JarvisCore backend running on http://localhost:3001
+[2026-02-26T22:44:10.910Z] [INFO] Routes: /api/chat | /api/bots | /api/devices | /api/scripts
+[2026-02-26T22:44:29.603Z] [INFO] GET /
+[2026-02-26T22:45:03.425Z] [INFO] POST /api/chat
+[2026-02-26T22:45:03.426Z] [INFO] Chat request: "hi"
+[2026-02-26T22:45:03.459Z] [INFO] Intent resolved: error
+[2026-02-26T22:45:03.459Z] [INFO] Intent: error | Params: {"reason":"Model communication failure"}
+[2026-02-26T22:45:03.460Z] [WARN] Model error intent: Model communication failure
+[2026-02-26T22:45:11.886Z] [INFO] GET /api/bots
+[2026-02-26T22:45:13.396Z] [INFO] POST /api/bot/WebBot/activate
+[2026-02-26T22:45:13.397Z] [INFO] Bot activated: WebBot
+[2026-02-26T22:45:13.402Z] [INFO] GET /api/bots
+[2026-02-26T22:45:14.188Z] [INFO] POST /api/bot/WebBot/deactivate
+[2026-02-26T22:45:14.189Z] [WARN] Bot deactivated: WebBot
+[2026-02-26T22:45:14.193Z] [INFO] GET /api/bots
+[2026-02-26T22:45:14.765Z] [INFO] GET /api/devices
+[2026-02-26T22:45:16.677Z] [INFO] POST /api/device/tv_living/command
+[2026-02-26T22:45:16.678Z] [INFO] Bot activated: NetBot
+[2026-02-26T22:45:16.679Z] [INFO] Intent: net_adb_youtube | Params: {"action":"adb_youtube","device":"tv_living","query":"","value":null}
+[2026-02-26T22:45:16.679Z] [INFO] Executing: NetBot
+[2026-02-26T22:45:16.680Z] [INFO] NetBot: action=adb_youtube, device=tv_living, query=""
+[2026-02-26T22:45:16.724Z] [INFO] NetBot ADB → TV Living: shell am start -a android.intent.action.VIEW -d "https://www.youtube.com"
+[2026-02-26T22:45:16.752Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-26T22:45:16.753Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-26T22:45:17.331Z] [INFO] POST /api/device/tv_living/command
+[2026-02-26T22:45:17.332Z] [INFO] Intent: net_adb_youtube | Params: {"action":"adb_youtube","device":"tv_living","query":"","value":null}
+[2026-02-26T22:45:17.333Z] [INFO] Executing: NetBot
+[2026-02-26T22:45:17.333Z] [INFO] NetBot: action=adb_youtube, device=tv_living, query=""
+[2026-02-26T22:45:17.360Z] [INFO] NetBot ADB → TV Living: shell am start -a android.intent.action.VIEW -d "https://www.youtube.com"
+[2026-02-26T22:45:17.388Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-26T22:45:17.389Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-26T22:45:17.475Z] [INFO] POST /api/device/tv_living/command
+[2026-02-26T22:45:17.476Z] [INFO] Intent: net_adb_youtube | Params: {"action":"adb_youtube","device":"tv_living","query":"","value":null}
+[2026-02-26T22:45:17.476Z] [INFO] Executing: NetBot
+[2026-02-26T22:45:17.477Z] [INFO] NetBot: action=adb_youtube, device=tv_living, query=""
+[2026-02-26T22:45:17.504Z] [INFO] NetBot ADB → TV Living: shell am start -a android.intent.action.VIEW -d "https://www.youtube.com"
+[2026-02-26T22:45:17.534Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-26T22:45:17.535Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-26T22:45:19.141Z] [INFO] POST /api/device/phone_tobias/command
+[2026-02-26T22:45:19.141Z] [INFO] Intent: net_adb_youtube | Params: {"action":"adb_youtube","device":"phone_tobias","query":"asd","value":null}
+[2026-02-26T22:45:19.142Z] [INFO] Executing: NetBot
+[2026-02-26T22:45:19.142Z] [INFO] NetBot: action=adb_youtube, device=phone_tobias, query="asd"
+[2026-02-26T22:45:19.169Z] [INFO] NetBot ADB → Celular Tobías: shell am start -a android.intent.action.VIEW -d "https://www.youtube.com/results
+[2026-02-26T22:45:19.197Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-26T22:45:19.197Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-26T22:45:19.963Z] [INFO] POST /api/device/phone_tobias/command
+[2026-02-26T22:45:19.964Z] [INFO] Intent: net_adb_youtube | Params: {"action":"adb_youtube","device":"phone_tobias","query":"asd","value":null}
+[2026-02-26T22:45:19.964Z] [INFO] Executing: NetBot
+[2026-02-26T22:45:19.965Z] [INFO] NetBot: action=adb_youtube, device=phone_tobias, query="asd"
+[2026-02-26T22:45:19.991Z] [INFO] NetBot ADB → Celular Tobías: shell am start -a android.intent.action.VIEW -d "https://www.youtube.com/results
+[2026-02-26T22:45:20.019Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-26T22:45:20.020Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-26T22:45:20.091Z] [INFO] POST /api/device/phone_tobias/command
+[2026-02-26T22:45:20.092Z] [INFO] Intent: net_adb_youtube | Params: {"action":"adb_youtube","device":"phone_tobias","query":"asd","value":null}
+[2026-02-26T22:45:20.092Z] [INFO] Executing: NetBot
+[2026-02-26T22:45:20.093Z] [INFO] NetBot: action=adb_youtube, device=phone_tobias, query="asd"
+[2026-02-26T22:45:20.120Z] [INFO] NetBot ADB → Celular Tobías: shell am start -a android.intent.action.VIEW -d "https://www.youtube.com/results
+[2026-02-26T22:45:20.147Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-26T22:45:20.148Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-26T22:45:20.235Z] [INFO] POST /api/device/phone_tobias/command
+[2026-02-26T22:45:20.236Z] [INFO] Intent: net_adb_youtube | Params: {"action":"adb_youtube","device":"phone_tobias","query":"asd","value":null}
+[2026-02-26T22:45:20.236Z] [INFO] Executing: NetBot
+[2026-02-26T22:45:20.237Z] [INFO] NetBot: action=adb_youtube, device=phone_tobias, query="asd"
+[2026-02-26T22:45:20.264Z] [INFO] NetBot ADB → Celular Tobías: shell am start -a android.intent.action.VIEW -d "https://www.youtube.com/results
+[2026-02-26T22:45:20.292Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-26T22:45:20.293Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-26T22:45:22.949Z] [INFO] GET /api/bots
+[2026-02-26T22:45:28.858Z] [INFO] POST /api/chat
+[2026-02-26T22:45:28.859Z] [INFO] Chat request: "aver"
+[2026-02-26T22:45:28.866Z] [INFO] Intent resolved: error
+[2026-02-26T22:45:28.867Z] [INFO] Intent: error | Params: {"reason":"Model communication failure"}
+[2026-02-26T22:45:28.867Z] [WARN] Model error intent: Model communication failure
+[2026-02-26T22:46:19.644Z] [INFO] GET /api/bots
+[2026-02-26T22:46:23.640Z] [INFO] GET /api/bots
+[2026-02-26T22:46:27.643Z] [INFO] GET /api/bots
+[2026-02-26T22:46:27.878Z] [INFO] POST /api/bot/WhatsAppBot/activate
+[2026-02-26T22:46:28.315Z] [INFO] WhatsAppBot: initializing...
+[2026-02-26T22:46:28.317Z] [INFO] Bot activated: WhatsAppBot
+[2026-02-26T22:46:28.732Z] [INFO] GET /api/bots
+[2026-02-26T22:46:28.870Z] [INFO] POST /api/bot/WhatsAppBot/deactivate
+[2026-02-26T22:46:28.871Z] [WARN] Bot deactivated: WhatsAppBot
+[2026-02-26T22:46:28.872Z] [INFO] WhatsAppBot: stopped
+[2026-02-26T22:46:28.875Z] [INFO] GET /api/bots
+[2026-02-26T22:46:28.998Z] [INFO] POST /api/bot/WhatsAppBot/activate
+[2026-02-26T22:46:28.999Z] [INFO] WhatsAppBot: initializing...
+[2026-02-26T22:46:29.000Z] [INFO] Bot activated: WhatsAppBot
+[2026-02-26T22:46:29.007Z] [INFO] GET /api/bots
+[2026-02-26T22:46:31.644Z] [INFO] GET /api/bots
+[2026-02-26T22:46:35.912Z] [INFO] WhatsAppBot: QR ready — scan with your phone:
+[2026-02-26T22:46:37.533Z] [INFO] POST /api/chat
+[2026-02-26T22:46:37.534Z] [INFO] Chat request: "hi"
+[2026-02-26T22:46:37.541Z] [INFO] Intent resolved: error
+[2026-02-26T22:46:37.542Z] [INFO] Intent: error | Params: {"reason":"Model communication failure"}
+[2026-02-26T22:46:37.542Z] [WARN] Model error intent: Model communication failure
+[2026-02-26T22:47:35.819Z] [INFO] WhatsAppBot: QR ready — scan with your phone:
+[2026-02-26T22:47:55.821Z] [INFO] WhatsAppBot: QR ready — scan with your phone:
+[2026-02-26T22:48:23.104Z] [INFO] WhatsAppBot: authenticated ✅
+[2026-02-26T22:48:23.105Z] [INFO] WhatsAppBot: authenticated ✅
+[2026-02-26T22:48:23.106Z] [INFO] WhatsAppBot: authenticated ✅
+[2026-02-26T22:48:24.376Z] [INFO] WhatsAppBot: ready ✅ Listening for messages...
+[2026-02-26T22:50:32.980Z] [INFO] GET /api/bots
+[2026-02-26T22:50:36.974Z] [INFO] GET /api/bots
+[2026-02-26T22:50:40.975Z] [INFO] GET /api/bots
+[2026-02-26T22:50:44.974Z] [INFO] GET /api/bots
+[2026-02-26T22:50:48.974Z] [INFO] GET /api/bots
+[2026-02-26T22:50:52.974Z] [INFO] GET /api/bots
+[2026-02-26T22:50:56.802Z] [INFO] POST /api/bot/WebBot/activate
+[2026-02-26T22:50:56.803Z] [INFO] Bot activated: WebBot
+[2026-02-26T22:50:56.806Z] [INFO] GET /api/bots
+[2026-02-26T22:50:56.975Z] [INFO] GET /api/bots
+[2026-02-26T22:50:59.089Z] [INFO] POST /api/bot/DoctorBot/deactivate
+[2026-02-26T22:50:59.090Z] [WARN] Bot deactivated: DoctorBot
+[2026-02-26T22:50:59.094Z] [INFO] GET /api/bots
+[2026-02-26T22:51:01.610Z] [INFO] POST /api/chat
+[2026-02-26T22:51:01.611Z] [INFO] Chat request: "hi"
+[2026-02-26T22:51:01.625Z] [INFO] Intent resolved: error
+[2026-02-26T22:51:01.625Z] [INFO] Intent: error | Params: {"reason":"Model communication failure"}
+[2026-02-26T22:51:01.626Z] [WARN] Model error intent: Model communication failure
+[2026-02-26T22:51:10.076Z] [INFO] POST /api/chat
+[2026-02-26T22:51:10.077Z] [INFO] Chat request: "asd"
+[2026-02-26T22:51:10.084Z] [INFO] Intent resolved: error
+[2026-02-26T22:51:10.084Z] [INFO] Intent: error | Params: {"reason":"Model communication failure"}
+[2026-02-26T22:51:10.085Z] [WARN] Model error intent: Model communication failure
+[2026-02-26T22:52:10.651Z] [INFO] GET /api/bots
+[2026-02-26T22:52:11.868Z] [INFO] POST /api/bot/WebBot/deactivate
+[2026-02-26T22:52:11.869Z] [WARN] Bot deactivated: WebBot
+[2026-02-26T22:52:11.872Z] [INFO] GET /api/bots
+[2026-02-26T22:52:12.588Z] [INFO] POST /api/bot/WhatsAppBot/deactivate
+[2026-02-26T22:52:12.589Z] [WARN] Bot deactivated: WhatsAppBot
+[2026-02-26T22:52:12.593Z] [INFO] GET /api/bots
+[2026-02-26T22:52:12.768Z] [INFO] WhatsAppBot: stopped
+[2026-02-26T22:52:14.650Z] [INFO] GET /api/bots
+[2026-02-26T22:52:15.275Z] [INFO] POST /api/bot/DoctorBot/activate
+[2026-02-26T22:52:15.276Z] [INFO] Bot activated: DoctorBot
+[2026-02-26T22:52:15.279Z] [INFO] GET /api/bots
+[2026-02-26T22:52:15.907Z] [INFO] POST /api/bot/DoctorBot/deactivate
+[2026-02-26T22:52:15.908Z] [WARN] Bot deactivated: DoctorBot
+[2026-02-26T22:52:15.911Z] [INFO] GET /api/bots
+[2026-02-26T22:52:18.649Z] [INFO] GET /api/bots
+[2026-02-26T22:52:22.292Z] [INFO] POST /api/chat
+[2026-02-26T22:52:22.293Z] [INFO] Chat request: "hu"
+[2026-02-26T22:52:22.300Z] [INFO] Intent resolved: error
+[2026-02-26T22:52:22.301Z] [INFO] Intent: error | Params: {"reason":"Model communication failure"}
+[2026-02-26T22:52:22.302Z] [WARN] Model error intent: Model communication failure
+[2026-02-26T22:52:23.684Z] [INFO] GET /api/bots
+[2026-02-26T22:52:24.627Z] [INFO] GET /api/devices
+[2026-02-26T22:52:26.036Z] [INFO] POST /api/device/tv_living/command
+[2026-02-26T22:52:26.036Z] [INFO] Intent: net_adb_youtube | Params: {"action":"adb_youtube","device":"tv_living","query":"","value":null}
+[2026-02-26T22:52:26.037Z] [INFO] Executing: NetBot
+[2026-02-26T22:52:26.037Z] [INFO] NetBot: action=adb_youtube, device=tv_living, query=""
+[2026-02-26T22:52:26.067Z] [INFO] NetBot ADB → TV Living: shell am start -a android.intent.action.VIEW -d "https://www.youtube.com"
+[2026-02-26T22:52:26.100Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-26T22:52:26.101Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-26T22:52:26.379Z] [INFO] POST /api/device/tv_living/command
+[2026-02-26T22:52:26.380Z] [INFO] Intent: net_adb_youtube | Params: {"action":"adb_youtube","device":"tv_living","query":"","value":null}
+[2026-02-26T22:52:26.380Z] [INFO] Executing: NetBot
+[2026-02-26T22:52:26.381Z] [INFO] NetBot: action=adb_youtube, device=tv_living, query=""
+[2026-02-26T22:52:26.411Z] [INFO] NetBot ADB → TV Living: shell am start -a android.intent.action.VIEW -d "https://www.youtube.com"
+[2026-02-26T22:52:26.441Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-26T22:52:26.442Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-26T22:52:27.531Z] [INFO] GET /api/bots
+[2026-02-26T22:52:32.316Z] [INFO] GET /api/bots
+[2026-02-26T22:52:36.316Z] [INFO] GET /api/bots
+[2026-02-26T22:52:40.321Z] [INFO] GET /api/bots
+[2026-02-26T22:52:44.324Z] [INFO] GET /api/bots
+[2026-02-26T22:52:48.319Z] [INFO] GET /api/bots
+[2026-02-26T22:52:52.311Z] [INFO] GET /api/bots
+[2026-02-26T22:52:56.317Z] [INFO] GET /api/bots
+[2026-02-26T22:53:00.312Z] [INFO] GET /api/bots
+[2026-02-26T22:53:04.316Z] [INFO] GET /api/bots
+[2026-02-26T22:53:08.325Z] [INFO] GET /api/bots
+[2026-02-26T22:53:11.535Z] [INFO] GET /api/bots
+[2026-02-26T22:53:16.325Z] [INFO] GET /api/bots
+[2026-02-26T22:53:20.318Z] [INFO] GET /api/bots
+[2026-02-26T22:53:24.322Z] [INFO] GET /api/bots
+[2026-02-26T22:53:28.327Z] [INFO] GET /api/bots
+[2026-02-26T22:53:32.312Z] [INFO] GET /api/bots
+[2026-02-26T22:53:36.327Z] [INFO] GET /api/bots
+[2026-02-26T22:53:40.320Z] [INFO] GET /api/bots
+[2026-02-26T22:53:44.327Z] [INFO] GET /api/bots
+[2026-02-26T22:53:48.317Z] [INFO] GET /api/bots
+[2026-02-26T22:53:52.324Z] [INFO] GET /api/bots
+[2026-02-26T22:53:56.320Z] [INFO] GET /api/bots
+[2026-02-26T22:54:00.325Z] [INFO] GET /api/bots
+[2026-02-26T22:54:04.314Z] [INFO] GET /api/bots
+[2026-02-26T22:54:08.317Z] [INFO] GET /api/bots
+[2026-02-26T22:54:12.324Z] [INFO] GET /api/bots
+[2026-02-26T22:54:36.315Z] [INFO] GET /api/bots
+[2026-02-26T22:55:36.322Z] [INFO] GET /api/bots
+[2026-02-26T22:56:36.325Z] [INFO] GET /api/bots
+[2026-02-26T22:57:36.315Z] [INFO] GET /api/bots
+[2026-02-26T22:58:36.317Z] [INFO] GET /api/bots
+[2026-02-26T22:59:36.311Z] [INFO] GET /api/bots
+[2026-02-26T23:00:36.327Z] [INFO] GET /api/bots
+[2026-02-26T23:00:50.625Z] [INFO] GET /api/bots
+[2026-02-26T23:00:51.533Z] [INFO] GET /api/bots
+[2026-02-26T23:00:53.617Z] [INFO] POST /api/chat
+[2026-02-26T23:00:53.618Z] [INFO] Chat request: "as"
+[2026-02-26T23:00:53.625Z] [INFO] Intent resolved: error
+[2026-02-26T23:00:53.626Z] [INFO] Intent: error | Params: {"reason":"Model communication failure"}
+[2026-02-26T23:00:53.626Z] [WARN] Model error intent: Model communication failure
+[2026-02-26T23:01:47.060Z] [INFO] GET /api/devices
+[2026-02-26T23:12:15.320Z] [INFO] GET /api/bots
+[2026-02-26T23:12:21.313Z] [INFO] GET /api/bots
+[2026-02-26T23:12:26.325Z] [INFO] GET /api/bots
+[2026-02-26T23:12:28.920Z] [INFO] GET /api/bots
+[2026-02-26T23:12:33.920Z] [INFO] GET /api/bots
+[2026-02-26T23:12:36.060Z] [INFO] POST /api/chat
+[2026-02-26T23:12:36.061Z] [INFO] Chat request: "hi"
+[2026-02-26T23:12:36.068Z] [INFO] Intent resolved: error
+[2026-02-26T23:12:36.069Z] [INFO] Intent: error | Params: {"reason":"Model communication failure"}
+[2026-02-26T23:12:36.069Z] [WARN] Model error intent: Model communication failure
+[2026-02-26T23:12:40.510Z] [INFO] GET /api/bots
+[2026-02-26T23:12:42.111Z] [INFO] GET /api/bots
+[2026-02-26T23:12:42.806Z] [INFO] GET /api/devices
+[2026-02-26T23:12:43.486Z] [INFO] GET /api/bots
+[2026-02-26T23:12:44.143Z] [INFO] GET /api/bots
+[2026-02-26T23:12:46.573Z] [INFO] POST /api/chat
+[2026-02-26T23:12:46.574Z] [INFO] Chat request: "abrí discord"
+[2026-02-26T23:12:46.581Z] [INFO] Intent resolved: error
+[2026-02-26T23:12:46.581Z] [INFO] Intent: error | Params: {"reason":"Model communication failure"}
+[2026-02-26T23:12:46.582Z] [WARN] Model error intent: Model communication failure
+[2026-02-26T23:12:47.060Z] [INFO] POST /api/chat
+[2026-02-26T23:12:47.061Z] [INFO] Chat request: "abrí discord"
+[2026-02-26T23:12:47.068Z] [INFO] Intent resolved: error
+[2026-02-26T23:12:47.068Z] [INFO] Intent: error | Params: {"reason":"Model communication failure"}
+[2026-02-26T23:12:47.069Z] [WARN] Model error intent: Model communication failure
+[2026-02-26T23:12:47.716Z] [INFO] POST /api/chat
+[2026-02-26T23:12:47.717Z] [INFO] Chat request: "abrí discord"
+[2026-02-26T23:12:47.724Z] [INFO] Intent resolved: error
+[2026-02-26T23:12:47.725Z] [INFO] Intent: error | Params: {"reason":"Model communication failure"}
+[2026-02-26T23:12:47.725Z] [WARN] Model error intent: Model communication failure
+[2026-02-26T23:12:48.116Z] [INFO] POST /api/chat
+[2026-02-26T23:12:48.117Z] [INFO] Chat request: "abrí discord"
+[2026-02-26T23:12:48.122Z] [INFO] Intent resolved: error
+[2026-02-26T23:12:48.123Z] [INFO] Intent: error | Params: {"reason":"Model communication failure"}
+[2026-02-26T23:12:48.123Z] [WARN] Model error intent: Model communication failure
+[2026-02-26T23:12:48.629Z] [INFO] POST /api/chat
+[2026-02-26T23:12:48.630Z] [INFO] Chat request: "abrí discord"
+[2026-02-26T23:12:48.635Z] [INFO] Intent resolved: error
+[2026-02-26T23:12:48.636Z] [INFO] Intent: error | Params: {"reason":"Model communication failure"}
+[2026-02-26T23:12:48.636Z] [WARN] Model error intent: Model communication failure
+[2026-02-26T23:12:48.676Z] [INFO] POST /api/chat
+[2026-02-26T23:12:48.677Z] [INFO] Chat request: "abrí discord"
+[2026-02-26T23:12:48.682Z] [INFO] Intent resolved: error
+[2026-02-26T23:12:48.682Z] [INFO] Intent: error | Params: {"reason":"Model communication failure"}
+[2026-02-26T23:12:48.683Z] [WARN] Model error intent: Model communication failure
+[2026-02-26T23:12:49.044Z] [INFO] POST /api/chat
+[2026-02-26T23:12:49.045Z] [INFO] Chat request: "abrí discord"
+[2026-02-26T23:12:49.050Z] [INFO] Intent resolved: error
+[2026-02-26T23:12:49.050Z] [INFO] Intent: error | Params: {"reason":"Model communication failure"}
+[2026-02-26T23:12:49.051Z] [WARN] Model error intent: Model communication failure
+[2026-02-26T23:12:49.144Z] [INFO] GET /api/bots
+[2026-02-26T23:12:49.396Z] [INFO] POST /api/chat
+[2026-02-26T23:12:49.397Z] [INFO] Chat request: "abrí discord"
+[2026-02-26T23:12:49.401Z] [INFO] Intent resolved: error
+[2026-02-26T23:12:49.402Z] [INFO] Intent: error | Params: {"reason":"Model communication failure"}
+[2026-02-26T23:12:49.402Z] [WARN] Model error intent: Model communication failure
+[2026-02-26T23:12:49.812Z] [INFO] POST /api/chat
+[2026-02-26T23:12:49.813Z] [INFO] Chat request: "abrí discord"
+[2026-02-26T23:12:49.818Z] [INFO] Intent resolved: error
+[2026-02-26T23:12:49.818Z] [INFO] Intent: error | Params: {"reason":"Model communication failure"}
+[2026-02-26T23:12:49.819Z] [WARN] Model error intent: Model communication failure
+[2026-02-26T23:12:54.147Z] [INFO] GET /api/bots
+[2026-02-26T23:13:00.479Z] [INFO] POST /api/chat
+[2026-02-26T23:13:00.480Z] [INFO] Chat request: "as"
+[2026-02-26T23:13:00.490Z] [INFO] Intent resolved: error
+[2026-02-26T23:13:00.491Z] [INFO] Intent: error | Params: {"reason":"Model communication failure"}
+[2026-02-26T23:13:00.492Z] [WARN] Model error intent: Model communication failure
+[2026-02-26T23:13:24.805Z] [INFO] POST /api/chat
+[2026-02-26T23:13:24.806Z] [INFO] Chat request: "hola"
+[2026-02-26T23:13:24.814Z] [INFO] Intent resolved: error
+[2026-02-26T23:13:24.814Z] [INFO] Intent: error | Params: {"reason":"Model communication failure"}
+[2026-02-26T23:13:24.815Z] [WARN] Model error intent: Model communication failure
+[2026-02-26T23:13:32.994Z] [INFO] GET /api/bots
+[2026-02-26T23:13:35.138Z] [INFO] GET /api/bots
+[2026-02-26T23:13:40.318Z] [INFO] GET /api/bots
+[2026-02-26T23:13:45.315Z] [INFO] GET /api/bots
+[2026-02-26T23:13:50.319Z] [INFO] GET /api/bots
+[2026-02-26T23:13:55.314Z] [INFO] GET /api/bots
+[2026-02-26T23:14:00.313Z] [INFO] GET /api/bots
+[2026-02-26T23:14:05.316Z] [INFO] GET /api/bots
+[2026-02-26T23:14:10.324Z] [INFO] GET /api/bots
+[2026-02-26T23:14:15.319Z] [INFO] GET /api/bots
+[2026-02-26T23:14:20.324Z] [INFO] GET /api/bots
+[2026-02-26T23:14:25.139Z] [INFO] GET /api/bots
+[2026-02-26T23:14:27.929Z] [INFO] GET /api/devices
+[2026-02-26T23:14:29.646Z] [INFO] GET /api/bots
+[2026-02-26T23:14:31.446Z] [INFO] GET /api/bots
+[2026-02-26T23:14:36.451Z] [INFO] GET /api/bots
+[2026-02-26T23:14:42.143Z] [INFO] POST /api/chat
+[2026-02-26T23:14:42.144Z] [INFO] Chat request: "as"
+[2026-02-26T23:14:42.150Z] [INFO] Intent resolved: error
+[2026-02-26T23:14:42.151Z] [INFO] Intent: error | Params: {"reason":"Model communication failure"}
+[2026-02-26T23:14:42.151Z] [WARN] Model error intent: Model communication failure
+[2026-02-26T23:16:08.169Z] [INFO] GET /api/bots
+[2026-02-26T23:17:49.414Z] [INFO] GET /api/bots
+[2026-02-26T23:17:54.323Z] [INFO] GET /api/bots
+[2026-02-26T23:17:58.315Z] [INFO] GET /api/bots
+[2026-02-26T23:18:02.311Z] [INFO] GET /api/bots
+[2026-02-26T23:18:06.318Z] [INFO] GET /api/bots
+[2026-02-26T23:18:10.315Z] [INFO] GET /api/bots
+[2026-02-26T23:18:14.313Z] [INFO] GET /api/bots
+[2026-02-26T23:18:18.322Z] [INFO] GET /api/bots
+[2026-02-26T23:18:22.319Z] [INFO] GET /api/bots
+[2026-02-26T23:18:26.325Z] [INFO] GET /api/bots
+[2026-02-26T23:18:30.312Z] [INFO] GET /api/bots
+[2026-02-26T23:18:34.322Z] [INFO] GET /api/bots
+[2026-02-26T23:18:38.317Z] [INFO] GET /api/bots
+[2026-02-26T23:18:42.313Z] [INFO] GET /api/bots
+[2026-02-26T23:18:46.316Z] [INFO] GET /api/bots
+[2026-02-26T23:18:50.320Z] [INFO] GET /api/bots
+[2026-02-26T23:19:36.323Z] [INFO] GET /api/bots
+[2026-02-26T23:20:36.324Z] [INFO] GET /api/bots
+[2026-02-26T23:20:50.151Z] [INFO] GET /api/bots

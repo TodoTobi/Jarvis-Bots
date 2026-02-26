@@ -2,6 +2,7 @@ import React from "react";
 
 function Sidebar({ view, setView }) {
     const navItems = [
+        { key: "dashboard", icon: "🏠", label: "Dashboard" },
         { key: "chat", icon: "💬", label: "Chat" },
         { key: "bots", icon: "🤖", label: "Bots" },
         { key: "devices", icon: "📡", label: "Dispositivos" }
