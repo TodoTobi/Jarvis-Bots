@@ -1,0 +1,12 @@
+[2026-02-26T20:11:03.427Z] [INFO] BotManager initialized
+[2026-02-26T20:11:09.635Z] [INFO] Intent received: error | Parameters: {"reason":"Model communication failure"}
+[2026-02-26T20:11:09.635Z] [WARN] Model returned error intent
+[2026-02-26T20:11:11.680Z] [INFO] Intent received: error | Parameters: {"reason":"Model communication failure"}
+[2026-02-26T20:11:11.681Z] [WARN] Model returned error intent
+[2026-02-26T20:11:14.521Z] [INFO] Intent received: error | Parameters: {"reason":"Model communication failure"}
+[2026-02-26T20:11:14.521Z] [WARN] Model returned error intent
+[2026-02-26T20:15:13.560Z] [INFO] BotManager initialized
+[2026-02-26T20:15:18.158Z] [INFO] Intent received: error | Parameters: {"reason":"Model communication failure"}
+[2026-02-26T20:15:18.159Z] [WARN] Model returned error intent
+[2026-02-26T20:25:46.582Z] [INFO] BotManager initialized
+[2026-02-26T20:27:36.858Z] [INFO] BotManager initialized
