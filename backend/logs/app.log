@@ -361,3 +361,11 @@ programa o archivo por lotes ejecutable.
 [2026-02-26T23:19:36.323Z] [INFO] GET /api/bots
 [2026-02-26T23:20:36.324Z] [INFO] GET /api/bots
 [2026-02-26T23:20:50.151Z] [INFO] GET /api/bots
+[2026-02-26T23:34:38.733Z] [INFO] InstructionLoader: loaded 8 md files from C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\md
+[2026-02-26T23:34:38.784Z] [INFO] BatBot: whitelist loaded (17 scripts)
+[2026-02-26T23:34:38.785Z] [INFO] NetBot: 2 devices loaded
+[2026-02-26T23:34:38.786Z] [INFO] BotManager initialized with 8 bots
+[2026-02-26T23:55:08.177Z] [INFO] InstructionLoader: loaded 8 md files from C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\md
+[2026-02-26T23:55:08.227Z] [INFO] BatBot: whitelist loaded (17 scripts)
+[2026-02-26T23:55:08.228Z] [INFO] NetBot: 2 devices loaded
+[2026-02-26T23:55:08.229Z] [INFO] BotManager initialized with 8 bots
