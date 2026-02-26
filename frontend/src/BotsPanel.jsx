@@ -2,30 +2,12 @@ import React, { useEffect, useState, useCallback } from "react";
 import { getBots, activateBot, deactivateBot } from "./api";
 
 const BOT_META = {
-    WebBot: {
-        icon: "🌐",
-        role: "Conversación general y búsquedas"
-    },
-    DoctorBot: {
-        icon: "🩺",
-        role: "Diagnóstico y recuperación de errores"
-    },
-    BatBot: {
-        icon: "⚙️",
-        role: "Ejecutor de scripts .bat locales"
-    },
-    MediaBot: {
-        icon: "🎵",
-        role: "Control de reproducción multimedia"
-    },
-    NetBot: {
-        icon: "📡",
-        role: "Control de dispositivos en red"
-    },
-    WhatsAppBot: {
-        icon: "💬",
-        role: "Control remoto vía WhatsApp"
-    }
+    WebBot: { icon: "🌐", role: "Conversación general y búsquedas" },
+    DoctorBot: { icon: "🩺", role: "Diagnóstico y recuperación de errores" },
+    BatBot: { icon: "⚙️", role: "Ejecutor de scripts .bat locales" },
+    MediaBot: { icon: "🎵", role: "Control de reproducción multimedia" },
+    NetBot: { icon: "📡", role: "Control de dispositivos en red" },
+    WhatsAppBot: { icon: "💬", role: "Control remoto vía WhatsApp" }
 };
 
 function BotsPanel() {
@@ -53,11 +35,8 @@ function BotsPanel() {
     const handleToggle = async (bot) => {
         try {
             setToggling(bot.name);
-            if (bot.active) {
-                await deactivateBot(bot.name);
-            } else {
-                await activateBot(bot.name);
-            }
+            if (bot.active) await deactivateBot(bot.name);
+            else await activateBot(bot.name);
             await loadBots();
         } catch (err) {
             console.error("Toggle failed:", err);
@@ -67,11 +46,10 @@ function BotsPanel() {
     };
 
     const getCardClass = (bot) => {
-        const classes = ["bot-card"];
-        if (bot.status === "working") classes.push("working");
-        else if (bot.status === "error") classes.push("error");
-        else if (bot.active) classes.push("active");
-        return classes.join(" ");
+        if (bot.status === "working") return "bot-card working";
+        if (bot.status === "error") return "bot-card error";
+        if (bot.active) return "bot-card active";
+        return "bot-card";
     };
 
     const getBadgeClass = (bot) => {
@@ -91,16 +69,16 @@ function BotsPanel() {
     const formatDate = (dateStr) => {
         if (!dateStr) return "Nunca";
         return new Date(dateStr).toLocaleTimeString("es-AR", {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit"
+            hour: "2-digit", minute: "2-digit", second: "2-digit"
         });
     };
 
     if (loading) {
         return (
             <div className="bots-grid">
-                <p style={{ color: "var(--text-muted)", padding: "20px" }}>Cargando bots...</p>
+                <p style={{ color: "var(--text-muted)", padding: "20px", fontSize: "14px" }}>
+                    Cargando bots...
+                </p>
             </div>
         );
     }
@@ -128,15 +106,7 @@ function BotsPanel() {
                         </div>
 
                         {bot.lastError && (
-                            <div style={{
-                                fontSize: "12px",
-                                color: "var(--status-error)",
-                                background: "rgba(239,68,68,0.08)",
-                                padding: "8px 12px",
-                                borderRadius: "8px",
-                                marginBottom: "12px",
-                                lineHeight: 1.5
-                            }}>
+                            <div className="bot-error-box">
                                 ⚠ {bot.lastError}
                             </div>
                         )}
@@ -145,8 +115,8 @@ function BotsPanel() {
                             <div className="bot-card-meta">
                                 Última ejecución: {formatDate(bot.lastRun)}
                                 {bot.runCount > 0 && (
-                                    <span style={{ marginLeft: "8px", color: "var(--accent-hover)" }}>
-                                        ({bot.runCount} runs)
+                                    <span style={{ marginLeft: "8px", color: "var(--accent)" }}>
+                                        ({bot.runCount})
                                     </span>
                                 )}
                             </div>

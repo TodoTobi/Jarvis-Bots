@@ -17,7 +17,7 @@ class BatBot extends Bot {
     constructor() {
         super("BatBot", "Ejecutor de scripts .bat en la PC local");
 
-        this.batsDir = path.resolve(__dirname, "../../../bats");
+        this.batsDir = path.resolve(__dirname, "../../bats");
         this.whitelistPath = path.resolve(__dirname, "../config/bat_whitelist.json");
         this.whitelist = this._loadWhitelist();
     }

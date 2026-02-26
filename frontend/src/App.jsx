@@ -12,6 +12,7 @@ function App() {
         switch (view) {
             case "bots": return <BotsPage />;
             case "devices": return <DevicesPage />;
+            case "chat":
             default: return <Chat />;
         }
     };

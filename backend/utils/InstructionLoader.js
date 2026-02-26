@@ -1,68 +1,65 @@
 /**
  * InstructionLoader.js — Loads and manages .md instruction files
  *
- * Reads all markdown files from the /md folder at startup.
- * Provides a buildFullContext() method that assembles the full
- * system prompt sent to the model for intent detection.
+ * Structure: backend/utils/ is 2 levels from project root
+ * → path.resolve(__dirname, "../../md") = project_root/md/
  */
 
 const fs = require("fs");
 const path = require("path");
 const logger = require("../logs/logger");
 
-// Files loaded in this order for context building
-const CONTEXT_ORDER = [
-    "identity",
-    "soul",
-    "user",
-    "tools",
-    "bots",
-    "heartbeat",
-    "bootstrap",
-    "memory"
-];
+const CONTEXT_ORDER = ["identity", "soul", "user", "tools", "bots", "heartbeat", "bootstrap", "memory"];
 
 class InstructionLoader {
     constructor() {
-        this.mdPath = path.resolve(__dirname, "../../../md");
+        // backend/utils/__dirname → ../../ = project root → md/
+        this.mdPath = path.resolve(__dirname, "../../md");
         this.cache = {};
         this._loadAll();
     }
 
-    /* =========================
-       LOAD ALL .md FILES
-    ========================= */
-
     _loadAll() {
         if (!fs.existsSync(this.mdPath)) {
-            throw new Error(`md/ folder not found at: ${this.mdPath}`);
+            logger.warn(`md/ not found at ${this.mdPath} — creating with defaults`);
+            this._createDefaults();
         }
 
         const files = fs.readdirSync(this.mdPath).filter(f => f.endsWith(".md"));
-
         files.forEach(file => {
             const key = file.replace(".md", "");
             try {
                 this.cache[key] = fs.readFileSync(path.join(this.mdPath, file), "utf-8");
             } catch (err) {
-                logger.warn(`InstructionLoader: could not read ${file} — ${err.message}`);
+                logger.warn(`Could not read ${file}: ${err.message}`);
             }
         });
 
-        logger.info(`InstructionLoader: loaded ${files.length} files (${files.join(", ")})`);
+        logger.info(`InstructionLoader: loaded ${files.length} md files from ${this.mdPath}`);
     }
 
-    /* =========================
-       GET SINGLE FILE
-    ========================= */
+    _createDefaults() {
+        fs.mkdirSync(this.mdPath, { recursive: true });
+        const defaults = {
+            "identity.md": "# Identity\nYou are **Jarvis**, a modular AI agent.\n",
+            "soul.md": "# Soul\n## Personality\n- Tone: Professional, friendly\n- Language: Spanish (Argentina) by default\n",
+            "user.md": "# User Profile\n## Basic Info\n- Name: Tobías\n- Language: Spanish (Argentina)\n",
+            "tools.md": "# Tools\n## Available\n- Web Search, File System, LM Studio API, .bat scripts, ADB\n",
+            "bots.md": "# Bots\nSee full bots.md for intent mapping.\n",
+            "heartbeat.md": "# Heartbeat\n## Monitor\n- Check interval: 30s\n",
+            "bootstrap.md": "# Bootstrap\n## Startup\n1. Load env\n2. Load md files\n3. Init bots\n",
+            "memory.md": "# Memory\n\n"
+        };
+        Object.entries(defaults).forEach(([file, content]) => {
+            const fp = path.join(this.mdPath, file);
+            if (!fs.existsSync(fp)) fs.writeFileSync(fp, content, "utf-8");
+        });
+        logger.info(`md/ folder created at ${this.mdPath}`);
+    }
 
     get(key) {
         return this.cache[key] || "";
     }
-
-    /* =========================
-       BUILD CONTEXT FOR MODEL
-    ========================= */
 
     buildFullContext(userMessage) {
         const sections = [];
@@ -74,62 +71,48 @@ class InstructionLoader {
             }
         });
 
-        // Keep memory short (last 500 chars to avoid token overflow)
-        const memoryKey = sections.findIndex(s => s.startsWith("# MEMORY"));
-        if (memoryKey !== -1) {
-            const memContent = this.get("memory");
-            const shortMem = memContent.slice(-500);
-            sections[memoryKey] = `# MEMORY (recent)\n${shortMem}`;
+        // Trim memory to avoid token overflow
+        const memIdx = sections.findIndex(s => s.startsWith("# MEMORY"));
+        if (memIdx !== -1) {
+            sections[memIdx] = `# MEMORY (recent)\n${this.get("memory").slice(-500)}`;
         }
 
         sections.push(`# USER_INPUT\n${userMessage}`);
-
         sections.push(`
 # INSTRUCTION
-Analiza el USER_INPUT y responde SOLO con JSON válido:
+Analyze USER_INPUT. Respond ONLY with valid JSON:
 {
   "intent": "intent_name",
   "parameters": { "key": "value" },
   "priority": "normal",
-  "notes": "opcional"
+  "notes": "optional"
 }
 
-Ejemplos de intents:
-- "poneme música de youtube" → {"intent":"media_play_youtube","parameters":{"query":"música"},"priority":"normal"}
-- "subí el volumen" → {"intent":"bat_volume_up","parameters":{"script":"volume_up"},"priority":"normal"}
-- "abrí youtube en la tele" → {"intent":"net_tv_youtube","parameters":{"action":"adb_youtube","device":"tv_living","query":""},"priority":"normal"}
-- "bloqueá la pantalla" → {"intent":"bat_system_lock","parameters":{"script":"system_lock"},"priority":"normal"}
-- "hola cómo estás" → {"intent":"chat_response","parameters":{"query":"hola cómo estás"},"priority":"normal"}
+Examples:
+- "poneme musica de youtube" → {"intent":"media_play_youtube","parameters":{"query":"musica"},"priority":"normal"}
+- "subi el volumen" → {"intent":"bat_volume_up","parameters":{"script":"volume_up"},"priority":"normal"}
+- "abri youtube en la tele" → {"intent":"net_tv_youtube","parameters":{"action":"adb_youtube","device":"tv_living","query":""},"priority":"normal"}
+- "bloquea la pantalla" → {"intent":"bat_system_lock","parameters":{"script":"system_lock"},"priority":"normal"}
+- "hola como estas" → {"intent":"chat_response","parameters":{"query":"hola como estas"},"priority":"normal"}
 `);
 
         return sections.join("\n\n---\n\n");
     }
 
-    /* =========================
-       MEMORY APPEND
-    ========================= */
-
     appendToMemory(entry) {
         const memoryPath = path.join(this.mdPath, "memory.md");
-        const timestamp = new Date().toISOString();
-        const block = `\n\n## ${timestamp}\n${entry}\n`;
-
+        const block = `\n\n## ${new Date().toISOString()}\n${entry}\n`;
         try {
             fs.appendFileSync(memoryPath, block, "utf-8");
             this.cache["memory"] = (this.cache["memory"] || "") + block;
         } catch (err) {
-            logger.warn(`InstructionLoader: memory write failed — ${err.message}`);
+            logger.warn(`Memory write failed: ${err.message}`);
         }
     }
-
-    /* =========================
-       HOT RELOAD
-    ========================= */
 
     reload() {
         this.cache = {};
         this._loadAll();
-        logger.info("InstructionLoader: files reloaded");
     }
 }
 

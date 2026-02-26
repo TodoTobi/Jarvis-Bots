@@ -1,11 +1,52 @@
-body {
+/* index.css — base reset, everything else in App.css */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
     margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #f5f5f5;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    height: 100%;
+}
+
+body {
+    height: 100%;
+    background: #212121;
+    color: #ececec;
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
 }
 
 #root {
+    height: 100%;
     display: flex;
-    justify-content: center;
-    padding: 50px;
+}
+
+::selection {
+    background: rgba(16, 163, 127, 0.25);
+    color: #fff;
+}
+
+*:focus-visible {
+    outline: 2px solid rgba(16, 163, 127, 0.5);
+    outline-offset: 2px;
+}
+
+a {
+    color: #10a37f;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+code,
+pre {
+    font-family: 'DM Mono', 'Fira Code', monospace;
+    font-size: 0.875em;
 }

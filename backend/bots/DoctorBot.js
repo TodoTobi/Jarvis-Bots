@@ -57,7 +57,7 @@ class DoctorBot extends Bot {
     constructor() {
         super("DoctorBot", "Diagnóstico y recuperación de errores del sistema");
 
-        this.memoryPath = path.resolve(__dirname, "../../../md/memory.md");
+        this.memoryPath = path.resolve(__dirname, "../../md/memory.md");
         this.errorHistory = [];
         this.maxHistory = 50;
     }

@@ -10,3 +10,26 @@
 [2026-02-26T20:15:18.159Z] [WARN] Model returned error intent
 [2026-02-26T20:25:46.582Z] [INFO] BotManager initialized
 [2026-02-26T20:27:36.858Z] [INFO] BotManager initialized
+[2026-02-26T22:29:28.044Z] [INFO] InstructionLoader: loaded 8 md files from C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\md
+[2026-02-26T22:29:28.091Z] [INFO] BatBot: whitelist loaded (17 scripts)
+[2026-02-26T22:29:28.092Z] [INFO] NetBot: 2 devices loaded
+[2026-02-26T22:29:28.092Z] [INFO] BotManager initialized with 6 bots
+[2026-02-26T22:29:28.099Z] [INFO] JarvisCore backend running on http://localhost:3001
+[2026-02-26T22:29:28.100Z] [INFO] Routes: /api/chat | /api/bots | /api/devices | /api/scripts
+[2026-02-26T22:29:39.668Z] [INFO] GET /api/bots
+[2026-02-26T22:29:39.675Z] [INFO] GET /api/bots
+[2026-02-26T22:29:40.948Z] [INFO] POST /api/bot/WebBot/activate
+[2026-02-26T22:29:40.949Z] [INFO] Bot activated: WebBot
+[2026-02-26T22:29:40.953Z] [INFO] GET /api/bots
+[2026-02-26T22:29:45.404Z] [INFO] POST /api/chat
+[2026-02-26T22:29:45.405Z] [INFO] Chat request: "yes id o"
+[2026-02-26T22:29:47.432Z] [INFO] Intent resolved: error
+[2026-02-26T22:29:47.432Z] [INFO] Intent: error | Params: {"reason":"Model communication failure"}
+[2026-02-26T22:29:47.433Z] [WARN] Model error intent: Model communication failure
+[2026-02-26T22:31:10.000Z] [INFO] InstructionLoader: loaded 8 md files from C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\md
+[2026-02-26T22:31:10.043Z] [INFO] BatBot: whitelist loaded (17 scripts)
+[2026-02-26T22:31:10.044Z] [INFO] NetBot: 2 devices loaded
+[2026-02-26T22:31:10.045Z] [INFO] BotManager initialized with 6 bots
+[2026-02-26T22:31:10.050Z] [INFO] JarvisCore backend running on http://localhost:3001
+[2026-02-26T22:31:10.051Z] [INFO] Routes: /api/chat | /api/bots | /api/devices | /api/scripts
+[2026-02-26T22:31:43.629Z] [INFO] GET /
