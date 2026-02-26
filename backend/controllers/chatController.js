@@ -1,3 +1,8 @@
+/**
+ * chatController.js — Handles chat messages
+ * Orchestrates: message → model → intent → bot → response
+ */
+
 const instructionLoader = require("../utils/InstructionLoader");
 const modelService = require("../services/ModelService");
 const botManager = require("../bots/BotManager");
@@ -6,49 +11,56 @@ const logger = require("../logs/logger");
 class ChatController {
 
     health(req, res) {
-        res.json({ status: "OK", timestamp: new Date().toISOString() });
+        res.json({
+            status: "OK",
+            timestamp: new Date().toISOString(),
+            bots: botManager.getAllStates().length
+        });
     }
 
     async handleChat(req, res, next) {
         try {
             const { message } = req.body;
 
-            if (!message || typeof message !== "string") {
-                const error = new Error("Invalid message format");
-                error.status = 400;
-                throw error;
+            if (!message || typeof message !== "string" || !message.trim()) {
+                return res.status(400).json({
+                    success: false,
+                    error: "El mensaje no puede estar vacío"
+                });
             }
 
-            logger.info(`Incoming message: "${message.substring(0, 100)}"`);
+            const trimmed = message.trim();
+            logger.info(`Chat request: "${trimmed.substring(0, 100)}"`);
 
-            /* 1️⃣ Build Context */
-            const fullContext = instructionLoader.buildFullContext(message);
+            /* 1. Build full context */
+            const fullContext = instructionLoader.buildFullContext(trimmed);
 
-            /* 2️⃣ Get Intent from Model */
+            /* 2. Get intent from model */
             const intentObject = await modelService.generateIntent(fullContext);
 
-            if (!intentObject || !intentObject.intent) {
+            if (!intentObject?.intent) {
                 throw new Error("Invalid intent structure from model");
             }
 
-            logger.info(`Model intent: ${intentObject.intent}`);
+            logger.info(`Intent resolved: ${intentObject.intent}`);
 
-            /* 3️⃣ Execute Intent via BotManager */
-            const executionResult = await botManager.executeIntent(intentObject);
+            /* 3. Execute via BotManager */
+            const result = await botManager.executeIntent(intentObject);
 
-            /* 4️⃣ Persist to Memory */
-            try {
-                instructionLoader.appendToMemory(
-                    `User: ${message}\nIntent: ${intentObject.intent}\nResult: ${executionResult.reply?.substring(0, 200) || "empty"}`
-                );
-            } catch (memErr) {
-                logger.warn(`Memory write failed: ${memErr.message}`);
-            }
+            /* 4. Persist to memory (non-blocking) */
+            setImmediate(() => {
+                try {
+                    instructionLoader.appendToMemory(
+                        `User: ${trimmed}\nIntent: ${intentObject.intent}\nResult: ${result.reply?.substring(0, 300) || "empty"}`
+                    );
+                } catch { }
+            });
 
             return res.json({
-                success: !executionResult.error,
-                reply: executionResult.reply,
-                intent: intentObject.intent
+                success: !result.error,
+                reply: result.reply,
+                intent: intentObject.intent,
+                bot: botManager._mapIntent?.(intentObject.intent) || "unknown"
             });
 
         } catch (error) {

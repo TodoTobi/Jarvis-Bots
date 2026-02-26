@@ -1,0 +1,33 @@
+{
+    "devices": [
+        {
+            "id": "tv_living",
+            "name": "TV Living",
+            "type": "android_tv",
+            "ip": "192.168.1.X",
+            "adb_port": 5555,
+            "mac": "XX:XX:XX:XX:XX:XX",
+            "authorized": true,
+            "notes": "Reemplazá la IP con la IP real de tu TV en la red local"
+        },
+        {
+            "id": "phone_tobias",
+            "name": "Celular Tobías",
+            "type": "android_phone",
+            "ip": "192.168.0.5:38361",
+            "adb_port": 5555,
+            "mac": "XX:XX:XX:XX:XX:XX",
+            "authorized": true,
+            "notes": "Reemplazá con la IP real de tu celular"
+        }
+    ],
+    "_setup_guide": {
+        "android_adb_wifi": [
+            "1. Activar Opciones de desarrollador en el dispositivo",
+            "2. Activar Depuración inalámbrica (Android 11+) o Depuración USB + WiFi (anterior)",
+            "3. En la PC: adb connect [IP]:[PORT]",
+            "4. Aceptar el diálogo de autorización en el dispositivo",
+            "5. Verificar con: adb devices"
+        ]
+    }
+}

@@ -1,9 +1,15 @@
 import React from "react";
 
 function Sidebar({ view, setView }) {
+    const navItems = [
+        { key: "chat", icon: "💬", label: "Chat" },
+        { key: "bots", icon: "🤖", label: "Bots" },
+        { key: "devices", icon: "📡", label: "Dispositivos" }
+    ];
+
     return (
         <div className="sidebar">
-            {/* Header / Logo */}
+            {/* Logo */}
             <div className="sidebar-header">
                 <div className="sidebar-logo">
                     <div className="sidebar-logo-icon">⚡</div>
@@ -13,26 +19,20 @@ function Sidebar({ view, setView }) {
 
             {/* Navigation */}
             <nav className="sidebar-nav">
-                <button
-                    className={`nav-btn ${view === "chat" ? "active" : ""}`}
-                    onClick={() => setView("chat")}
-                >
-                    <span className="nav-btn-icon">💬</span>
-                    <span>Chat</span>
-                </button>
-
-                <button
-                    className={`nav-btn ${view === "bots" ? "active" : ""}`}
-                    onClick={() => setView("bots")}
-                >
-                    <span className="nav-btn-icon">🤖</span>
-                    <span>Bots</span>
-                </button>
+                {navItems.map(item => (
+                    <button
+                        key={item.key}
+                        className={`nav-btn ${view === item.key ? "active" : ""}`}
+                        onClick={() => setView(item.key)}
+                    >
+                        <span className="nav-btn-icon">{item.icon}</span>
+                        <span>{item.label}</span>
+                    </button>
+                ))}
             </nav>
 
             <div className="sidebar-divider" />
-
-            <div className="sidebar-section-title">Recientes</div>
+            <div className="sidebar-section-title">Sistema</div>
 
             {/* Footer */}
             <div className="sidebar-footer">

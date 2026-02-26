@@ -1,0 +1,4 @@
+@echo off
+:: night_mode.bat — Toggles Windows Night Light (blue light filter)
+powershell -command "$path = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\CloudStore\Store\DefaultAccount\Current\default$windows.data.bluelightreduction.bluelightreductionstate\windows.data.bluelightreduction.bluelightreductionstate'; if (Test-Path $path) { $data = (Get-ItemProperty -Path $path -Name 'Data').Data; if ($data[18] -eq 0) { $data[18] = 19; Set-ItemProperty -Path $path -Name 'Data' -Value $data; echo 'Night light ON' } else { $data[18] = 0; Set-ItemProperty -Path $path -Name 'Data' -Value $data; echo 'Night light OFF' } } else { echo 'Night light setting not found' }"
+echo Night mode toggled

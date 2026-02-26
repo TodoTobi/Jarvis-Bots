@@ -1,56 +1,52 @@
+/**
+ * WebBot.js — General conversation, search and information retrieval
+ * Passes queries through the LLM and returns natural language responses
+ */
+
+const Bot = require("./Bot");
 const modelService = require("../services/ModelService");
 const instructionLoader = require("../utils/InstructionLoader");
 const logger = require("../logs/logger");
 
-class WebBot {
+class WebBot extends Bot {
     constructor() {
-        this.name = "WebBot";
+        super("WebBot", "Conversación general y búsqueda de información");
     }
 
     async run(parameters) {
-        if (!parameters || typeof parameters !== "object") {
-            throw new Error("Invalid parameters for WebBot");
-        }
-
-        // Accept 'query' or fallback to any string value in parameters
+        // Accept multiple param names for flexibility
         const query =
-            parameters.query ||
-            parameters.message ||
-            parameters.prompt ||
-            parameters.text ||
-            Object.values(parameters).find(v => typeof v === "string") ||
-            JSON.stringify(parameters);
+            parameters?.query ||
+            parameters?.message ||
+            parameters?.prompt ||
+            parameters?.text ||
+            (parameters && Object.values(parameters).find(v => typeof v === "string")) ||
+            "";
 
         if (!query) {
             throw new Error("WebBot requires a text query parameter");
         }
 
-        logger.info(`WebBot processing: "${query.substring(0, 80)}..."`);
-
-        /* =========================
-           BUILD BOT-SPECIFIC CONTEXT
-        ========================= */
+        logger.info(`WebBot processing: "${query.substring(0, 80)}${query.length > 80 ? "..." : ""}"`);
 
         const botInstructions = instructionLoader.get("bots");
+        const soulInstructions = instructionLoader.get("soul");
+        const userProfile = instructionLoader.get("user");
 
-        const prompt = `You are WebBot, a specialized AI assistant.
-Your task is to interpret the user's request and provide a helpful, clear response.
-Respond in the same language as the user query.
-
-${botInstructions ? "Context:\n" + botInstructions + "\n\n" : ""}User Query:
-${query}
-
-Respond clearly and directly. Do NOT wrap your response in JSON.`;
-
-        /* =========================
-           CALL CENTRAL MODEL SERVICE
-        ========================= */
+        const prompt = [
+            "Eres Jarvis, un asistente de IA modular local.",
+            soulInstructions ? `\nPersonalidad:\n${soulInstructions}` : "",
+            userProfile ? `\nPerfil del usuario:\n${userProfile}` : "",
+            botInstructions ? `\nContexto de bots disponibles:\n${botInstructions}` : "",
+            `\nResponde en el mismo idioma que el usuario. Se claro, directo y útil.`,
+            `\n---\nConsulta del usuario:\n${query}`
+        ].filter(Boolean).join("\n");
 
         const response = await modelService.generateText(prompt);
 
-        logger.info(`WebBot response received (${response.length} chars)`);
+        logger.info(`WebBot response: ${response.length} chars`);
 
-        return response;
+        return response || "No obtuve respuesta del modelo.";
     }
 }
 

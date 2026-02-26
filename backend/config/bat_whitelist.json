@@ -1,0 +1,123 @@
+{
+    "scripts": {
+        "media_youtube": {
+            "path": "pc/media/play_youtube.bat",
+            "label": "Abrir YouTube",
+            "category": "media",
+            "description": "Abre YouTube en el navegador con una búsqueda opcional",
+            "timeout": 10000
+        },
+        "media_spotify": {
+            "path": "pc/media/play_spotify.bat",
+            "label": "Abrir Spotify",
+            "category": "media",
+            "description": "Abre la aplicación de Spotify",
+            "timeout": 10000
+        },
+        "media_vlc": {
+            "path": "pc/media/play_vlc.bat",
+            "label": "Reproducir en VLC",
+            "category": "media",
+            "description": "Abre VLC con un archivo o URL",
+            "timeout": 10000
+        },
+        "media_pause": {
+            "path": "pc/media/media_pause.bat",
+            "label": "Pausar/Reproducir",
+            "category": "media",
+            "description": "Envía tecla Play/Pause al sistema",
+            "timeout": 5000
+        },
+        "media_next": {
+            "path": "pc/media/media_next.bat",
+            "label": "Siguiente pista",
+            "category": "media",
+            "description": "Envía tecla siguiente pista",
+            "timeout": 5000
+        },
+        "media_prev": {
+            "path": "pc/media/media_prev.bat",
+            "label": "Pista anterior",
+            "category": "media",
+            "description": "Envía tecla pista anterior",
+            "timeout": 5000
+        },
+        "volume_up": {
+            "path": "pc/media/volume_up.bat",
+            "label": "Subir volumen",
+            "category": "media",
+            "description": "Sube el volumen del sistema en 10%",
+            "timeout": 5000
+        },
+        "volume_down": {
+            "path": "pc/media/volume_down.bat",
+            "label": "Bajar volumen",
+            "category": "media",
+            "description": "Baja el volumen del sistema en 10%",
+            "timeout": 5000
+        },
+        "volume_mute": {
+            "path": "pc/media/mute_toggle.bat",
+            "label": "Silenciar/activar audio",
+            "category": "media",
+            "description": "Alterna silencio del sistema",
+            "timeout": 5000
+        },
+        "system_lock": {
+            "path": "pc/system/lock_screen.bat",
+            "label": "Bloquear pantalla",
+            "category": "system",
+            "description": "Bloquea la pantalla del PC",
+            "timeout": 5000
+        },
+        "system_screenshot": {
+            "path": "pc/system/screenshot.bat",
+            "label": "Captura de pantalla",
+            "category": "system",
+            "description": "Toma una captura de pantalla y la guarda",
+            "timeout": 8000
+        },
+        "system_night_mode": {
+            "path": "pc/system/night_mode.bat",
+            "label": "Modo nocturno",
+            "category": "system",
+            "description": "Activa/desactiva el modo nocturno de Windows",
+            "timeout": 5000
+        },
+        "system_sleep": {
+            "path": "pc/system/sleep.bat",
+            "label": "Suspender PC",
+            "category": "system",
+            "description": "Pone el PC en modo suspensión",
+            "timeout": 5000
+        },
+        "app_discord": {
+            "path": "pc/apps/open_discord.bat",
+            "label": "Abrir Discord",
+            "category": "apps",
+            "description": "Abre Discord",
+            "timeout": 10000
+        },
+        "app_vscode": {
+            "path": "pc/apps/open_vscode.bat",
+            "label": "Abrir VS Code",
+            "category": "apps",
+            "description": "Abre Visual Studio Code",
+            "timeout": 10000
+        },
+        "app_fortnite": {
+            "path": "pc/apps/open_fortnite.bat",
+            "label": "Abrir Fortnite",
+            "category": "apps",
+            "description": "Lanza Fortnite vía Epic Games",
+            "timeout": 15000
+        },
+        "app_browser": {
+            "path": "pc/apps/open_browser.bat",
+            "label": "Abrir navegador",
+            "category": "apps",
+            "description": "Abre el navegador predeterminado",
+            "timeout": 10000
+        }
+    }
+}
