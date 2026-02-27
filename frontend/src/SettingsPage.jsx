@@ -2,32 +2,27 @@ import React, { useEffect, useState } from "react";
 
 const API = "http://localhost:3001/api";
 
-/* ─── Section wrapper ─────────────────────────────────── */
 function Section({ title, icon, children }) {
     return (
         <div style={{
             background: "var(--card-bg)", border: "1px solid var(--card-border)",
             borderRadius: "12px", marginBottom: "16px", overflow: "hidden"
         }}>
-            <div style={{
-                padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)",
-                display: "flex", alignItems: "center", gap: "9px"
-            }}>
+            <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", gap: "9px" }}>
                 <span style={{ fontSize: "16px" }}>{icon}</span>
                 <span style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)" }}>{title}</span>
             </div>
-            <div style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: "14px" }}>
+            <div style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: "16px" }}>
                 {children}
             </div>
         </div>
     );
 }
 
-/* ─── Setting field ───────────────────────────────────── */
 function Field({ label, hint, children }) {
     return (
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px" }}>
-            <div style={{ flex: "0 0 220px" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: "16px" }}>
+            <div style={{ flex: "0 0 230px" }}>
                 <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--text-primary)" }}>{label}</div>
                 {hint && <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "3px", lineHeight: "1.5" }}>{hint}</div>}
             </div>
@@ -36,30 +31,26 @@ function Field({ label, hint, children }) {
     );
 }
 
-/* ─── Text input ──────────────────────────────────────── */
-function TextInput({ value, onChange, placeholder, mono = false }) {
+function TextInput({ value, onChange, placeholder, mono = false, type = "text" }) {
     return (
-        <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+        <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
             style={{
                 width: "100%", background: "var(--input-bg)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                borderRadius: "8px", padding: "8px 12px",
-                color: "var(--text-primary)",
+                border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px",
+                padding: "8px 12px", color: "var(--text-primary)",
                 fontFamily: mono ? "'DM Mono', monospace" : "'DM Sans', sans-serif",
                 fontSize: "13px", outline: "none"
             }} />
     );
 }
 
-/* ─── Toggle ──────────────────────────────────────────── */
 function Toggle({ checked, onChange }) {
     return (
         <label style={{ position: "relative", width: "40px", height: "22px", cursor: "pointer", display: "block" }}>
             <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)}
                 style={{ opacity: 0, width: 0, height: 0, position: "absolute" }} />
             <span style={{
-                position: "absolute", inset: 0,
-                background: checked ? "rgba(16,163,127,0.3)" : "rgba(255,255,255,0.08)",
+                position: "absolute", inset: 0, background: checked ? "rgba(16,163,127,0.3)" : "rgba(255,255,255,0.08)",
                 border: `1px solid ${checked ? "rgba(16,163,127,0.5)" : "rgba(255,255,255,0.1)"}`,
                 borderRadius: "100px", transition: "all 0.2s"
             }} />
@@ -73,93 +64,131 @@ function Toggle({ checked, onChange }) {
     );
 }
 
+function Select({ value, onChange, options }) {
+    return (
+        <select value={value} onChange={e => onChange(e.target.value)}
+            style={{
+                width: "100%", background: "var(--input-bg)", border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "8px", padding: "8px 12px", color: "var(--text-primary)",
+                fontSize: "13px", outline: "none"
+            }}>
+            {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+    );
+}
+
+/* ─── Model test button ───────────────────────────────── */
+function TestModel({ url, model, apiKey }) {
+    const [result, setResult] = useState(null);
+    const [testing, setTesting] = useState(false);
+
+    const handleTest = async () => {
+        setTesting(true);
+        setResult(null);
+        try {
+            const headers = { "Content-Type": "application/json" };
+            if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`;
+
+            const body = { messages: [{ role: "user", content: "Say OK" }], max_tokens: 10, temperature: 0 };
+            if (model) body.model = model;
+
+            const res = await fetch(`${url}/chat/completions`, { method: "POST", headers, body: JSON.stringify(body) });
+            const data = await res.json();
+
+            if (data.choices?.[0]?.message?.content) {
+                setResult({ ok: true, msg: `✓ Conexión exitosa — modelo respondió: "${data.choices[0].message.content.trim()}"` });
+            } else if (data.error) {
+                setResult({ ok: false, msg: `✕ Error del servidor: ${data.error.message || JSON.stringify(data.error)}` });
+            } else {
+                setResult({ ok: false, msg: `✕ Respuesta inesperada: ${JSON.stringify(data).substring(0, 120)}` });
+            }
+        } catch (err) {
+            setResult({ ok: false, msg: `✕ ${err.message}` });
+        }
+        setTesting(false);
+    };
+
+    return (
+        <div>
+            <button onClick={handleTest} disabled={testing || !url}
+                style={{
+                    background: "rgba(16,163,127,0.12)", border: "1px solid rgba(16,163,127,0.3)",
+                    borderRadius: "7px", padding: "7px 16px", color: "var(--accent)",
+                    fontSize: "12px", fontWeight: 600, fontFamily: "'DM Sans', sans-serif",
+                    cursor: testing || !url ? "not-allowed" : "pointer"
+                }}>
+                {testing ? "Probando..." : "🔌 Probar conexión"}
+            </button>
+            {result && (
+                <div style={{
+                    marginTop: "8px", padding: "8px 12px", borderRadius: "7px", fontSize: "12px",
+                    fontFamily: "'DM Mono', monospace", lineHeight: "1.5",
+                    background: result.ok ? "rgba(25,195,125,0.1)" : "rgba(239,68,68,0.1)",
+                    color: result.ok ? "#19c37d" : "#ef4444",
+                    border: `1px solid ${result.ok ? "rgba(25,195,125,0.3)" : "rgba(239,68,68,0.3)"}`
+                }}>
+                    {result.msg}
+                </div>
+            )}
+        </div>
+    );
+}
+
 /* ─── Bat creator ─────────────────────────────────────── */
 function BatCreator() {
-    const [filePath, setFilePath] = useState("pc/custom/mi_script.bat");
-    const [content, setContent] = useState("@echo off\n:: Mi script personalizado\necho Hola desde mi script!\npause");
-    const [key, setKey] = useState("my_script");
-    const [label, setLabel] = useState("Mi Script");
-    const [category, setCategory] = useState("custom");
-    const [desc, setDesc] = useState("Descripción de mi script");
+    const [form, setForm] = useState({
+        filePath: "pc/custom/mi_script.bat", key: "my_script",
+        label: "Mi Script", category: "custom",
+        desc: "Descripción del script",
+        content: "@echo off\n:: Mi script personalizado\necho Hola desde mi script!\npause"
+    });
     const [status, setStatus] = useState(null);
+    const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
     const handleCreate = async () => {
         setStatus("saving");
         try {
-            // 1. Save the .bat file
-            const r1 = await fetch(`${API}/bats`, {
-                method: "PUT", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ filePath, content })
-            });
+            const r1 = await fetch(`${API}/bats`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ filePath: form.filePath, content: form.content }) });
             if (!r1.ok) throw new Error(await r1.text());
-
-            // 2. Add to whitelist
-            const r2 = await fetch(`${API}/whitelist`, {
-                method: "PUT", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ key, entry: { path: filePath, label, category, description: desc, timeout: 10000 } })
-            });
+            const r2 = await fetch(`${API}/whitelist`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: form.key, entry: { path: form.filePath, label: form.label, category: form.category, description: form.desc, timeout: 10000 } }) });
             if (!r2.ok) throw new Error(await r2.text());
-
-            setStatus("ok");
-            setTimeout(() => setStatus(null), 3000);
+            setStatus("ok"); setTimeout(() => setStatus(null), 3000);
         } catch (err) {
-            setStatus("error:" + err.message);
-            setTimeout(() => setStatus(null), 4000);
+            setStatus("error:" + err.message); setTimeout(() => setStatus(null), 4000);
         }
     };
 
     return (
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-                <div>
-                    <div style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "5px" }}>Ruta del archivo (relativa a bats/)</div>
-                    <TextInput value={filePath} onChange={setFilePath} placeholder="pc/custom/mi_script.bat" mono />
-                </div>
-                <div>
-                    <div style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "5px" }}>Clave en whitelist (única, sin espacios)</div>
-                    <TextInput value={key} onChange={setKey} placeholder="my_script" mono />
-                </div>
-                <div>
-                    <div style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "5px" }}>Etiqueta</div>
-                    <TextInput value={label} onChange={setLabel} placeholder="Mi Script" />
-                </div>
-                <div>
-                    <div style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "5px" }}>Categoría</div>
-                    <select value={category} onChange={e => setCategory(e.target.value)}
-                        style={{ width: "100%", background: "var(--input-bg)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", padding: "8px 12px", color: "var(--text-primary)", fontSize: "13px", outline: "none" }}>
-                        <option value="custom">custom</option>
-                        <option value="media">media</option>
-                        <option value="system">system</option>
-                        <option value="apps">apps</option>
-                    </select>
-                </div>
+                {[
+                    { k: "filePath", label: "Ruta (relativa a bats/)", placeholder: "pc/custom/mi_script.bat", mono: true },
+                    { k: "key", label: "Clave whitelist", placeholder: "my_script", mono: true },
+                    { k: "label", label: "Etiqueta", placeholder: "Mi Script" },
+                    { k: "desc", label: "Descripción", placeholder: "Qué hace" },
+                ].map(({ k, label, placeholder, mono }) => (
+                    <div key={k}>
+                        <div style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "5px" }}>{label}</div>
+                        <TextInput value={form[k]} onChange={v => set(k, v)} placeholder={placeholder} mono={mono} />
+                    </div>
+                ))}
             </div>
             <div>
-                <div style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "5px" }}>Descripción</div>
-                <TextInput value={desc} onChange={setDesc} placeholder="Qué hace este script" />
+                <div style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "5px" }}>Categoría</div>
+                <Select value={form.category} onChange={v => set("category", v)}
+                    options={[{ value: "custom", label: "custom" }, { value: "media", label: "media" }, { value: "system", label: "system" }, { value: "apps", label: "apps" }]} />
             </div>
             <div>
-                <div style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "5px" }}>Contenido del .bat</div>
-                <textarea value={content} onChange={e => setContent(e.target.value)}
-                    rows={8}
-                    style={{
-                        width: "100%", background: "var(--input-bg)",
-                        border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px",
-                        padding: "12px", color: "var(--text-primary)",
-                        fontFamily: "'DM Mono', monospace", fontSize: "12px",
-                        lineHeight: "1.6", resize: "vertical", outline: "none"
-                    }} />
+                <div style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "5px" }}>Contenido .bat</div>
+                <textarea value={form.content} onChange={e => set("content", e.target.value)} rows={7}
+                    style={{ width: "100%", background: "var(--input-bg)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", padding: "12px", color: "var(--text-primary)", fontFamily: "'DM Mono', monospace", fontSize: "12px", lineHeight: "1.6", resize: "vertical", outline: "none" }} />
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <button onClick={handleCreate} disabled={status === "saving"}
-                    style={{
-                        background: "var(--accent)", border: "none", borderRadius: "8px",
-                        padding: "9px 18px", color: "#fff", fontSize: "13px", fontWeight: 600,
-                        fontFamily: "'DM Sans', sans-serif", cursor: "pointer"
-                    }}>
+                    style={{ background: "var(--accent)", border: "none", borderRadius: "8px", padding: "9px 18px", color: "#fff", fontSize: "13px", fontWeight: 600, fontFamily: "'DM Sans', sans-serif", cursor: "pointer" }}>
                     {status === "saving" ? "Creando..." : "⚡ Crear Script"}
                 </button>
-                {status === "ok" && <span style={{ fontSize: "12px", color: "#19c37d" }}>✓ Script creado y agregado a la whitelist</span>}
+                {status === "ok" && <span style={{ fontSize: "12px", color: "#19c37d" }}>✓ Script creado y en whitelist</span>}
                 {status?.startsWith("error:") && <span style={{ fontSize: "12px", color: "#ef4444" }}>{status.replace("error:", "")}</span>}
             </div>
         </div>
@@ -168,96 +197,90 @@ function BatCreator() {
 
 /* ─── Main Settings ───────────────────────────────────── */
 function SettingsPage() {
-    const [mode, setMode] = useState("simple"); // simple | advanced
+    const [mode, setMode] = useState("simple");
     const [settings, setSettings] = useState({});
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
-    const [tab, setTab] = useState("general");
+    const [tab, setTab] = useState("model");
 
     useEffect(() => {
-        fetch(`${API}/settings`)
-            .then(r => r.json())
-            .then(setSettings)
-            .catch(console.error);
+        fetch(`${API}/settings`).then(r => r.json()).then(setSettings).catch(console.error);
     }, []);
 
-    const set = (key, val) => setSettings(prev => ({ ...prev, [key]: val }));
+    const set = (k, v) => setSettings(p => ({ ...p, [k]: v }));
 
     const handleSave = async () => {
         setSaving(true);
         try {
-            await fetch(`${API}/settings`, {
-                method: "POST", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(settings)
-            });
-            setSaved(true);
-            setTimeout(() => setSaved(false), 3000);
-        } catch (err) {
-            alert("Error: " + err.message);
-        }
+            await fetch(`${API}/settings`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(settings) });
+            setSaved(true); setTimeout(() => setSaved(false), 3000);
+        } catch (err) { alert("Error: " + err.message); }
         setSaving(false);
     };
 
     const tabs = [
-        { key: "general", label: "General" },
-        { key: "model", label: "Modelo IA" },
-        { key: "whatsapp", label: "WhatsApp" },
-        { key: "vision", label: "Visión & Control" },
-        { key: "bats", label: "Scripts .bat" },
+        { key: "model", label: "🧠 Modelo IA" },
+        { key: "whatsapp", label: "💬 WhatsApp" },
+        { key: "vision", label: "👁 Visión & Control" },
+        { key: "bats", label: "⚡ Scripts .bat" },
+        { key: "general", label: "⚙ General" },
     ];
+
+    // Provider presets
+    const PROVIDERS = [
+        { id: "lmstudio", label: "LM Studio (Local)", baseUrl: "http://localhost:1234/v1", needsKey: false },
+        { id: "openai", label: "OpenAI (GPT-4, GPT-3.5…)", baseUrl: "https://api.openai.com/v1", needsKey: true },
+        { id: "anthropic", label: "Anthropic (Claude…)", baseUrl: "https://api.anthropic.com/v1", needsKey: true },
+        { id: "groq", label: "Groq (Llama, Mixtral…)", baseUrl: "https://api.groq.com/openai/v1", needsKey: true },
+        { id: "ollama", label: "Ollama (Local alternativo)", baseUrl: "http://localhost:11434/v1", needsKey: false },
+        { id: "custom", label: "URL personalizada", baseUrl: "", needsKey: true },
+    ];
+
+    const currentProvider = PROVIDERS.find(p => settings.lm_api_url?.startsWith(p.baseUrl)) || PROVIDERS[5];
+
+    const handleProviderChange = (id) => {
+        const p = PROVIDERS.find(pr => pr.id === id);
+        if (p && p.baseUrl) set("lm_api_url", p.baseUrl);
+    };
 
     return (
         <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "var(--main-bg)", overflow: "hidden" }}>
 
             {/* Header */}
-            <div style={{
-                padding: "24px 28px 16px", borderBottom: "1px solid rgba(255,255,255,0.07)",
-                flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between"
-            }}>
+            <div style={{ padding: "22px 28px 14px", borderBottom: "1px solid rgba(255,255,255,0.07)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div>
                     <h1 style={{ fontSize: "19px", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>⚙️ Configuración</h1>
-                    <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "4px" }}>
-                        Ajustá el sistema sin tocar código
-                    </p>
+                    <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "4px" }}>Ajustá el sistema sin tocar código</p>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    {/* Mode toggle */}
-                    <div style={{
-                        background: "var(--card-bg)", border: "1px solid var(--card-border)",
-                        borderRadius: "8px", padding: "3px", display: "flex", gap: "2px"
-                    }}>
+                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                    <div style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)", borderRadius: "8px", padding: "3px", display: "flex" }}>
                         {["simple", "advanced"].map(m => (
-                            <button key={m} onClick={() => setMode(m)}
-                                style={{
-                                    background: mode === m ? "rgba(255,255,255,0.1)" : "transparent",
-                                    border: "none", borderRadius: "6px", padding: "5px 14px",
-                                    color: mode === m ? "var(--text-primary)" : "var(--text-muted)",
-                                    fontSize: "12px", fontWeight: mode === m ? 600 : 400,
-                                    fontFamily: "'DM Sans', sans-serif", cursor: "pointer"
-                                }}>
+                            <button key={m} onClick={() => setMode(m)} style={{
+                                background: mode === m ? "rgba(255,255,255,0.1)" : "transparent",
+                                border: "none", borderRadius: "6px", padding: "5px 14px",
+                                color: mode === m ? "var(--text-primary)" : "var(--text-muted)",
+                                fontSize: "12px", fontWeight: mode === m ? 600 : 400,
+                                fontFamily: "'DM Sans', sans-serif", cursor: "pointer"
+                            }}>
                                 {m === "simple" ? "Simple" : "Avanzado"}
                             </button>
                         ))}
                     </div>
                     <button onClick={handleSave} disabled={saving}
-                        style={{
-                            background: "var(--accent)", border: "none", borderRadius: "8px",
-                            padding: "8px 18px", color: "#fff", fontSize: "13px", fontWeight: 600,
-                            fontFamily: "'DM Sans', sans-serif", cursor: "pointer"
-                        }}>
+                        style={{ background: "var(--accent)", border: "none", borderRadius: "8px", padding: "8px 18px", color: "#fff", fontSize: "13px", fontWeight: 600, fontFamily: "'DM Sans', sans-serif", cursor: "pointer" }}>
                         {saving ? "Guardando..." : saved ? "✓ Guardado" : "💾 Guardar"}
                     </button>
                 </div>
             </div>
 
             <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-
-                {/* Tab list */}
-                <div style={{ width: "180px", borderRight: "1px solid rgba(255,255,255,0.07)", padding: "12px 8px", overflowY: "auto" }}>
+                {/* Tabs */}
+                <div style={{ width: "185px", borderRight: "1px solid rgba(255,255,255,0.07)", padding: "10px 8px", overflowY: "auto" }}>
                     {tabs.map(t => (
                         <button key={t.key} onClick={() => setTab(t.key)}
                             style={{
-                                width: "100%", textAlign: "left", background: tab === t.key ? "var(--active-bg)" : "transparent",
+                                width: "100%", textAlign: "left",
+                                background: tab === t.key ? "var(--active-bg)" : "transparent",
                                 border: `1px solid ${tab === t.key ? "rgba(255,255,255,0.1)" : "transparent"}`,
                                 borderRadius: "8px", padding: "9px 12px", cursor: "pointer", marginBottom: "2px",
                                 fontSize: "13px", fontWeight: tab === t.key ? 600 : 400,
@@ -272,98 +295,119 @@ function SettingsPage() {
                 {/* Content */}
                 <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px" }}>
 
-                    {tab === "general" && (
-                        <>
-                            <Section title="Servidor Backend" icon="🖥">
-                                <Field label="Puerto" hint="Puerto donde corre el backend (default: 3001)">
-                                    <TextInput value={settings.port || ""} onChange={v => set("port", v)} placeholder="3001" mono />
-                                </Field>
-                            </Section>
-                        </>
-                    )}
-
+                    {/* ── MODEL ── */}
                     {tab === "model" && (
                         <>
-                            <Section title="LM Studio" icon="🧠">
-                                <Field label="URL del modelo" hint="IP y puerto donde LM Studio está corriendo. Ej: http://localhost:1234/v1">
+                            <Section title="Proveedor de IA" icon="🔌">
+                                <Field label="Proveedor" hint="Seleccioná el servicio donde corre el modelo de lenguaje">
+                                    <Select
+                                        value={currentProvider.id}
+                                        onChange={handleProviderChange}
+                                        options={PROVIDERS.map(p => ({ value: p.id, label: p.label }))}
+                                    />
+                                </Field>
+                                <Field label="URL del servidor"
+                                    hint="Se autocompleta al elegir proveedor. Para LM Studio usá la IP de tu PC si es remoto.">
                                     <TextInput value={settings.lm_api_url || ""} onChange={v => set("lm_api_url", v)} placeholder="http://localhost:1234/v1" mono />
                                 </Field>
-                                <Field label="Nombre del modelo" hint="Copiá el nombre EXACTO del modelo como aparece en LM Studio → Loaded Models. Si no coincide obtenés error 400.">
-                                    <TextInput value={settings.lm_model || ""} onChange={v => set("lm_model", v)} placeholder="meta-llama-3.1-13b-instruct" mono />
-                                </Field>
-                                {mode === "advanced" && (
-                                    <div style={{ padding: "10px 14px", background: "rgba(16,163,127,0.08)", borderRadius: "8px", fontSize: "12px", color: "var(--text-secondary)", lineHeight: "1.6" }}>
-                                        💡 <strong>Tip:</strong> Si seguís recibiendo error 400, dejá el campo "Nombre del modelo" vacío. LM Studio usará el modelo que tengas cargado sin importar el nombre.
-                                    </div>
-                                )}
-                            </Section>
-                        </>
-                    )}
-
-                    {tab === "whatsapp" && (
-                        <>
-                            <Section title="WhatsApp Bot" icon="💬">
-                                <Field label="Tu número" hint="Número de WhatsApp autorizado. Sin +, sin espacios. Ej: 5491160597308">
-                                    <TextInput value={settings.whatsapp_numbers || ""} onChange={v => set("whatsapp_numbers", v)} placeholder="5491160597308" mono />
-                                </Field>
-                                {mode === "advanced" && (
-                                    <Field label="Modo Debug" hint="Loguea el número exacto de cada mensaje recibido. Útil si el bot no te responde.">
-                                        <Toggle checked={!!settings.whatsapp_debug} onChange={v => set("whatsapp_debug", v)} />
+                                {(currentProvider.needsKey || mode === "advanced") && (
+                                    <Field label="API Key"
+                                        hint="No requerida para LM Studio u Ollama locales">
+                                        <TextInput type="password" value={settings.lm_api_token || ""} onChange={v => set("lm_api_token", v)} placeholder="sk-..." mono />
                                     </Field>
                                 )}
-                                {mode === "advanced" && (
-                                    <>
-                                        <Field label="Whisper.cpp (exe)" hint="Ruta al binario de whisper.cpp para transcripción de voz local">
-                                            <TextInput value={settings.whisper_cpp_path || ""} onChange={v => set("whisper_cpp_path", v)} placeholder="C:\whisper.cpp\main.exe" mono />
-                                        </Field>
-                                        <Field label="Modelo Whisper" hint="Ruta al archivo .bin del modelo (ggml-base.bin recomendado)">
-                                            <TextInput value={settings.whisper_model_path || ""} onChange={v => set("whisper_model_path", v)} placeholder="C:\whisper.cpp\models\ggml-base.bin" mono />
-                                        </Field>
-                                    </>
-                                )}
+                                <Field label="Nombre del modelo"
+                                    hint={`Ejemplos: gpt-4o, claude-opus-4-6, llama-3-13b-instruct.\nPara LM Studio: dejalo vacío para usar el modelo activo automáticamente.`}>
+                                    <TextInput value={settings.lm_model || ""} onChange={v => set("lm_model", v)} placeholder="(vacío = usa el modelo activo)" mono />
+                                </Field>
+
+                                {/* Test button */}
+                                <div style={{ paddingTop: "4px" }}>
+                                    <TestModel url={settings.lm_api_url} model={settings.lm_model} apiKey={settings.lm_api_token} />
+                                </div>
                             </Section>
+
+                            {mode === "advanced" && (
+                                <Section title="Proveedores disponibles" icon="📋">
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                                        {PROVIDERS.slice(0, -1).map(p => (
+                                            <div key={p.id} onClick={() => handleProviderChange(p.id)}
+                                                style={{
+                                                    padding: "12px 14px", borderRadius: "10px", cursor: "pointer",
+                                                    background: currentProvider.id === p.id ? "var(--accent-light)" : "rgba(255,255,255,0.04)",
+                                                    border: `1px solid ${currentProvider.id === p.id ? "var(--accent-border)" : "rgba(255,255,255,0.08)"}`,
+                                                    transition: "all 0.15s"
+                                                }}>
+                                                <div style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)" }}>{p.label}</div>
+                                                <div style={{ fontSize: "10px", fontFamily: "'DM Mono', monospace", color: "var(--text-muted)", marginTop: "3px" }}>{p.baseUrl || "URL personalizada"}</div>
+                                                {p.needsKey && <div style={{ fontSize: "10px", color: "#f59e0b", marginTop: "3px" }}>Requiere API Key</div>}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </Section>
+                            )}
                         </>
                     )}
 
+                    {/* ── WHATSAPP ── */}
+                    {tab === "whatsapp" && (
+                        <Section title="WhatsApp Bot" icon="💬">
+                            <Field label="Tu número" hint="Sin +, sin espacios. Argentina: 5491160597308">
+                                <TextInput value={settings.whatsapp_numbers || ""} onChange={v => set("whatsapp_numbers", v)} placeholder="5491160597308" mono />
+                            </Field>
+                            {mode === "advanced" && (
+                                <Field label="Debug Mode" hint="Loguea el número exacto de cada mensaje. Activá si el bot no responde.">
+                                    <Toggle checked={!!settings.whatsapp_debug} onChange={v => set("whatsapp_debug", v)} />
+                                </Field>
+                            )}
+                            {mode === "advanced" && (<>
+                                <Field label="Whisper.cpp" hint="Ruta al ejecutable para STT local">
+                                    <TextInput value={settings.whisper_cpp_path || ""} onChange={v => set("whisper_cpp_path", v)} placeholder="C:\whisper.cpp\main.exe" mono />
+                                </Field>
+                                <Field label="Modelo Whisper" hint="ggml-base.bin recomendado">
+                                    <TextInput value={settings.whisper_model_path || ""} onChange={v => set("whisper_model_path", v)} placeholder="C:\whisper.cpp\models\ggml-base.bin" mono />
+                                </Field>
+                            </>)}
+                        </Section>
+                    )}
+
+                    {/* ── VISION ── */}
                     {tab === "vision" && (
-                        <>
-                            <Section title="Visión & Control del PC" icon="👁">
-                                <Field label="API Key (Claude o OpenAI)" hint="Para análisis de imágenes, PDFs y control del PC. Obtenela en console.anthropic.com o platform.openai.com">
-                                    <TextInput value={settings.vision_api_key === "***configured***" ? "" : (settings.vision_api_key || "")} onChange={v => set("vision_api_key", v)} placeholder={settings.vision_api_key === "***configured***" ? "••••••••• (configurado)" : "sk-ant-... o sk-..."} mono />
-                                </Field>
-                                <Field label="Proveedor" hint="Claude: mejor para PDFs y análisis detallado. OpenAI GPT-4o: buena alternativa.">
-                                    <select value={settings.vision_provider || "claude"} onChange={e => set("vision_provider", e.target.value)}
-                                        style={{ background: "var(--input-bg)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", padding: "8px 12px", color: "var(--text-primary)", fontSize: "13px", outline: "none", width: "100%" }}>
-                                        <option value="claude">Claude (Anthropic) — Recomendado</option>
-                                        <option value="openai">GPT-4o (OpenAI)</option>
-                                    </select>
-                                </Field>
-                                <Field label="Control del PC" hint="Permite a Jarvis controlar el mouse y teclado para automatizar tareas. Requiere: pip install pyautogui pillow">
-                                    <Toggle checked={!!settings.computer_control_enabled} onChange={v => set("computer_control_enabled", v)} />
-                                </Field>
-                                {settings.computer_control_enabled && (
-                                    <div style={{ padding: "10px 14px", background: "rgba(239,68,68,0.08)", borderRadius: "8px", fontSize: "12px", color: "#f87171", lineHeight: "1.6" }}>
-                                        ⚠️ <strong>Atención:</strong> Con el control del PC activado, Jarvis puede hacer clicks, escribir texto y controlar aplicaciones. Asegurate de solo darle tareas específicas y seguras.
-                                    </div>
-                                )}
-                                {mode === "advanced" && (
-                                    <div style={{ padding: "10px 14px", background: "rgba(16,163,127,0.08)", borderRadius: "8px", fontSize: "12px", color: "var(--text-secondary)", lineHeight: "1.6" }}>
-                                        📦 <strong>Requisitos:</strong>
-                                        <br />· <code>pip install pyautogui pillow</code> — control del PC
-                                        <br />· <code>pip install openai-whisper</code> — transcripción local (opcional)
-                                        <br />· API Key de Anthropic o OpenAI para análisis de imágenes y PDFs
-                                    </div>
-                                )}
-                            </Section>
-                        </>
+                        <Section title="Visión & Control del PC" icon="👁">
+                            <Field label="API Key (Vision)" hint="Para analizar imágenes/PDFs y controlar el PC. Claude o OpenAI.">
+                                <TextInput type="password" value={settings.vision_api_key === "***configured***" ? "" : (settings.vision_api_key || "")} onChange={v => set("vision_api_key", v)} placeholder={settings.vision_api_key === "***configured***" ? "••••• (configurado)" : "sk-ant-... o sk-..."} mono />
+                            </Field>
+                            <Field label="Proveedor Vision" hint="Claude: mejor para PDFs. GPT-4o: buena alternativa.">
+                                <Select value={settings.vision_provider || "claude"} onChange={v => set("vision_provider", v)}
+                                    options={[{ value: "claude", label: "Claude (Anthropic) — Recomendado" }, { value: "openai", label: "GPT-4o (OpenAI)" }]} />
+                            </Field>
+                            <Field label="Control del PC" hint="Permite clicks, teclado, automatización. Requiere: pip install pyautogui pillow">
+                                <Toggle checked={!!settings.computer_control_enabled} onChange={v => set("computer_control_enabled", v)} />
+                            </Field>
+                            {settings.computer_control_enabled && (
+                                <div style={{ padding: "10px 14px", background: "rgba(239,68,68,0.08)", borderRadius: "8px", fontSize: "12px", color: "#f87171", lineHeight: "1.6" }}>
+                                    ⚠️ Con esta opción activa Jarvis puede controlar tu PC. Usalo con tareas específicas.
+                                </div>
+                            )}
+                        </Section>
                     )}
 
+                    {/* ── BATS ── */}
                     {tab === "bats" && (
                         <Section title="Crear Nuevo Script .bat" icon="⚡">
                             <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0 }}>
-                                Creá un script .bat personalizado y agregalo a la whitelist para que Jarvis pueda ejecutarlo.
+                                Creá un script .bat y agregalo a la whitelist para que Jarvis lo ejecute con tu comando.
                             </p>
                             <BatCreator />
+                        </Section>
+                    )}
+
+                    {/* ── GENERAL ── */}
+                    {tab === "general" && (
+                        <Section title="Servidor" icon="🖥">
+                            <Field label="Puerto del backend" hint="Puerto donde corre el servidor Node.js (default: 3001). Reiniciá para aplicar.">
+                                <TextInput value={settings.port || ""} onChange={v => set("port", v)} placeholder="3001" mono />
+                            </Field>
                         </Section>
                     )}
 

@@ -1,4 +1,4 @@
-// Sidebar.jsx
+// === Sidebar.jsx ===
 import React from "react";
 
 const NAV_MAIN = [
@@ -8,27 +8,15 @@ const NAV_MAIN = [
     { key: "devices", icon: "📡", label: "Dispositivos" },
 ];
 
-const NAV_CONFIG = [
+const NAV_TOOLS = [
+    { key: "doctor", icon: "🩺", label: "DoctorBot" },
     { key: "instructions", icon: "📄", label: "Instrucciones" },
     { key: "settings", icon: "⚙️", label: "Configuración" },
 ];
 
-function NavBtn({ item, active, onClick }) {
-    return (
-        <button
-            className={`nav-btn ${active ? "active" : ""}`}
-            onClick={() => onClick(item.key)}
-        >
-            <span className="nav-btn-icon">{item.icon}</span>
-            <span>{item.label}</span>
-        </button>
-    );
-}
-
-function Sidebar({ view, setView }) {
+export function Sidebar({ view, setView, doctorErrors = 0 }) {
     return (
         <div className="sidebar">
-            {/* Logo */}
             <div className="sidebar-header">
                 <div className="sidebar-logo">
                     <div className="sidebar-logo-icon">⚡</div>
@@ -36,24 +24,39 @@ function Sidebar({ view, setView }) {
                 </div>
             </div>
 
-            {/* Main nav */}
             <nav className="sidebar-nav">
                 {NAV_MAIN.map(item => (
-                    <NavBtn key={item.key} item={item} active={view === item.key} onClick={setView} />
+                    <button key={item.key} className={`nav-btn ${view === item.key ? "active" : ""}`} onClick={() => setView(item.key)}>
+                        <span className="nav-btn-icon">{item.icon}</span>
+                        <span>{item.label}</span>
+                    </button>
                 ))}
             </nav>
 
             <div className="sidebar-divider" />
-            <div className="sidebar-section-title">Personalizar</div>
+            <div className="sidebar-section-title">Sistema</div>
 
-            {/* Config nav */}
             <nav className="sidebar-nav" style={{ flex: "unset" }}>
-                {NAV_CONFIG.map(item => (
-                    <NavBtn key={item.key} item={item} active={view === item.key} onClick={setView} />
+                {NAV_TOOLS.map(item => (
+                    <button key={item.key} className={`nav-btn ${view === item.key ? "active" : ""}`} onClick={() => setView(item.key)}
+                        style={{ position: "relative" }}>
+                        <span className="nav-btn-icon">{item.icon}</span>
+                        <span>{item.label}</span>
+                        {/* Error badge on DoctorBot */}
+                        {item.key === "doctor" && doctorErrors > 0 && (
+                            <span style={{
+                                position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)",
+                                background: "#ef4444", color: "#fff", borderRadius: "10px",
+                                fontSize: "10px", fontWeight: 700, padding: "1px 6px",
+                                fontFamily: "'DM Mono', monospace", minWidth: "18px", textAlign: "center"
+                            }}>
+                                {doctorErrors}
+                            </span>
+                        )}
+                    </button>
                 ))}
             </nav>
 
-            {/* Footer */}
             <div className="sidebar-footer">
                 <div className="sidebar-status">
                     <span className="status-dot" />

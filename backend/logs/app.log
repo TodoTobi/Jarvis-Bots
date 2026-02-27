@@ -369,3 +369,234 @@ programa o archivo por lotes ejecutable.
 [2026-02-26T23:55:08.227Z] [INFO] BatBot: whitelist loaded (17 scripts)
 [2026-02-26T23:55:08.228Z] [INFO] NetBot: 2 devices loaded
 [2026-02-26T23:55:08.229Z] [INFO] BotManager initialized with 8 bots
+[2026-02-27T00:10:18.099Z] [INFO] InstructionLoader: loaded 8 md files from C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\md
+[2026-02-27T00:10:18.152Z] [INFO] BatBot: whitelist loaded (17 scripts)
+[2026-02-27T00:10:18.152Z] [INFO] NetBot: 2 devices loaded
+[2026-02-27T00:10:18.153Z] [INFO] BotManager initialized with 8 bots
+[2026-02-27T00:10:18.160Z] [WARN] multer not installed — file upload disabled. Run: npm install multer
+[2026-02-27T00:10:18.164Z] [INFO] JarvisCore backend running on http://localhost:3001
+[2026-02-27T00:10:18.165Z] [INFO] Routes: /api/chat | /api/bots | /api/devices | /api/md | /api/settings | /api/doctor | /api/upload
+[2026-02-27T00:10:18.176Z] [INFO] ModelService: LM Studio connected. Loaded models: meta-llama-3.1-13b-instruct-abliterated, meta-llama-3.1-8b-instruct, liquid/lfm2.5-1.2b, text-embedding-nomic-embed-text-v1.5, openai/gpt-oss-20b
+[2026-02-27T00:10:19.329Z] [INFO] GET /api/bots
+[2026-02-27T00:10:24.319Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:10:28.697Z] [INFO] GET /api/bots
+[2026-02-27T00:10:31.493Z] [INFO] GET /api/bots
+[2026-02-27T00:10:31.495Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:10:42.363Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:10:45.858Z] [INFO] POST /api/doctor/fix-all
+[2026-02-27T00:11:01.499Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:11:12.349Z] [INFO] InstructionLoader: loaded 8 md files from C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\md
+[2026-02-27T00:11:12.404Z] [INFO] BatBot: whitelist loaded (17 scripts)
+[2026-02-27T00:11:12.405Z] [INFO] NetBot: 2 devices loaded
+[2026-02-27T00:11:12.406Z] [INFO] BotManager initialized with 8 bots
+[2026-02-27T00:11:12.533Z] [INFO] Upload endpoint enabled (multer found)
+[2026-02-27T00:11:12.538Z] [INFO] JarvisCore backend running on http://localhost:3001
+[2026-02-27T00:11:12.538Z] [INFO] Routes: /api/chat | /api/bots | /api/devices | /api/md | /api/settings | /api/doctor | /api/upload
+[2026-02-27T00:11:12.545Z] [INFO] ModelService: LM Studio connected. Loaded models: meta-llama-3.1-13b-instruct-abliterated, meta-llama-3.1-8b-instruct, liquid/lfm2.5-1.2b, text-embedding-nomic-embed-text-v1.5, openai/gpt-oss-20b
+[2026-02-27T00:11:17.205Z] [INFO] GET /api/bots
+[2026-02-27T00:11:17.209Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:11:19.208Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:11:31.985Z] [INFO] GET /api/bots
+[2026-02-27T00:11:34.482Z] [INFO] POST /api/chat
+[2026-02-27T00:11:34.483Z] [INFO] Chat request: "asd"
+[2026-02-27T00:11:47.116Z] [INFO] ModelService raw: ##{}`
+##{...{"}
+{#{...
+{}
+##{##{... { #:{"={}}{}`{},{
+##{your
+  { }
+    { }{\
+{}
+
+
+You{... { #{}
+{{
+  { #{}
+{your { { #:{
+
+{}`{}</{}
+##
+{...
+
+{y
+[2026-02-27T00:11:47.117Z] [WARN] ModelService: non-JSON response, treating as chat: ##{}`
+##{...{"}
+{#{...
+{}
+##{##{... { #:{"={}}{}`{},{
+##{your
+  { }
+    { }{\
+{}
+
+
+You{... { #{}
+[2026-02-27T00:11:47.118Z] [INFO] Intent resolved: chat_response
+[2026-02-27T00:11:47.119Z] [INFO] Intent: chat_response | Params: {"query":"##{}`\r\n##{...{\"}\n{#{...\n{}\r\n##{##{... { #:{\"={}}{}`{},{\r\n##{your\n  { }\n    { }{\\\n{}\n\n\nYou{... { #{}\r\n{{\n  { #{}\r\n{your { { #:{\n\n{}`{}</{}\r\n##\n{...\n\n{you\n#={\n## \n  # Jarvis{**\n{...\n{...\n{**\n \r\n\n##\r\n  # Jarvis: { # { #\n\t{\\\n{\\\n: \n{ \n{ \n{ \n    {\" \n{ \n{ \n{ \n{ \n{ \n{ \n {'s\n{ Jarvis { { { { { \\\n\n You are a **\n\n { Jarvis' \n { Jarvis { { { { { Jarvis { { { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis's\n{ Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis Jarvis\n\n## Jarvis\r\n# Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { \n \r\n\nTool to the tool\r\n    Jarvis { Jarvis { Jarvis\n  # Jarvis\n  Jarvis\n    Jarvis\n    (tool: Jarvis- \n    Jarvis\n0\n\t\\\n  # Jarvis **\n  # Jarvis - **\n    # Jarvis\r\n 5\n \r\n## Jarvis\r\n 1\n  # Jarvis\n7\n  #"}
+[2026-02-27T00:11:47.119Z] [INFO] Auto-activating WebBot
+[2026-02-27T00:11:47.120Z] [INFO] Bot activated: WebBot
+[2026-02-27T00:11:47.121Z] [INFO] Executing: WebBot
+[2026-02-27T00:11:47.121Z] [INFO] WebBot processing: "##{}`
+##{...{"}
+{#{...
+{}
+##{##{... { #:{"={}}{}`{},{
+##{your
+  { }
+    { }{\..."
+[2026-02-27T00:11:47.207Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:11:49.122Z] [INFO] WebBot response: 107 chars
+[2026-02-27T00:11:49.122Z] [INFO] Done: WebBot
+[2026-02-27T00:11:58.028Z] [INFO] POST /api/upload
+[2026-02-27T00:11:58.039Z] [INFO] Bot activated: VisionBot
+[2026-02-27T00:11:58.040Z] [INFO] Intent: vision_analyze | Params: {"action":"analyze_pdf","filePath":"C:\\Users\\usuario\\Desktop\\Jarvis 26-02-2026\\Jarvis-Bots\\tmp\\uploads\\e82da4260494045cc73d701fb8eab926","mimeType":"application/pdf","query":"Analizá este archivo"}
+[2026-02-27T00:11:58.040Z] [INFO] Executing: VisionBot
+[2026-02-27T00:11:58.042Z] [INFO] Done: VisionBot
+[2026-02-27T00:12:07.242Z] [INFO] POST /api/chat
+[2026-02-27T00:12:07.243Z] [INFO] Chat request: "hola hablame en español como te llamas?"
+[2026-02-27T00:12:17.321Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:12:18.234Z] [INFO] ModelService raw: ##{}`{your_borrow={
+5: { #your {'{"{}{}
+  { }{#{{{} 
+	{\
+{}
+
+
+You
+{{
+  #{}
+{your{your
+    { }
+{},{
+{"
+
+##
+{...
+{you
+#...
+
+## 
+  { # Jarvis{**
+{..
+[2026-02-27T00:12:18.235Z] [WARN] ModelService: non-JSON response, treating as chat: ##{}`{your_borrow={
+5: { #your {'{"{}{}
+  { }{#{{{} 
+	{\
+{}
+
+
+You
+{{
+  #{}
+{your{your
+    { }
+{}
+[2026-02-27T00:12:18.236Z] [INFO] Intent resolved: chat_response
+[2026-02-27T00:12:18.237Z] [INFO] Intent: chat_response | Params: {"query":"##{}`{your_borrow={\r\n5: { #your {'{\"{}{}\r\n  { }{#{{{} \n\t{\\\n{}\n\n\nYou\n{{\n  #{}\r\n{your{your\r\n    { }\n{},{\r\n{\"\n\n##\n{...\n{you\n#...\n\n## \n  { # Jarvis{**\n{... { # \n  # \n  # \n  # \n\t{ \n{ \n{ \n{ \n{\\\n: {1\n\t{\n    {\"\r\n 5\n{ \n{ \n{ \n{ \n{ \n { { Jarvis's { { { { { { { Jarvis: Jarvis { { { { Jarvis { Jarvis { Jarvis { { { { { { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis's (default { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis\n Jarvis { Jarvis { Jarvis\n\n## Jarvis\r\nC\n{ Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { \n  # { Jarvis { Jarvis to the tool\n Jarvis { Jarvis { Jarvis\n    Jarvis\n    Jarvis tools\n    Jarvis\n    Jarvis\n\t**\n    Jarvis\n    Jarvis\r\n  # \n  # \n    Jarvis **\n    Jarvis **\n** Jarvis\r\n  # \n# \n‖\r\n \r\n\n## \n{ Jarvis- Jarvis\r\n  # \n# Jarvis\n\n## Jarvis\n\n## \n\n## \n1\n Jarvis\n Jarvis\n**\r\n\r\n##"}
+[2026-02-27T00:12:18.237Z] [INFO] Executing: WebBot
+[2026-02-27T00:12:18.238Z] [INFO] WebBot processing: "##{}`{your_borrow={
+5: { #your {'{"{}{}
+  { }{#{{{} 
+	{\
+{}
+
+
+You
+{{
+  #{}
+{y..."
+[2026-02-27T00:12:20.566Z] [INFO] WebBot response: 213 chars
+[2026-02-27T00:12:20.567Z] [INFO] Done: WebBot
+[2026-02-27T00:12:47.322Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:13:17.207Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:13:47.202Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:14:17.203Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:14:47.204Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:15:17.205Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:15:19.838Z] [INFO] GET /api/bots
+[2026-02-27T00:15:21.395Z] [INFO] POST /api/bot/WebBot/deactivate
+[2026-02-27T00:15:21.396Z] [WARN] Bot deactivated: WebBot
+[2026-02-27T00:15:21.399Z] [INFO] GET /api/bots
+[2026-02-27T00:15:23.843Z] [INFO] GET /api/bots
+[2026-02-27T00:15:24.082Z] [INFO] POST /api/bot/VisionBot/deactivate
+[2026-02-27T00:15:24.083Z] [WARN] Bot deactivated: VisionBot
+[2026-02-27T00:15:24.086Z] [INFO] GET /api/bots
+[2026-02-27T00:15:31.462Z] [INFO] POST /api/chat
+[2026-02-27T00:15:31.463Z] [INFO] Chat request: "hola en español"
+[2026-02-27T00:15:42.975Z] [INFO] ModelService raw: ##{\
+{}`{#{
+##{{"}{}
+{... { #{}
+#{""{}}{**
+{{"your { {'s
+  { }
+    { #={} 
+{\
+{}
+
+
+##
+{{
+  { { #: { # { your { #: { }
+{},{
+
+##
+}
+
+You
+#{
+
+{you
+	...
+[2026-02-27T00:15:42.976Z] [WARN] ModelService: non-JSON response, treating as chat: ##{\
+{}`{#{
+##{{"}{}
+{... { #{}
+#{""{}}{**
+{{"your { {'s
+  { }
+    { #={} 
+{\
+{}
+
+
+##
+{{
+  { { #:
+[2026-02-27T00:15:42.977Z] [INFO] Intent resolved: chat_response
+[2026-02-27T00:15:42.977Z] [INFO] Intent: chat_response | Params: {"query":"##{\\\n{}`{#{\r\n##{{\"}{}\n{... { #{}\r\n#{\"\"{}}{**\n{{\"your { {'s\r\n  { }\n    { #={} \n{\\\n{}\n\n\n##\n{{\n  { { #: { # { your { #: { }\n{},{\n\n##\n}\n\nYou\n#{\n\n{you\n\t...\n\n## \n  # { Jarvis{›\n# \n  # \n  # \n\t{... \n\t{ \n{ \n{ \n{ \n: Jarvis' \n{\\\n   1\n{\"\r\n{ \n{ \n{ \n{ \n{ \n{ \n { { Jarvis's { Jarvis { { { { { Jarvis: Jarvis { { { Jarvis { Jarvis' \n{ Jarvis { { { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis's (default { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis\n  Jarvis\r\n# Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { Jarvis { \n  # Jarvis to the tool\r\n    Jarvis { Jarvis { Jarvis\n  # Jarvis\n  Jarvis\n    Jarvis\n    (Tool: Jarvis- \n    Jarvis\n0\n\t\\\n  # Jarvis **\n    Jarvis\r\n\t**\n    **\n    Jarvis\r\n  # Jarvis\r\n  # Jarvis\r\n \r\n\n## \n# Jarvis\n6\n  # Jarvis"}
+[2026-02-27T00:15:42.978Z] [INFO] Auto-activating WebBot
+[2026-02-27T00:15:42.978Z] [INFO] Bot activated: WebBot
+[2026-02-27T00:15:42.978Z] [INFO] Executing: WebBot
+[2026-02-27T00:15:42.979Z] [INFO] WebBot processing: "##{\
+{}`{#{
+##{{"}{}
+{... { #{}
+#{""{}}{**
+{{"your { {'s
+  { }
+    { #={} 
+{\..."
+[2026-02-27T00:15:44.871Z] [INFO] WebBot response: 138 chars
+[2026-02-27T00:15:44.872Z] [INFO] Done: WebBot
+[2026-02-27T00:15:47.206Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:15:53.527Z] [INFO] GET /api/bots
+[2026-02-27T00:15:57.523Z] [INFO] GET /api/bots
+[2026-02-27T00:15:58.658Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:16:03.441Z] [INFO] POST /api/doctor/fix
+[2026-02-27T00:16:17.201Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:16:17.770Z] [INFO] GET /api/settings
+[2026-02-27T00:16:47.203Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:16:47.260Z] [INFO] POST /api/settings
+[2026-02-27T00:16:47.263Z] [INFO] Settings updated: lm_api_url, lm_model, port, whatsapp_numbers, whatsapp_debug, whisper_cpp_path, whisper_model_path, computer_control_enabled, vision_api_key, vision_provider
+[2026-02-27T00:16:50.483Z] [INFO] POST /api/settings
+[2026-02-27T00:16:50.485Z] [INFO] Settings updated: lm_api_url, lm_model, port, whatsapp_numbers, whatsapp_debug, whisper_cpp_path, whisper_model_path, computer_control_enabled, vision_api_key, vision_provider
+[2026-02-27T00:16:51.307Z] [INFO] POST /api/settings
+[2026-02-27T00:16:51.309Z] [INFO] Settings updated: lm_api_url, lm_model, port, whatsapp_numbers, whatsapp_debug, whisper_cpp_path, whisper_model_path, computer_control_enabled, vision_api_key, vision_provider
+[2026-02-27T00:16:53.509Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:16:56.636Z] [INFO] POST /api/doctor/fix
+[2026-02-27T00:17:03.987Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:17:04.586Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:17:17.319Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:17:47.313Z] [INFO] GET /api/doctor/scan
