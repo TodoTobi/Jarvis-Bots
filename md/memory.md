@@ -562,3 +562,101 @@ Result: ¡Gracias por intentarlo! Sin embargo, parece que hay algunos errores de
 - ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:48.634Z — ModelService generateIntent: Request failed with status code 400
 - ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:48.122Z — ModelService generateIntent: Request failed with status code 400
 - ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:47.723Z — ModelService generateIntent: Request failed with status code 400
+
+
+## 2026-02-27T00:18:36.333Z
+## DoctorBot Scan [2026-02-27T00:18:36.333Z]
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:14:42.150Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:13:24.813Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:13:00.489Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:49.817Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:49.400Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:49.049Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:48.681Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:48.634Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:48.122Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:47.723Z — ModelService generateIntent: Request failed with status code 400
+
+
+## 2026-02-27T00:19:36.337Z
+## DoctorBot Scan [2026-02-27T00:19:36.337Z]
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:14:42.150Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:13:24.813Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:13:00.489Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:49.817Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:49.400Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:49.049Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:48.681Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:48.634Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:48.122Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:47.723Z — ModelService generateIntent: Request failed with status code 400
+
+
+## 2026-02-27T00:20:36.329Z
+## DoctorBot Scan [2026-02-27T00:20:36.329Z]
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:14:42.150Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:13:24.813Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:13:00.489Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:49.817Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:49.400Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:49.049Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:48.681Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:48.634Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:48.122Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:47.723Z — ModelService generateIntent: Request failed with status code 400
+
+
+## 2026-02-27T00:21:03.385Z
+## DoctorBot Scan [2026-02-27T00:21:03.385Z]
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:14:42.150Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:13:24.813Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:13:00.489Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:49.817Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:49.400Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:49.049Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:48.681Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:48.634Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:48.122Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:47.723Z — ModelService generateIntent: Request failed with status code 400
+
+
+## 2026-02-27T00:21:17.325Z
+## DoctorBot Scan [2026-02-27T00:21:17.325Z]
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:14:42.150Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:13:24.813Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:13:00.489Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:49.817Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:49.400Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:49.049Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:48.681Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:48.634Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:48.122Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:47.723Z — ModelService generateIntent: Request failed with status code 400
+
+
+## 2026-02-27T00:21:47.330Z
+## DoctorBot Scan [2026-02-27T00:21:47.330Z]
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:14:42.150Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:13:24.813Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:13:00.489Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:49.817Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:49.400Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:49.049Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:48.681Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:48.634Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:48.122Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:47.723Z — ModelService generateIntent: Request failed with status code 400
+
+
+## 2026-02-27T00:22:36.322Z
+## DoctorBot Scan [2026-02-27T00:22:36.322Z]
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:14:42.150Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:13:24.813Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:13:00.489Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:49.817Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:49.400Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:49.049Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:48.681Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:48.634Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:48.122Z — ModelService generateIntent: Request failed with status code 400
+- ModelService generateIntent: Request failed with status code 400: 2026-02-26T23:12:47.723Z — ModelService generateIntent: Request failed with status code 400
