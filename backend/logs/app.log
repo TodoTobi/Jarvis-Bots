@@ -1911,3 +1911,7 @@ Mi nombre es Jar..."
 [2026-02-27T12:21:18.325Z] [INFO] GET /api/doctor/scan
 [2026-02-27T12:21:18.388Z] [INFO] InstructionLoader: memory.md trimmed from 5315B to ~5000B
 [2026-02-27T12:21:18.617Z] [INFO] GET /api/history/conversations
+[2026-02-27T12:21:33.318Z] [INFO] GET /api/history/status
+[2026-02-27T12:21:33.319Z] [INFO] GET /api/history/conversations
+[2026-02-27T12:21:33.321Z] [INFO] GET /api/history/projects
+[2026-02-27T12:21:33.622Z] [INFO] GET /api/history/conversations
