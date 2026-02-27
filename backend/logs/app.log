@@ -607,3 +607,815 @@ You
 [2026-02-27T00:21:17.319Z] [INFO] GET /api/doctor/scan
 [2026-02-27T00:21:47.323Z] [INFO] GET /api/doctor/scan
 [2026-02-27T00:22:36.315Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:30:12.619Z] [INFO] InstructionLoader: loaded 8 md files from C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\md
+[2026-02-27T00:30:12.679Z] [INFO] BatBot: whitelist loaded (17 scripts)
+[2026-02-27T00:30:12.680Z] [INFO] NetBot: 2 devices loaded
+[2026-02-27T00:30:12.681Z] [INFO] BotManager initialized with 8 bots
+[2026-02-27T00:30:12.718Z] [INFO] Upload endpoint enabled (multer found)
+[2026-02-27T00:30:12.722Z] [INFO] JarvisCore backend running on http://localhost:3001
+[2026-02-27T00:30:12.722Z] [INFO] Routes: /api/chat | /api/bots | /api/devices | /api/md | /api/settings | /api/doctor | /api/upload
+[2026-02-27T00:30:12.731Z] [INFO] ModelService: LM Studio connected. Loaded models: meta-llama-3.1-13b-instruct-abliterated, meta-llama-3.1-8b-instruct, liquid/lfm2.5-1.2b, text-embedding-nomic-embed-text-v1.5, openai/gpt-oss-20b
+[2026-02-27T00:30:14.319Z] [INFO] GET /api/bots
+[2026-02-27T00:30:17.320Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:30:19.320Z] [INFO] GET /api/bots
+[2026-02-27T00:30:24.322Z] [INFO] GET /api/bots
+[2026-02-27T00:30:26.839Z] [INFO] GET /api/bots
+[2026-02-27T00:30:26.841Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:30:29.769Z] [INFO] GET /api/bots
+[2026-02-27T00:30:33.770Z] [INFO] GET /api/bots
+[2026-02-27T00:30:38.318Z] [INFO] GET /api/bots
+[2026-02-27T00:30:42.322Z] [INFO] GET /api/bots
+[2026-02-27T00:30:46.315Z] [INFO] GET /api/bots
+[2026-02-27T00:30:50.376Z] [INFO] GET /api/bots
+[2026-02-27T00:30:53.770Z] [INFO] GET /api/bots
+[2026-02-27T00:30:55.019Z] [INFO] GET /api/devices
+[2026-02-27T00:30:56.163Z] [INFO] GET /api/bots
+[2026-02-27T00:30:56.841Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:30:57.340Z] [INFO] GET /api/bots
+[2026-02-27T00:31:27.327Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:31:57.312Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:32:27.320Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:32:57.321Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:33:27.313Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:33:57.312Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:34:36.316Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:35:36.316Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:36:36.313Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:37:15.224Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:37:27.316Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:37:57.322Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:38:36.314Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:39:36.315Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:40:36.323Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:41:36.323Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:42:36.314Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:43:36.322Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:44:36.320Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:45:36.320Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:46:36.319Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:47:36.327Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:47:49.326Z] [INFO] GET /api/history/status
+[2026-02-27T00:47:49.329Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:47:49.330Z] [INFO] GET /api/history/projects
+[2026-02-27T00:47:49.331Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:48:00.317Z] [INFO] GET /api/history/status
+[2026-02-27T00:48:00.319Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:48:00.320Z] [INFO] GET /api/history/projects
+[2026-02-27T00:48:10.321Z] [INFO] GET /api/history/status
+[2026-02-27T00:48:10.322Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:48:10.322Z] [INFO] GET /api/history/projects
+[2026-02-27T00:48:17.332Z] [INFO] GET /api/history/status
+[2026-02-27T00:48:17.334Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:48:17.336Z] [INFO] GET /api/history/projects
+[2026-02-27T00:48:17.336Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:48:28.326Z] [INFO] GET /api/history/status
+[2026-02-27T00:48:28.328Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:48:28.329Z] [INFO] GET /api/history/projects
+[2026-02-27T00:48:38.324Z] [INFO] GET /api/history/status
+[2026-02-27T00:48:38.326Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:48:38.326Z] [INFO] GET /api/history/projects
+[2026-02-27T00:48:48.324Z] [INFO] GET /api/history/status
+[2026-02-27T00:48:48.325Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:48:48.326Z] [INFO] GET /api/history/projects
+[2026-02-27T00:48:48.327Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:48:58.313Z] [INFO] GET /api/history/status
+[2026-02-27T00:48:58.315Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:48:58.316Z] [INFO] GET /api/history/projects
+[2026-02-27T00:48:59.325Z] [INFO] GET /api/history/status
+[2026-02-27T00:48:59.327Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:48:59.328Z] [INFO] GET /api/history/projects
+[2026-02-27T00:48:59.329Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:49:10.318Z] [INFO] GET /api/history/status
+[2026-02-27T00:49:10.320Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:49:10.321Z] [INFO] GET /api/history/projects
+[2026-02-27T00:49:20.317Z] [INFO] GET /api/history/status
+[2026-02-27T00:49:20.318Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:49:20.319Z] [INFO] GET /api/history/projects
+[2026-02-27T00:49:28.329Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:49:28.330Z] [INFO] GET /api/history/status
+[2026-02-27T00:49:28.331Z] [INFO] GET /api/history/projects
+[2026-02-27T00:49:30.319Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:49:44.323Z] [INFO] GET /api/history/status
+[2026-02-27T00:49:44.325Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:49:44.326Z] [INFO] GET /api/history/projects
+[2026-02-27T00:49:59.327Z] [INFO] GET /api/history/status
+[2026-02-27T00:49:59.329Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:49:59.329Z] [INFO] GET /api/history/projects
+[2026-02-27T00:49:59.330Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:50:14.320Z] [INFO] GET /api/history/status
+[2026-02-27T00:50:14.321Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:50:14.322Z] [INFO] GET /api/history/projects
+[2026-02-27T00:50:29.321Z] [INFO] GET /api/history/status
+[2026-02-27T00:50:29.323Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:50:29.324Z] [INFO] GET /api/history/projects
+[2026-02-27T00:50:30.320Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:50:44.325Z] [INFO] GET /api/history/status
+[2026-02-27T00:50:44.326Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:50:44.327Z] [INFO] GET /api/history/projects
+[2026-02-27T00:50:59.327Z] [INFO] GET /api/history/status
+[2026-02-27T00:50:59.329Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:50:59.330Z] [INFO] GET /api/history/projects
+[2026-02-27T00:51:00.323Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:51:30.325Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:51:36.326Z] [INFO] GET /api/history/status
+[2026-02-27T00:51:36.328Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:51:36.329Z] [INFO] GET /api/history/projects
+[2026-02-27T00:52:36.316Z] [INFO] GET /api/history/status
+[2026-02-27T00:52:36.318Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:52:36.318Z] [INFO] GET /api/history/projects
+[2026-02-27T00:52:36.319Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:53:36.318Z] [INFO] GET /api/history/status
+[2026-02-27T00:53:36.320Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:53:36.321Z] [INFO] GET /api/history/projects
+[2026-02-27T00:53:36.322Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:54:36.316Z] [INFO] GET /api/history/status
+[2026-02-27T00:54:36.320Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:54:36.321Z] [INFO] GET /api/history/projects
+[2026-02-27T00:54:36.322Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:55:13.887Z] [INFO] InstructionLoader: loaded 8 md files from C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\md
+[2026-02-27T00:55:13.889Z] [INFO] InstructionLoader: memory.md trimmed from 119787B to ~5000B
+[2026-02-27T00:55:13.949Z] [INFO] BatBot: whitelist loaded (17 scripts)
+[2026-02-27T00:55:13.950Z] [INFO] NetBot: 2 devices loaded
+[2026-02-27T00:55:13.951Z] [INFO] BotManager initialized with 8 bots
+[2026-02-27T00:55:13.986Z] [INFO] Upload endpoint enabled (multer found)
+[2026-02-27T00:55:13.990Z] [INFO] JarvisCore backend running on http://localhost:3001
+[2026-02-27T00:55:13.990Z] [INFO] Routes: /api/chat | /api/bots | /api/devices | /api/md | /api/settings | /api/doctor | /api/upload
+[2026-02-27T00:55:13.999Z] [INFO] ModelService: LM Studio connected. Loaded models: meta-llama-3.1-13b-instruct-abliterated, meta-llama-3.1-8b-instruct, liquid/lfm2.5-1.2b, text-embedding-nomic-embed-text-v1.5, openai/gpt-oss-20b
+[2026-02-27T00:55:22.324Z] [INFO] GET /api/history/status
+[2026-02-27T00:55:22.326Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:55:22.329Z] [INFO] GET /api/history/projects
+[2026-02-27T00:55:22.331Z] [INFO] GET /api/bots
+[2026-02-27T00:55:22.333Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:55:22.353Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:55:28.326Z] [INFO] GET /api/bots
+[2026-02-27T00:55:32.322Z] [INFO] GET /api/bots
+[2026-02-27T00:55:36.355Z] [INFO] POST /api/history/conversations
+[2026-02-27T00:55:37.323Z] [INFO] GET /api/history/status
+[2026-02-27T00:55:37.324Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:55:37.326Z] [INFO] GET /api/history/projects
+[2026-02-27T00:55:40.795Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:55:40.810Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:55:42.714Z] [INFO] GET /api/md
+[2026-02-27T00:55:47.468Z] [INFO] GET /api/settings
+[2026-02-27T00:55:52.322Z] [INFO] GET /api/history/status
+[2026-02-27T00:55:52.324Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:55:52.325Z] [INFO] GET /api/history/projects
+[2026-02-27T00:55:52.326Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:55:52.337Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:56:08.329Z] [INFO] GET /api/history/status
+[2026-02-27T00:56:08.331Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:56:08.334Z] [INFO] GET /api/history/projects
+[2026-02-27T00:56:23.313Z] [INFO] GET /api/history/status
+[2026-02-27T00:56:23.314Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:56:23.316Z] [INFO] GET /api/history/projects
+[2026-02-27T00:56:23.316Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:56:23.328Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:56:37.324Z] [INFO] GET /api/history/status
+[2026-02-27T00:56:37.326Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:56:37.326Z] [INFO] GET /api/history/projects
+[2026-02-27T00:56:53.325Z] [INFO] GET /api/history/status
+[2026-02-27T00:56:53.327Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:56:53.328Z] [INFO] GET /api/history/projects
+[2026-02-27T00:56:53.328Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:56:53.340Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:57:08.319Z] [INFO] GET /api/history/status
+[2026-02-27T00:57:08.321Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:57:08.322Z] [INFO] GET /api/history/projects
+[2026-02-27T00:57:23.321Z] [INFO] GET /api/history/status
+[2026-02-27T00:57:23.322Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:57:23.323Z] [INFO] GET /api/history/projects
+[2026-02-27T00:57:23.324Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:57:23.338Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:57:38.325Z] [INFO] GET /api/history/status
+[2026-02-27T00:57:38.327Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:57:38.328Z] [INFO] GET /api/history/projects
+[2026-02-27T00:57:53.327Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:57:53.340Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:58:21.271Z] [INFO] GET /api/history/status
+[2026-02-27T00:58:21.273Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:58:21.275Z] [INFO] GET /api/history/projects
+[2026-02-27T00:58:22.322Z] [INFO] GET /api/history/status
+[2026-02-27T00:58:22.323Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:58:22.324Z] [INFO] GET /api/history/projects
+[2026-02-27T00:58:22.325Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:58:22.337Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:58:34.809Z] [INFO] GET /api/history/status
+[2026-02-27T00:58:34.811Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:58:34.812Z] [INFO] GET /api/history/projects
+[2026-02-27T00:58:34.813Z] [INFO] GET /api/bots
+[2026-02-27T00:58:34.814Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:58:34.829Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:58:40.318Z] [INFO] GET /api/bots
+[2026-02-27T00:58:45.252Z] [INFO] InstructionLoader: loaded 8 md files from C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\md
+[2026-02-27T00:58:45.254Z] [INFO] InstructionLoader: memory.md trimmed from 5070B to ~5000B
+[2026-02-27T00:58:45.314Z] [INFO] BatBot: whitelist loaded (17 scripts)
+[2026-02-27T00:58:45.314Z] [INFO] NetBot: 2 devices loaded
+[2026-02-27T00:58:45.316Z] [INFO] BotManager initialized with 8 bots
+[2026-02-27T00:58:45.352Z] [INFO] Upload endpoint enabled (multer found)
+[2026-02-27T00:58:45.355Z] [INFO] JarvisCore backend running on http://localhost:3001
+[2026-02-27T00:58:45.356Z] [INFO] Routes: /api/chat | /api/bots | /api/devices | /api/md | /api/settings | /api/doctor | /api/upload
+[2026-02-27T00:58:45.364Z] [INFO] ModelService: LM Studio connected. Loaded models: meta-llama-3.1-13b-instruct-abliterated, meta-llama-3.1-8b-instruct, liquid/lfm2.5-1.2b, text-embedding-nomic-embed-text-v1.5, openai/gpt-oss-20b
+[2026-02-27T00:58:45.576Z] [INFO] GET /api/bots
+[2026-02-27T00:58:49.808Z] [INFO] GET /api/history/status
+[2026-02-27T00:58:49.812Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:58:49.813Z] [INFO] GET /api/history/projects
+[2026-02-27T00:58:49.814Z] [INFO] GET /api/bots
+[2026-02-27T00:58:50.507Z] [INFO] GET /api/history/status
+[2026-02-27T00:58:50.509Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:58:50.510Z] [INFO] GET /api/history/projects
+[2026-02-27T00:58:50.511Z] [INFO] GET /api/bots
+[2026-02-27T00:58:50.513Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:58:50.533Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:58:51.002Z] [INFO] GET /api/history/status
+[2026-02-27T00:58:51.004Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:58:51.005Z] [INFO] GET /api/history/projects
+[2026-02-27T00:58:51.006Z] [INFO] GET /api/bots
+[2026-02-27T00:58:51.007Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:58:51.021Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:58:51.129Z] [INFO] GET /api/history/status
+[2026-02-27T00:58:51.131Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:58:51.132Z] [INFO] GET /api/history/projects
+[2026-02-27T00:58:51.133Z] [INFO] GET /api/bots
+[2026-02-27T00:58:51.134Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:58:51.147Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:58:51.291Z] [INFO] GET /api/history/status
+[2026-02-27T00:58:51.293Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:58:51.293Z] [INFO] GET /api/history/projects
+[2026-02-27T00:58:51.294Z] [INFO] GET /api/bots
+[2026-02-27T00:58:51.296Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:58:51.309Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:58:51.429Z] [INFO] GET /api/history/status
+[2026-02-27T00:58:51.432Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:58:51.433Z] [INFO] GET /api/history/projects
+[2026-02-27T00:58:51.434Z] [INFO] GET /api/bots
+[2026-02-27T00:58:51.435Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:58:51.448Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:58:51.553Z] [INFO] GET /api/history/status
+[2026-02-27T00:58:51.555Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:58:51.555Z] [INFO] GET /api/history/projects
+[2026-02-27T00:58:51.556Z] [INFO] GET /api/bots
+[2026-02-27T00:58:51.557Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:58:51.570Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:58:51.840Z] [INFO] GET /api/history/status
+[2026-02-27T00:58:51.842Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:58:51.843Z] [INFO] GET /api/history/projects
+[2026-02-27T00:58:51.844Z] [INFO] GET /api/bots
+[2026-02-27T00:58:51.845Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:58:51.859Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:58:52.001Z] [INFO] GET /api/history/status
+[2026-02-27T00:58:52.003Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:58:52.004Z] [INFO] GET /api/history/projects
+[2026-02-27T00:58:52.005Z] [INFO] GET /api/bots
+[2026-02-27T00:58:52.007Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:58:52.020Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:58:52.159Z] [INFO] GET /api/history/status
+[2026-02-27T00:58:52.162Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:58:52.163Z] [INFO] GET /api/history/projects
+[2026-02-27T00:58:52.164Z] [INFO] GET /api/bots
+[2026-02-27T00:58:52.165Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:58:52.178Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:58:52.648Z] [INFO] GET /api/history/status
+[2026-02-27T00:58:52.649Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:58:52.651Z] [INFO] GET /api/history/projects
+[2026-02-27T00:58:52.651Z] [INFO] GET /api/bots
+[2026-02-27T00:58:52.653Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:58:52.664Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:58:53.242Z] [INFO] GET /api/history/status
+[2026-02-27T00:58:53.243Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:58:53.244Z] [INFO] GET /api/history/projects
+[2026-02-27T00:58:53.245Z] [INFO] GET /api/bots
+[2026-02-27T00:58:53.246Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:58:53.257Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:58:53.410Z] [INFO] GET /api/history/status
+[2026-02-27T00:58:53.414Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:58:53.415Z] [INFO] GET /api/history/projects
+[2026-02-27T00:58:53.416Z] [INFO] GET /api/bots
+[2026-02-27T00:58:53.418Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:58:53.431Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:58:53.554Z] [INFO] GET /api/history/status
+[2026-02-27T00:58:53.556Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:58:53.557Z] [INFO] GET /api/history/projects
+[2026-02-27T00:58:53.558Z] [INFO] GET /api/bots
+[2026-02-27T00:58:53.559Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:58:53.573Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:58:53.689Z] [INFO] GET /api/history/status
+[2026-02-27T00:58:53.690Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:58:53.691Z] [INFO] GET /api/history/projects
+[2026-02-27T00:58:53.692Z] [INFO] GET /api/bots
+[2026-02-27T00:58:53.693Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:58:53.704Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:58:53.921Z] [INFO] GET /api/history/status
+[2026-02-27T00:58:53.924Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:58:53.926Z] [INFO] GET /api/history/projects
+[2026-02-27T00:58:53.927Z] [INFO] GET /api/bots
+[2026-02-27T00:58:53.929Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:58:53.942Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:58:54.113Z] [INFO] GET /api/history/status
+[2026-02-27T00:58:54.115Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:58:54.116Z] [INFO] GET /api/history/projects
+[2026-02-27T00:58:54.117Z] [INFO] GET /api/bots
+[2026-02-27T00:58:54.118Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:58:54.131Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:58:54.607Z] [INFO] GET /api/history/status
+[2026-02-27T00:58:54.609Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:58:54.610Z] [INFO] GET /api/history/projects
+[2026-02-27T00:58:54.610Z] [INFO] GET /api/bots
+[2026-02-27T00:58:54.611Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:58:54.624Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:58:54.793Z] [INFO] GET /api/history/status
+[2026-02-27T00:58:54.796Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:58:54.797Z] [INFO] GET /api/history/projects
+[2026-02-27T00:58:54.798Z] [INFO] GET /api/bots
+[2026-02-27T00:58:54.799Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:58:54.811Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:58:56.518Z] [INFO] GET /api/md
+[2026-02-27T00:58:56.930Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:58:56.944Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T00:58:58.169Z] [INFO] POST /api/doctor/fix-all
+[2026-02-27T00:59:02.393Z] [INFO] POST /api/doctor/fix
+[2026-02-27T00:59:06.256Z] [INFO] POST /api/history/conversations
+[2026-02-27T00:59:06.874Z] [INFO] GET /api/bots
+[2026-02-27T00:59:08.570Z] [INFO] GET /api/bots
+[2026-02-27T00:59:09.527Z] [INFO] POST /api/history/conversations
+[2026-02-27T00:59:09.791Z] [INFO] GET /api/history/status
+[2026-02-27T00:59:09.792Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:59:09.793Z] [INFO] GET /api/history/projects
+[2026-02-27T00:59:13.497Z] [INFO] POST /api/chat
+[2026-02-27T00:59:13.498Z] [INFO] Chat request: "hola"
+[2026-02-27T00:59:16.339Z] [INFO] ModelService raw: ¡Excelente! Has analizado correctamente el MENSAJE DEL USUARIO y has respondido con un JSON válido.
+
+¡Buen trabajo! ¡Con
+[2026-02-27T00:59:16.340Z] [WARN] ModelService: non-JSON response, treating as chat: ¡Excelente! Has analizado correctamente el MENSAJE DEL USUARIO y has respondido 
+[2026-02-27T00:59:16.341Z] [INFO] Intent resolved: chat_response
+[2026-02-27T00:59:16.341Z] [INFO] Intent: chat_response | Params: {"query":"¡Excelente! Has analizado correctamente el MENSAJE DEL USUARIO y has respondido con un JSON válido.\n\n¡Buen trabajo! ¡Continúa mejorando tus habilidades de análisis de texto y generación de respuestas en formato JSON!"}
+[2026-02-27T00:59:16.342Z] [INFO] Auto-activating WebBot
+[2026-02-27T00:59:16.342Z] [INFO] Bot activated: WebBot
+[2026-02-27T00:59:16.343Z] [INFO] Executing: WebBot
+[2026-02-27T00:59:16.343Z] [INFO] WebBot processing: "¡Excelente! Has analizado correctamente el MENSAJE DEL USUARIO y has respondido ..."
+[2026-02-27T00:59:18.095Z] [INFO] WebBot response: 144 chars
+[2026-02-27T00:59:18.096Z] [INFO] Done: WebBot
+[2026-02-27T00:59:18.098Z] [WARN] SupabaseService: @supabase/supabase-js not installed. Run: npm install @supabase/supabase-js
+Cannot find module '@supabase/supabase-js'
+Require stack:
+- C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\backend\services\SupabaseService.js
+- C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\backend\controllers\chatController.js
+- C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\backend\routes\chatRoutes.js
+- C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\backend\server.js
+[2026-02-27T00:59:18.105Z] [INFO] InstructionLoader: memory.md trimmed from 5289B to ~5000B
+[2026-02-27T00:59:24.170Z] [INFO] POST /api/chat
+[2026-02-27T00:59:24.171Z] [INFO] Chat request: "ok, como te llamas"
+[2026-02-27T00:59:24.791Z] [INFO] GET /api/history/status
+[2026-02-27T00:59:24.793Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:59:24.794Z] [INFO] GET /api/history/projects
+[2026-02-27T00:59:24.795Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:59:24.810Z] [INFO] InstructionLoader: memory.md trimmed from 6766B to ~5000B
+[2026-02-27T00:59:25.246Z] [INFO] ModelService raw: ¡Excelente! ¡Gracias por tu apoyo y orientación!
+[2026-02-27T00:59:25.247Z] [WARN] ModelService: non-JSON response, treating as chat: ¡Excelente! ¡Gracias por tu apoyo y orientación!
+[2026-02-27T00:59:25.247Z] [INFO] Intent resolved: chat_response
+[2026-02-27T00:59:25.248Z] [INFO] Intent: chat_response | Params: {"query":"¡Excelente! ¡Gracias por tu apoyo y orientación!"}
+[2026-02-27T00:59:25.248Z] [INFO] Executing: WebBot
+[2026-02-27T00:59:25.248Z] [INFO] WebBot processing: "¡Excelente! ¡Gracias por tu apoyo y orientación!"
+[2026-02-27T00:59:26.188Z] [INFO] WebBot response: 89 chars
+[2026-02-27T00:59:26.189Z] [INFO] Done: WebBot
+[2026-02-27T00:59:26.191Z] [WARN] SupabaseService: @supabase/supabase-js not installed. Run: npm install @supabase/supabase-js
+Cannot find module '@supabase/supabase-js'
+Require stack:
+- C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\backend\services\SupabaseService.js
+- C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\backend\controllers\chatController.js
+- C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\backend\routes\chatRoutes.js
+- C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\backend\server.js
+[2026-02-27T00:59:26.197Z] [INFO] InstructionLoader: memory.md trimmed from 5249B to ~5000B
+[2026-02-27T00:59:30.337Z] [INFO] POST /api/chat
+[2026-02-27T00:59:30.338Z] [INFO] Chat request: "feo"
+[2026-02-27T00:59:32.654Z] [INFO] ModelService raw: ¡Excelente! Te do un puntaje de 9.5/10.
+
+Observaciones:
+
+* El intento de analizar el JSON y responder con un JSON válido
+[2026-02-27T00:59:32.655Z] [WARN] ModelService: non-JSON response, treating as chat: ¡Excelente! Te do un puntaje de 9.5/10.
+
+Observaciones:
+
+* El intento de analiza
+[2026-02-27T00:59:32.656Z] [INFO] Intent resolved: chat_response
+[2026-02-27T00:59:32.656Z] [INFO] Intent: chat_response | Params: {"query":"¡Excelente! Te do un puntaje de 9.5/10.\n\nObservaciones:\n\n* El intento de analizar el JSON y responder con un JSON válido es correcto.\n* Sin embargo, considera agregar más ejemplos para que el modelo pueda generalizarse mejor."}
+[2026-02-27T00:59:32.657Z] [INFO] Executing: WebBot
+[2026-02-27T00:59:32.657Z] [INFO] WebBot processing: "¡Excelente! Te do un puntaje de 9.5/10.
+
+Observaciones:
+
+* El intento de analiza..."
+[2026-02-27T00:59:35.513Z] [INFO] WebBot response: 387 chars
+[2026-02-27T00:59:35.514Z] [INFO] Done: WebBot
+[2026-02-27T00:59:35.516Z] [WARN] SupabaseService: @supabase/supabase-js not installed. Run: npm install @supabase/supabase-js
+Cannot find module '@supabase/supabase-js'
+Require stack:
+- C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\backend\services\SupabaseService.js
+- C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\backend\controllers\chatController.js
+- C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\backend\routes\chatRoutes.js
+- C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\backend\server.js
+[2026-02-27T00:59:35.522Z] [INFO] InstructionLoader: memory.md trimmed from 5348B to ~5000B
+[2026-02-27T00:59:39.795Z] [INFO] GET /api/history/status
+[2026-02-27T00:59:39.796Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:59:39.797Z] [INFO] GET /api/history/projects
+[2026-02-27T00:59:41.914Z] [INFO] POST /api/chat
+[2026-02-27T00:59:41.914Z] [INFO] Chat request: "2+2 cunatos son"
+[2026-02-27T00:59:44.005Z] [INFO] ModelService raw: ¡Excelente! Me alegra haber podido ayudarte.
+
+En cuanto al puntaje, ¡gracias por considerarlo! Sin embargo, como ya menc
+[2026-02-27T00:59:44.006Z] [WARN] ModelService: non-JSON response, treating as chat: ¡Excelente! Me alegra haber podido ayudarte.
+
+En cuanto al puntaje, ¡gracias por
+[2026-02-27T00:59:44.007Z] [INFO] Intent resolved: chat_response
+[2026-02-27T00:59:44.007Z] [INFO] Intent: chat_response | Params: {"query":"¡Excelente! Me alegra haber podido ayudarte.\n\nEn cuanto al puntaje, ¡gracias por considerarlo! Sin embargo, como ya mencioné anteriormente, es importante tener en cuenta que... (continuar con la respuesta)"}
+[2026-02-27T00:59:44.008Z] [INFO] Executing: WebBot
+[2026-02-27T00:59:44.008Z] [INFO] WebBot processing: "¡Excelente! Me alegra haber podido ayudarte.
+
+En cuanto al puntaje, ¡gracias por..."
+[2026-02-27T00:59:44.770Z] [INFO] GET /api/md
+[2026-02-27T00:59:45.977Z] [INFO] WebBot response: 257 chars
+[2026-02-27T00:59:45.978Z] [INFO] Done: WebBot
+[2026-02-27T00:59:45.980Z] [WARN] SupabaseService: @supabase/supabase-js not installed. Run: npm install @supabase/supabase-js
+Cannot find module '@supabase/supabase-js'
+Require stack:
+- C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\backend\services\SupabaseService.js
+- C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\backend\controllers\chatController.js
+- C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\backend\routes\chatRoutes.js
+- C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\backend\server.js
+[2026-02-27T00:59:45.987Z] [INFO] InstructionLoader: memory.md trimmed from 5358B to ~5000B
+[2026-02-27T00:59:46.574Z] [INFO] POST /api/history/conversations
+[2026-02-27T00:59:50.805Z] [INFO] POST /api/history/projects
+[2026-02-27T00:59:50.810Z] [INFO] GET /api/history/status
+[2026-02-27T00:59:50.811Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:59:50.812Z] [INFO] GET /api/history/projects
+[2026-02-27T00:59:53.512Z] [INFO] GET /api/history/status
+[2026-02-27T00:59:53.514Z] [INFO] GET /api/history/conversations
+[2026-02-27T00:59:53.515Z] [INFO] GET /api/history/projects
+[2026-02-27T00:59:53.517Z] [INFO] GET /api/bots
+[2026-02-27T00:59:53.519Z] [INFO] GET /api/doctor/scan
+[2026-02-27T00:59:53.541Z] [INFO] InstructionLoader: memory.md trimmed from 6766B to ~5000B
+[2026-02-27T00:59:59.312Z] [INFO] GET /api/bots
+[2026-02-27T01:00:04.314Z] [INFO] GET /api/bots
+[2026-02-27T01:00:09.319Z] [INFO] GET /api/history/status
+[2026-02-27T01:00:09.321Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:00:09.322Z] [INFO] GET /api/history/projects
+[2026-02-27T01:00:09.322Z] [INFO] GET /api/bots
+[2026-02-27T01:00:14.325Z] [INFO] GET /api/bots
+[2026-02-27T01:00:19.324Z] [INFO] GET /api/bots
+[2026-02-27T01:00:39.261Z] [INFO] InstructionLoader: loaded 8 md files from C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\md
+[2026-02-27T01:00:39.263Z] [INFO] InstructionLoader: memory.md trimmed from 5071B to ~5000B
+[2026-02-27T01:00:39.324Z] [INFO] BatBot: whitelist loaded (17 scripts)
+[2026-02-27T01:00:39.325Z] [INFO] NetBot: 2 devices loaded
+[2026-02-27T01:00:39.326Z] [INFO] BotManager initialized with 8 bots
+[2026-02-27T01:00:39.361Z] [INFO] Upload endpoint enabled (multer found)
+[2026-02-27T01:00:39.364Z] [INFO] JarvisCore backend running on http://localhost:3001
+[2026-02-27T01:00:39.364Z] [INFO] Routes: /api/chat | /api/bots | /api/devices | /api/md | /api/settings | /api/doctor | /api/upload
+[2026-02-27T01:00:39.374Z] [INFO] ModelService: LM Studio connected. Loaded models: meta-llama-3.1-13b-instruct-abliterated, meta-llama-3.1-8b-instruct, liquid/lfm2.5-1.2b, text-embedding-nomic-embed-text-v1.5, openai/gpt-oss-20b
+[2026-02-27T01:00:39.590Z] [INFO] GET /api/history/status
+[2026-02-27T01:00:39.593Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:00:39.595Z] [INFO] GET /api/history/projects
+[2026-02-27T01:00:39.597Z] [INFO] GET /api/bots
+[2026-02-27T01:00:44.324Z] [INFO] GET /api/bots
+[2026-02-27T01:00:46.188Z] [INFO] GET /api/history/status
+[2026-02-27T01:00:46.190Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:00:46.191Z] [INFO] GET /api/history/projects
+[2026-02-27T01:00:46.192Z] [INFO] GET /api/bots
+[2026-02-27T01:00:46.194Z] [INFO] GET /api/doctor/scan
+[2026-02-27T01:00:46.214Z] [INFO] InstructionLoader: memory.md trimmed from 6766B to ~5000B
+[2026-02-27T01:00:46.719Z] [INFO] GET /api/history/status
+[2026-02-27T01:00:46.721Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:00:46.722Z] [INFO] GET /api/history/projects
+[2026-02-27T01:00:46.723Z] [INFO] GET /api/bots
+[2026-02-27T01:00:46.724Z] [INFO] GET /api/doctor/scan
+[2026-02-27T01:00:46.737Z] [INFO] InstructionLoader: memory.md trimmed from 6767B to ~5000B
+[2026-02-27T01:00:46.841Z] [INFO] GET /api/history/status
+[2026-02-27T01:00:46.843Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:00:46.844Z] [INFO] GET /api/history/projects
+[2026-02-27T01:00:46.845Z] [INFO] GET /api/bots
+[2026-02-27T01:00:46.846Z] [INFO] GET /api/doctor/scan
+[2026-02-27T01:00:46.859Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T01:00:46.975Z] [INFO] GET /api/history/status
+[2026-02-27T01:00:46.976Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:00:46.977Z] [INFO] GET /api/history/projects
+[2026-02-27T01:00:46.978Z] [INFO] GET /api/bots
+[2026-02-27T01:00:46.979Z] [INFO] GET /api/doctor/scan
+[2026-02-27T01:00:46.992Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T01:00:47.248Z] [INFO] GET /api/history/status
+[2026-02-27T01:00:47.250Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:00:47.251Z] [INFO] GET /api/history/projects
+[2026-02-27T01:00:47.252Z] [INFO] GET /api/bots
+[2026-02-27T01:00:47.253Z] [INFO] GET /api/doctor/scan
+[2026-02-27T01:00:47.268Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T01:00:47.403Z] [INFO] GET /api/history/status
+[2026-02-27T01:00:47.404Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:00:47.405Z] [INFO] GET /api/history/projects
+[2026-02-27T01:00:47.406Z] [INFO] GET /api/bots
+[2026-02-27T01:00:47.407Z] [INFO] GET /api/doctor/scan
+[2026-02-27T01:00:47.419Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T01:00:47.673Z] [INFO] GET /api/history/status
+[2026-02-27T01:00:47.675Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:00:47.676Z] [INFO] GET /api/history/projects
+[2026-02-27T01:00:47.677Z] [INFO] GET /api/bots
+[2026-02-27T01:00:47.678Z] [INFO] GET /api/doctor/scan
+[2026-02-27T01:00:47.692Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T01:00:49.679Z] [INFO] GET /api/settings
+[2026-02-27T01:01:02.674Z] [INFO] GET /api/history/status
+[2026-02-27T01:01:02.675Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:01:02.676Z] [INFO] GET /api/history/projects
+[2026-02-27T01:01:17.674Z] [INFO] GET /api/history/status
+[2026-02-27T01:01:17.675Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:01:17.676Z] [INFO] GET /api/history/projects
+[2026-02-27T01:01:17.677Z] [INFO] GET /api/doctor/scan
+[2026-02-27T01:01:17.691Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T01:01:29.379Z] [INFO] InstructionLoader: loaded 8 md files from C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\md
+[2026-02-27T01:01:29.381Z] [INFO] InstructionLoader: memory.md trimmed from 5070B to ~5000B
+[2026-02-27T01:01:29.440Z] [INFO] BatBot: whitelist loaded (17 scripts)
+[2026-02-27T01:01:29.441Z] [INFO] NetBot: 2 devices loaded
+[2026-02-27T01:01:29.442Z] [INFO] BotManager initialized with 8 bots
+[2026-02-27T01:01:29.476Z] [INFO] Upload endpoint enabled (multer found)
+[2026-02-27T01:01:29.480Z] [INFO] JarvisCore backend running on http://localhost:3001
+[2026-02-27T01:01:29.480Z] [INFO] Routes: /api/chat | /api/bots | /api/devices | /api/md | /api/settings | /api/doctor | /api/upload
+[2026-02-27T01:01:29.490Z] [INFO] ModelService: LM Studio connected. Loaded models: meta-llama-3.1-13b-instruct-abliterated, meta-llama-3.1-8b-instruct, liquid/lfm2.5-1.2b, text-embedding-nomic-embed-text-v1.5, openai/gpt-oss-20b
+[2026-02-27T01:01:32.675Z] [INFO] GET /api/history/status
+[2026-02-27T01:01:32.680Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:01:32.681Z] [INFO] GET /api/history/projects
+[2026-02-27T01:01:34.632Z] [INFO] GET /api/history/status
+[2026-02-27T01:01:34.634Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:01:34.635Z] [INFO] GET /api/history/projects
+[2026-02-27T01:01:34.636Z] [INFO] GET /api/bots
+[2026-02-27T01:01:34.639Z] [INFO] GET /api/doctor/scan
+[2026-02-27T01:01:34.660Z] [INFO] InstructionLoader: memory.md trimmed from 6765B to ~5000B
+[2026-02-27T01:01:40.206Z] [INFO] GET /api/bots
+[2026-02-27T01:01:42.125Z] [INFO] GET /api/bots
+[2026-02-27T01:01:43.749Z] [INFO] POST /api/history/conversations
+[2026-02-27T01:01:44.813Z] [INFO] GET /api/devices
+[2026-02-27T01:01:46.036Z] [INFO] POST /api/device/tv_living/command
+[2026-02-27T01:01:46.037Z] [INFO] Bot activated: NetBot
+[2026-02-27T01:01:46.038Z] [INFO] Intent: net_adb_youtube | Params: {"action":"adb_youtube","device":"tv_living","query":"","value":null}
+[2026-02-27T01:01:46.039Z] [INFO] Executing: NetBot
+[2026-02-27T01:01:46.039Z] [INFO] NetBot: action=adb_youtube, device=tv_living, query=""
+[2026-02-27T01:01:46.094Z] [INFO] NetBot ADB → TV Living: shell am start -a android.intent.action.VIEW -d "https://www.youtube.com"
+[2026-02-27T01:01:46.133Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-27T01:01:46.134Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-27T01:01:47.469Z] [INFO] POST /api/device/phone_tobias/command
+[2026-02-27T01:01:47.469Z] [INFO] Intent: net_adb_youtube | Params: {"action":"adb_youtube","device":"phone_tobias","query":"asd","value":null}
+[2026-02-27T01:01:47.470Z] [INFO] Executing: NetBot
+[2026-02-27T01:01:47.470Z] [INFO] NetBot: action=adb_youtube, device=phone_tobias, query="asd"
+[2026-02-27T01:01:47.507Z] [INFO] NetBot ADB → Celular Tobías: shell am start -a android.intent.action.VIEW -d "https://www.youtube.com/results
+[2026-02-27T01:01:47.545Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-27T01:01:47.546Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-27T01:01:47.915Z] [INFO] POST /api/device/phone_tobias/command
+[2026-02-27T01:01:47.916Z] [INFO] Intent: net_adb_youtube | Params: {"action":"adb_youtube","device":"phone_tobias","query":"asd","value":null}
+[2026-02-27T01:01:47.917Z] [INFO] Executing: NetBot
+[2026-02-27T01:01:47.917Z] [INFO] NetBot: action=adb_youtube, device=phone_tobias, query="asd"
+[2026-02-27T01:01:47.953Z] [INFO] NetBot ADB → Celular Tobías: shell am start -a android.intent.action.VIEW -d "https://www.youtube.com/results
+[2026-02-27T01:01:47.990Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-27T01:01:47.991Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-27T01:01:48.051Z] [INFO] POST /api/device/phone_tobias/command
+[2026-02-27T01:01:48.052Z] [INFO] Intent: net_adb_youtube | Params: {"action":"adb_youtube","device":"phone_tobias","query":"asd","value":null}
+[2026-02-27T01:01:48.052Z] [INFO] Executing: NetBot
+[2026-02-27T01:01:48.053Z] [INFO] NetBot: action=adb_youtube, device=phone_tobias, query="asd"
+[2026-02-27T01:01:48.089Z] [INFO] NetBot ADB → Celular Tobías: shell am start -a android.intent.action.VIEW -d "https://www.youtube.com/results
+[2026-02-27T01:01:48.125Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-27T01:01:48.126Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-27T01:01:48.180Z] [INFO] POST /api/device/phone_tobias/command
+[2026-02-27T01:01:48.181Z] [INFO] Intent: net_adb_youtube | Params: {"action":"adb_youtube","device":"phone_tobias","query":"asd","value":null}
+[2026-02-27T01:01:48.181Z] [INFO] Executing: NetBot
+[2026-02-27T01:01:48.182Z] [INFO] NetBot: action=adb_youtube, device=phone_tobias, query="asd"
+[2026-02-27T01:01:48.218Z] [INFO] NetBot ADB → Celular Tobías: shell am start -a android.intent.action.VIEW -d "https://www.youtube.com/results
+[2026-02-27T01:01:48.254Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-27T01:01:48.255Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-27T01:01:49.635Z] [INFO] GET /api/history/status
+[2026-02-27T01:01:49.636Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:01:49.637Z] [INFO] GET /api/history/projects
+[2026-02-27T01:01:50.220Z] [INFO] GET /api/bots
+[2026-02-27T01:01:52.137Z] [INFO] GET /api/bots
+[2026-02-27T01:02:00.944Z] [INFO] POST /api/upload
+[2026-02-27T01:02:00.953Z] [INFO] Bot activated: VisionBot
+[2026-02-27T01:02:00.954Z] [INFO] Intent: vision_analyze | Params: {"action":"analyze_pdf","filePath":"C:\\Users\\usuario\\Desktop\\Jarvis 26-02-2026\\Jarvis-Bots\\tmp\\uploads\\d73e529d5142d6f1abe150776c22a415","mimeType":"application/pdf","query":"Analizá este archivo"}
+[2026-02-27T01:02:00.955Z] [INFO] Executing: VisionBot
+[2026-02-27T01:02:00.955Z] [INFO] Done: VisionBot
+[2026-02-27T01:02:04.633Z] [INFO] GET /api/history/status
+[2026-02-27T01:02:04.636Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:02:04.637Z] [INFO] GET /api/history/projects
+[2026-02-27T01:02:04.637Z] [INFO] GET /api/doctor/scan
+[2026-02-27T01:02:04.652Z] [INFO] InstructionLoader: memory.md trimmed from 7500B to ~5000B
+[2026-02-27T01:02:06.694Z] [INFO] POST /api/chat
+[2026-02-27T01:02:06.696Z] [INFO] Chat request: "pero..."
+[2026-02-27T01:02:07.718Z] [INFO] ModelService raw: ¡Excelente! ¡Gracias por la ayuda!
+[2026-02-27T01:02:07.719Z] [WARN] ModelService: non-JSON response, treating as chat: ¡Excelente! ¡Gracias por la ayuda!
+[2026-02-27T01:02:07.719Z] [INFO] Intent resolved: chat_response
+[2026-02-27T01:02:07.720Z] [INFO] Intent: chat_response | Params: {"query":"¡Excelente! ¡Gracias por la ayuda!"}
+[2026-02-27T01:02:07.720Z] [INFO] Auto-activating WebBot
+[2026-02-27T01:02:07.720Z] [INFO] Bot activated: WebBot
+[2026-02-27T01:02:07.721Z] [INFO] Executing: WebBot
+[2026-02-27T01:02:07.721Z] [INFO] WebBot processing: "¡Excelente! ¡Gracias por la ayuda!"
+[2026-02-27T01:02:09.302Z] [INFO] WebBot response: 192 chars
+[2026-02-27T01:02:09.303Z] [INFO] Done: WebBot
+[2026-02-27T01:02:09.305Z] [WARN] SupabaseService: @supabase/supabase-js not installed. Run: npm install @supabase/supabase-js
+Cannot find module '@supabase/supabase-js'
+Require stack:
+- C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\backend\services\SupabaseService.js
+- C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\backend\controllers\chatController.js
+- C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\backend\routes\chatRoutes.js
+- C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\backend\server.js
+[2026-02-27T01:02:09.312Z] [INFO] InstructionLoader: memory.md trimmed from 5334B to ~5000B
+[2026-02-27T01:02:10.892Z] [INFO] GET /api/doctor/scan
+[2026-02-27T01:02:10.904Z] [INFO] InstructionLoader: memory.md trimmed from 6123B to ~5000B
+[2026-02-27T01:02:19.636Z] [INFO] GET /api/history/status
+[2026-02-27T01:02:19.638Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:02:19.638Z] [INFO] GET /api/history/projects
+[2026-02-27T01:02:34.638Z] [INFO] GET /api/history/status
+[2026-02-27T01:02:34.639Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:02:34.640Z] [INFO] GET /api/history/projects
+[2026-02-27T01:02:34.641Z] [INFO] GET /api/doctor/scan
+[2026-02-27T01:02:34.655Z] [INFO] InstructionLoader: memory.md trimmed from 6121B to ~5000B
+[2026-02-27T01:02:49.633Z] [INFO] GET /api/history/status
+[2026-02-27T01:02:49.634Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:02:49.635Z] [INFO] GET /api/history/projects
+[2026-02-27T01:03:05.322Z] [INFO] GET /api/history/status
+[2026-02-27T01:03:05.323Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:03:05.324Z] [INFO] GET /api/history/projects
+[2026-02-27T01:03:05.325Z] [INFO] GET /api/doctor/scan
+[2026-02-27T01:03:05.340Z] [INFO] InstructionLoader: memory.md trimmed from 6117B to ~5000B
+[2026-02-27T01:03:20.323Z] [INFO] GET /api/history/status
+[2026-02-27T01:03:20.324Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:03:20.325Z] [INFO] GET /api/history/projects
+[2026-02-27T01:03:35.321Z] [INFO] GET /api/history/status
+[2026-02-27T01:03:35.323Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:03:35.324Z] [INFO] GET /api/history/projects
+[2026-02-27T01:03:35.324Z] [INFO] GET /api/doctor/scan
+[2026-02-27T01:03:35.337Z] [INFO] InstructionLoader: memory.md trimmed from 6119B to ~5000B
+[2026-02-27T01:03:50.322Z] [INFO] GET /api/history/status
+[2026-02-27T01:03:50.323Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:03:50.324Z] [INFO] GET /api/history/projects
+[2026-02-27T01:04:05.324Z] [INFO] GET /api/doctor/scan
+[2026-02-27T01:04:05.335Z] [INFO] InstructionLoader: memory.md trimmed from 6121B to ~5000B
+[2026-02-27T01:04:35.310Z] [INFO] GET /api/doctor/scan
+[2026-02-27T01:04:35.323Z] [INFO] InstructionLoader: memory.md trimmed from 6120B to ~5000B
+[2026-02-27T01:04:36.321Z] [INFO] GET /api/history/status
+[2026-02-27T01:04:36.324Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:04:36.325Z] [INFO] GET /api/history/projects
+[2026-02-27T01:04:55.414Z] [INFO] GET /api/history/status
+[2026-02-27T01:04:55.416Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:04:55.418Z] [INFO] GET /api/history/projects
+[2026-02-27T01:04:57.528Z] [INFO] GET /api/history/status
+[2026-02-27T01:04:57.530Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:04:57.531Z] [INFO] GET /api/history/projects
+[2026-02-27T01:04:57.532Z] [INFO] GET /api/bots
+[2026-02-27T01:04:57.533Z] [INFO] GET /api/doctor/scan
+[2026-02-27T01:04:57.546Z] [INFO] InstructionLoader: memory.md trimmed from 6120B to ~5000B
+[2026-02-27T01:04:59.193Z] [INFO] GET /api/doctor/scan
+[2026-02-27T01:04:59.205Z] [INFO] InstructionLoader: memory.md trimmed from 6120B to ~5000B
+[2026-02-27T01:05:05.824Z] [INFO] GET /api/history/status
+[2026-02-27T01:05:05.826Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:05:05.827Z] [INFO] GET /api/history/projects
+[2026-02-27T01:05:05.828Z] [INFO] GET /api/bots
+[2026-02-27T01:05:05.829Z] [INFO] GET /api/doctor/scan
+[2026-02-27T01:05:05.843Z] [INFO] InstructionLoader: memory.md trimmed from 6120B to ~5000B
+[2026-02-27T01:05:11.115Z] [INFO] POST /api/chat
+[2026-02-27T01:05:11.115Z] [INFO] Chat request: "aver"
+[2026-02-27T01:05:12.669Z] [INFO] ModelService raw: ¡Excelente! ¡Vamos a analizar el MENSAJE DEL USUARIO y responder SOLO con JSON válido!
+
+¿Qué más necesitas saber?
+[2026-02-27T01:05:12.670Z] [WARN] ModelService: non-JSON response, treating as chat: ¡Excelente! ¡Vamos a analizar el MENSAJE DEL USUARIO y responder SOLO con JSON v
+[2026-02-27T01:05:12.671Z] [INFO] Intent resolved: chat_response
+[2026-02-27T01:05:12.671Z] [INFO] Intent: chat_response | Params: {"query":"¡Excelente! ¡Vamos a analizar el MENSAJE DEL USUARIO y responder SOLO con JSON válido!\n\n¿Qué más necesitas saber?"}
+[2026-02-27T01:05:12.671Z] [INFO] Executing: WebBot
+[2026-02-27T01:05:12.672Z] [INFO] WebBot processing: "¡Excelente! ¡Vamos a analizar el MENSAJE DEL USUARIO y responder SOLO con JSON v..."
+[2026-02-27T01:05:14.363Z] [INFO] WebBot response: 222 chars
+[2026-02-27T01:05:14.364Z] [INFO] Done: WebBot
+[2026-02-27T01:05:14.365Z] [WARN] SupabaseService: @supabase/supabase-js not installed. Run: npm install @supabase/supabase-js
+Cannot find module '@supabase/supabase-js'
+Require stack:
+- C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\backend\services\SupabaseService.js
+- C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\backend\controllers\chatController.js
+- C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\backend\routes\chatRoutes.js
+- C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\backend\server.js
+[2026-02-27T01:05:14.372Z] [INFO] InstructionLoader: memory.md trimmed from 5338B to ~5000B
+[2026-02-27T01:05:18.221Z] [INFO] GET /api/doctor/scan
+[2026-02-27T01:05:18.233Z] [INFO] InstructionLoader: memory.md trimmed from 6122B to ~5000B
+[2026-02-27T01:05:20.143Z] [INFO] GET /api/settings
+[2026-02-27T01:05:20.826Z] [INFO] GET /api/history/status
+[2026-02-27T01:05:20.827Z] [INFO] GET /api/history/conversations
+[2026-02-27T01:05:20.828Z] [INFO] GET /api/history/projects
+[2026-02-27T01:05:23.957Z] [INFO] GET /api/bots
+[2026-02-27T01:05:25.044Z] [INFO] GET /api/bots
+[2026-02-27T01:05:25.500Z] [INFO] GET /api/devices
+[2026-02-27T01:05:27.260Z] [INFO] POST /api/device/phone_tobias/command
+[2026-02-27T01:05:27.260Z] [INFO] Intent: net_adb_youtube | Params: {"action":"adb_youtube","device":"phone_tobias","query":"asdad","value":null}
+[2026-02-27T01:05:27.261Z] [INFO] Executing: NetBot
+[2026-02-27T01:05:27.261Z] [INFO] NetBot: action=adb_youtube, device=phone_tobias, query="asdad"
+[2026-02-27T01:05:27.295Z] [INFO] NetBot ADB → Celular Tobías: shell am start -a android.intent.action.VIEW -d "https://www.youtube.com/results
+[2026-02-27T01:05:27.331Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-27T01:05:27.331Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-27T01:05:27.530Z] [INFO] POST /api/device/phone_tobias/command
+[2026-02-27T01:05:27.531Z] [INFO] Intent: net_adb_youtube | Params: {"action":"adb_youtube","device":"phone_tobias","query":"asdad","value":null}
+[2026-02-27T01:05:27.532Z] [INFO] Executing: NetBot
+[2026-02-27T01:05:27.532Z] [INFO] NetBot: action=adb_youtube, device=phone_tobias, query="asdad"
+[2026-02-27T01:05:27.568Z] [INFO] NetBot ADB → Celular Tobías: shell am start -a android.intent.action.VIEW -d "https://www.youtube.com/results
+[2026-02-27T01:05:27.603Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-27T01:05:27.604Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-27T01:05:27.666Z] [INFO] POST /api/device/phone_tobias/command
+[2026-02-27T01:05:27.667Z] [INFO] Intent: net_adb_youtube | Params: {"action":"adb_youtube","device":"phone_tobias","query":"asdad","value":null}
+[2026-02-27T01:05:27.667Z] [INFO] Executing: NetBot
+[2026-02-27T01:05:27.667Z] [INFO] NetBot: action=adb_youtube, device=phone_tobias, query="asdad"
+[2026-02-27T01:05:27.701Z] [INFO] NetBot ADB → Celular Tobías: shell am start -a android.intent.action.VIEW -d "https://www.youtube.com/results
+[2026-02-27T01:05:27.736Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-27T01:05:27.737Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-27T01:05:27.802Z] [INFO] POST /api/device/phone_tobias/command
+[2026-02-27T01:05:27.803Z] [INFO] Intent: net_adb_youtube | Params: {"action":"adb_youtube","device":"phone_tobias","query":"asdad","value":null}
+[2026-02-27T01:05:27.803Z] [INFO] Executing: NetBot
+[2026-02-27T01:05:27.804Z] [INFO] NetBot: action=adb_youtube, device=phone_tobias, query="asdad"
+[2026-02-27T01:05:27.838Z] [INFO] NetBot ADB → Celular Tobías: shell am start -a android.intent.action.VIEW -d "https://www.youtube.com/results
+[2026-02-27T01:05:27.873Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-27T01:05:27.874Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-27T01:05:27.922Z] [INFO] POST /api/device/phone_tobias/command
+[2026-02-27T01:05:27.923Z] [INFO] Intent: net_adb_youtube | Params: {"action":"adb_youtube","device":"phone_tobias","query":"asdad","value":null}
+[2026-02-27T01:05:27.923Z] [INFO] Executing: NetBot
+[2026-02-27T01:05:27.924Z] [INFO] NetBot: action=adb_youtube, device=phone_tobias, query="asdad"
+[2026-02-27T01:05:27.958Z] [INFO] NetBot ADB → Celular Tobías: shell am start -a android.intent.action.VIEW -d "https://www.youtube.com/results
+[2026-02-27T01:05:27.993Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-27T01:05:27.994Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-27T01:05:28.194Z] [INFO] POST /api/device/phone_tobias/command
+[2026-02-27T01:05:28.195Z] [INFO] Intent: net_adb_youtube | Params: {"action":"adb_youtube","device":"phone_tobias","query":"asdad","value":null}
+[2026-02-27T01:05:28.196Z] [INFO] Executing: NetBot
+[2026-02-27T01:05:28.196Z] [INFO] NetBot: action=adb_youtube, device=phone_tobias, query="asdad"
+[2026-02-27T01:05:28.238Z] [INFO] NetBot ADB → Celular Tobías: shell am start -a android.intent.action.VIEW -d "https://www.youtube.com/results
+[2026-02-27T01:05:28.288Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-27T01:05:28.288Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-27T01:05:28.315Z] [INFO] POST /api/device/phone_tobias/command
+[2026-02-27T01:05:28.316Z] [INFO] Intent: net_adb_youtube | Params: {"action":"adb_youtube","device":"phone_tobias","query":"asdad","value":null}
+[2026-02-27T01:05:28.316Z] [INFO] Executing: NetBot
+[2026-02-27T01:05:28.317Z] [INFO] NetBot: action=adb_youtube, device=phone_tobias, query="asdad"
+[2026-02-27T01:05:28.361Z] [INFO] NetBot ADB → Celular Tobías: shell am start -a android.intent.action.VIEW -d "https://www.youtube.com/results
+[2026-02-27T01:05:28.400Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-27T01:05:28.401Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-27T01:05:28.714Z] [INFO] POST /api/device/phone_tobias/command
+[2026-02-27T01:05:28.715Z] [INFO] Intent: net_adb_youtube | Params: {"action":"adb_youtube","device":"phone_tobias","query":"asdad","value":null}
+[2026-02-27T01:05:28.715Z] [INFO] Executing: NetBot
+[2026-02-27T01:05:28.716Z] [INFO] NetBot: action=adb_youtube, device=phone_tobias, query="asdad"
+[2026-02-27T01:05:28.750Z] [INFO] NetBot ADB → Celular Tobías: shell am start -a android.intent.action.VIEW -d "https://www.youtube.com/results
+[2026-02-27T01:05:28.785Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-27T01:05:28.785Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-27T01:05:29.823Z] [INFO] POST /api/device/phone_tobias/command
+[2026-02-27T01:05:29.823Z] [INFO] Intent: net_adb_back | Params: {"action":"adb_back","device":"phone_tobias","query":"","value":null}
+[2026-02-27T01:05:29.824Z] [INFO] Executing: NetBot
+[2026-02-27T01:05:29.824Z] [INFO] NetBot: action=adb_back, device=phone_tobias, query=""
+[2026-02-27T01:05:29.867Z] [INFO] NetBot ADB → Celular Tobías: shell input keyevent 4
+[2026-02-27T01:05:29.904Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-27T01:05:29.904Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-27T01:05:29.962Z] [INFO] POST /api/device/phone_tobias/command
+[2026-02-27T01:05:29.963Z] [INFO] Intent: net_adb_back | Params: {"action":"adb_back","device":"phone_tobias","query":"","value":null}
+[2026-02-27T01:05:29.963Z] [INFO] Executing: NetBot
+[2026-02-27T01:05:29.964Z] [INFO] NetBot: action=adb_back, device=phone_tobias, query=""
+[2026-02-27T01:05:29.999Z] [INFO] NetBot ADB → Celular Tobías: shell input keyevent 4
+[2026-02-27T01:05:30.034Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-27T01:05:30.035Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-27T01:05:30.890Z] [INFO] POST /api/device/phone_tobias/command
+[2026-02-27T01:05:30.891Z] [INFO] Intent: net_adb_home | Params: {"action":"adb_home","device":"phone_tobias","query":"","value":null}
+[2026-02-27T01:05:30.892Z] [INFO] Executing: NetBot
+[2026-02-27T01:05:30.892Z] [INFO] NetBot: action=adb_home, device=phone_tobias, query=""
+[2026-02-27T01:05:30.930Z] [INFO] NetBot ADB → Celular Tobías: shell input keyevent 3
+[2026-02-27T01:05:30.965Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-27T01:05:30.966Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-27T01:05:31.474Z] [INFO] POST /api/device/phone_tobias/command
+[2026-02-27T01:05:31.475Z] [INFO] Intent: net_adb_screenshot | Params: {"action":"adb_screenshot","device":"phone_tobias","query":"","value":null}
+[2026-02-27T01:05:31.475Z] [INFO] Executing: NetBot
+[2026-02-27T01:05:31.475Z] [INFO] NetBot: action=adb_screenshot, device=phone_tobias, query=""
+[2026-02-27T01:05:31.512Z] [INFO] NetBot ADB → Celular Tobías: shell screencap -p /sdcard/screenshot_1772154331476.png
+[2026-02-27T01:05:31.547Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-27T01:05:31.548Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-27T01:05:31.634Z] [INFO] POST /api/device/phone_tobias/command
+[2026-02-27T01:05:31.634Z] [INFO] Intent: net_adb_screenshot | Params: {"action":"adb_screenshot","device":"phone_tobias","query":"","value":null}
+[2026-02-27T01:05:31.635Z] [INFO] Executing: NetBot
+[2026-02-27T01:05:31.636Z] [INFO] NetBot: action=adb_screenshot, device=phone_tobias, query=""
+[2026-02-27T01:05:31.670Z] [INFO] NetBot ADB → Celular Tobías: shell screencap -p /sdcard/screenshot_1772154331636.png
+[2026-02-27T01:05:31.705Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-27T01:05:31.706Z] [INFO] DoctorBot diagnosis complete for NetBot
+[2026-02-27T01:05:31.778Z] [INFO] POST /api/device/phone_tobias/command
+[2026-02-27T01:05:31.778Z] [INFO] Intent: net_adb_screenshot | Params: {"action":"adb_screenshot","device":"phone_tobias","query":"","value":null}
+[2026-02-27T01:05:31.779Z] [INFO] Executing: NetBot
+[2026-02-27T01:05:31.779Z] [INFO] NetBot: action=adb_screenshot, device=phone_tobias, query=""
+[2026-02-27T01:05:31.817Z] [INFO] NetBot ADB → Celular Tobías: shell screencap -p /sdcard/screenshot_1772154331780.png
+[2026-02-27T01:05:31.853Z] [INFO] DoctorBot diagnosing: NetBot → "adb" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+[2026-02-27T01:05:31.854Z] [INFO] DoctorBot diagnosis complete for NetBot

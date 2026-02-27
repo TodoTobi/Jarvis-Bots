@@ -1,22 +1,23 @@
 /**
- * InstructionLoader.js — Loads and manages .md instruction files
- *
- * Structure: backend/utils/ is 2 levels from project root
- * → path.resolve(__dirname, "../../md") = project_root/md/
+ * InstructionLoader.js — v3 FIXED
+ * FIX: memory auto-trim to prevent token overflow, small context chunks
  */
 
 const fs = require("fs");
 const path = require("path");
 const logger = require("../logs/logger");
 
-const CONTEXT_ORDER = ["identity", "soul", "user", "tools", "bots", "heartbeat", "bootstrap", "memory"];
+const CONTEXT_ORDER = ["identity", "soul", "user", "tools", "bots", "memory"];
+const MAX_MEMORY_SIZE = 5000;     // bytes — auto-trim if bigger
+const MAX_SECTION_CHARS = 300;    // max chars per section in context
+const MAX_MEMORY_CHARS = 400;     // max chars from memory in context
 
 class InstructionLoader {
     constructor() {
-        // backend/utils/__dirname → ../../ = project root → md/
         this.mdPath = path.resolve(__dirname, "../../md");
         this.cache = {};
         this._loadAll();
+        this._autoTrimMemory();
     }
 
     _loadAll() {
@@ -38,16 +39,31 @@ class InstructionLoader {
         logger.info(`InstructionLoader: loaded ${files.length} md files from ${this.mdPath}`);
     }
 
+    _autoTrimMemory() {
+        const memPath = path.join(this.mdPath, "memory.md");
+        try {
+            if (!fs.existsSync(memPath)) return;
+            const stat = fs.statSync(memPath);
+            if (stat.size > MAX_MEMORY_SIZE) {
+                const content = fs.readFileSync(memPath, "utf-8");
+                const trimmed = "# Memory\n\n" + content.slice(-MAX_MEMORY_SIZE);
+                fs.writeFileSync(memPath, trimmed, "utf-8");
+                this.cache["memory"] = trimmed;
+                logger.info(`InstructionLoader: memory.md trimmed from ${stat.size}B to ~${MAX_MEMORY_SIZE}B`);
+            }
+        } catch (err) {
+            logger.warn(`Memory auto-trim failed: ${err.message}`);
+        }
+    }
+
     _createDefaults() {
         fs.mkdirSync(this.mdPath, { recursive: true });
         const defaults = {
-            "identity.md": "# Identity\nYou are **Jarvis**, a modular AI agent.\n",
-            "soul.md": "# Soul\n## Personality\n- Tone: Professional, friendly\n- Language: Spanish (Argentina) by default\n",
-            "user.md": "# User Profile\n## Basic Info\n- Name: Tobías\n- Language: Spanish (Argentina)\n",
-            "tools.md": "# Tools\n## Available\n- Web Search, File System, LM Studio API, .bat scripts, ADB\n",
-            "bots.md": "# Bots\nSee full bots.md for intent mapping.\n",
-            "heartbeat.md": "# Heartbeat\n## Monitor\n- Check interval: 30s\n",
-            "bootstrap.md": "# Bootstrap\n## Startup\n1. Load env\n2. Load md files\n3. Init bots\n",
+            "identity.md": "# Identity\nEres Jarvis, un asistente IA modular local de Tobías.\n",
+            "soul.md": "# Soul\n## Personalidad\n- Idioma: Español (Argentina)\n- Tono: Profesional y amigable\n- Responde SIEMPRE en español\n",
+            "user.md": "# Usuario\n- Nombre: Tobías\n- Idioma: Español (Argentina)\n",
+            "tools.md": "# Tools\n## Disponibles\n- Web Search, File System, LM Studio API, .bat scripts, ADB\n",
+            "bots.md": "# Bots\nWebBot, DoctorBot, BatBot, MediaBot, NetBot, WhatsAppBot\n",
             "memory.md": "# Memory\n\n"
         };
         Object.entries(defaults).forEach(([file, content]) => {
@@ -62,41 +78,33 @@ class InstructionLoader {
     }
 
     buildFullContext(userMessage) {
-        const sections = [];
+        const parts = [];
 
+        // Add each section, trimmed to avoid token overflow
         CONTEXT_ORDER.forEach(key => {
-            const content = this.get(key);
-            if (content.trim()) {
-                sections.push(`# ${key.toUpperCase()}\n${content.trim()}`);
+            if (key === "memory") return; // memory handled separately below
+            const content = this.get(key).trim();
+            if (content) {
+                const trimmed = content.length > MAX_SECTION_CHARS
+                    ? content.substring(0, MAX_SECTION_CHARS) + "..."
+                    : content;
+                parts.push(`[${key.toUpperCase()}]\n${trimmed}`);
             }
         });
 
-        // Trim memory to avoid token overflow
-        const memIdx = sections.findIndex(s => s.startsWith("# MEMORY"));
-        if (memIdx !== -1) {
-            sections[memIdx] = `# MEMORY (recent)\n${this.get("memory").slice(-500)}`;
+        // Memory — only last N chars
+        const mem = this.get("memory");
+        if (mem.trim()) {
+            parts.push(`[MEMORIA RECIENTE]\n${mem.slice(-MAX_MEMORY_CHARS)}`);
         }
 
-        sections.push(`# USER_INPUT\n${userMessage}`);
-        sections.push(`
-# INSTRUCTION
-Analyze USER_INPUT. Respond ONLY with valid JSON:
-{
-  "intent": "intent_name",
-  "parameters": { "key": "value" },
-  "priority": "normal",
-  "notes": "optional"
-}
+        // User message
+        parts.push(`[MENSAJE DEL USUARIO]\n${userMessage}`);
 
-Examples:
-- "poneme musica de youtube" → {"intent":"media_play_youtube","parameters":{"query":"musica"},"priority":"normal"}
-- "subi el volumen" → {"intent":"bat_volume_up","parameters":{"script":"volume_up"},"priority":"normal"}
-- "abri youtube en la tele" → {"intent":"net_tv_youtube","parameters":{"action":"adb_youtube","device":"tv_living","query":""},"priority":"normal"}
-- "bloquea la pantalla" → {"intent":"bat_system_lock","parameters":{"script":"system_lock"},"priority":"normal"}
-- "hola como estas" → {"intent":"chat_response","parameters":{"query":"hola como estas"},"priority":"normal"}
-`);
+        // Compact instruction
+        parts.push(`[INSTRUCCIÓN]\nAnaliza el MENSAJE DEL USUARIO y responde SOLO con JSON válido:\n{"intent":"nombre","parameters":{},"priority":"normal"}\n\nEjemplos:\n- "poneme youtube" → {"intent":"bat_exec","parameters":{"script":"media_youtube","query":""},"priority":"normal"}\n- "subi el volumen" → {"intent":"bat_exec","parameters":{"script":"volume_up"},"priority":"normal"}\n- "hola" → {"intent":"chat_response","parameters":{"query":"hola"},"priority":"normal"}`);
 
-        return sections.join("\n\n---\n\n");
+        return parts.join("\n\n");
     }
 
     appendToMemory(entry) {
@@ -105,6 +113,8 @@ Examples:
         try {
             fs.appendFileSync(memoryPath, block, "utf-8");
             this.cache["memory"] = (this.cache["memory"] || "") + block;
+            // Auto-trim after appending
+            this._autoTrimMemory();
         } catch (err) {
             logger.warn(`Memory write failed: ${err.message}`);
         }
@@ -113,6 +123,7 @@ Examples:
     reload() {
         this.cache = {};
         this._loadAll();
+        this._autoTrimMemory();
     }
 }
 
