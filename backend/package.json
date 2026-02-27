@@ -17,7 +17,7 @@
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "multer": "^2.0.2",
-    "supabase": "^2.76.15"
+    "@supabase/supabase-js": "^2.45.0"
   },
   "optionalDependencies": {
     "qrcode-terminal": "^0.12.0",
@@ -30,6 +30,7 @@
     "required": "npm install",
     "whatsapp_optional": "npm install whatsapp-web.js qrcode-terminal",
     "whisper_python": "pip install openai-whisper",
+    "adb_windows": "Instalá Android Platform Tools desde https://developer.android.com/studio/releases/platform-tools y agregá la carpeta al PATH del sistema",
     "nircmd_windows": "Download nircmd.exe from https://www.nirsoft.net/utils/nircmd.html and place in C:/Windows/System32 or PATH"
   }
 }
