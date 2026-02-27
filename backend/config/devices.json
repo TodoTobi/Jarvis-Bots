@@ -8,26 +8,32 @@
             "adb_port": 5555,
             "mac": "XX:XX:XX:XX:XX:XX",
             "authorized": true,
-            "notes": "Reemplazá la IP con la IP real de tu TV en la red local"
+            "notes": "Reemplazá la IP con la IP real de tu TV. Para Android TV normal el puerto es 5555."
         },
         {
             "id": "phone_tobias",
             "name": "Celular Tobías",
             "type": "android_phone",
-            "ip": "192.168.0.5:37797",
-            "adb_port": 5555,
+            "ip": "192.168.0.5",
+            "adb_port": 37797,
             "mac": "XX:XX:XX:XX:XX:XX",
             "authorized": true,
-            "notes": "Reemplazá con la IP real de tu celular"
+            "notes": "Puerto de Depuración Inalámbrica (Android 11+). Verificá el puerto en: Ajustes → Opciones de desarrollador → Depuración inalámbrica. El puerto cambia cada vez que activás la depuración."
         }
     ],
     "_setup_guide": {
-        "android_adb_wifi": [
-            "1. Activar Opciones de desarrollador en el dispositivo",
-            "2. Activar Depuración inalámbrica (Android 11+) o Depuración USB + WiFi (anterior)",
-            "3. En la PC: adb connect [IP]:[PORT]",
-            "4. Aceptar el diálogo de autorización en el dispositivo",
-            "5. Verificar con: adb devices"
+        "android_11_wireless": [
+            "1. Ajustes → Opciones de desarrollador → Depuración inalámbrica (activar)",
+            "2. Tocar 'Depuración inalámbrica' para ver el puerto actual (ej: 37797)",
+            "3. Actualizar adb_port en este archivo con ese número",
+            "4. En el chat de Jarvis: 'conectar al celular' para vincular",
+            "⚠ El puerto cambia cada vez que reactivás la depuración inalámbrica"
+        ],
+        "android_legacy_usb_first": [
+            "1. Conectar por USB con Depuración USB activada",
+            "2. Ejecutar: adb tcpip 5555",
+            "3. Desconectar USB",
+            "4. Usar adb_port: 5555 en este archivo"
         ]
     }
 }

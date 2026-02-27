@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Sidebar from "./Sidebar";
 import Chat from "./Chat";
 import BotsPage from "./BotsPage";
@@ -13,7 +13,11 @@ function App() {
     const [view, setView] = useState("dashboard");
     const [doctorErrors, setDoctorErrors] = useState(0);
 
-    // Poll doctor errors count silently every 30s to show badge
+    // ── Conversation state (shared between Sidebar and Chat) ──
+    const [activeConv, setActiveConv] = useState(null);  // { id, title }
+    const [chatKey, setChatKey] = useState(0);     // Force Chat remount on new conv
+
+    // Poll doctor errors silently
     useEffect(() => {
         const check = async () => {
             try {
@@ -27,22 +31,56 @@ function App() {
         return () => clearInterval(iv);
     }, []);
 
+    // Called when user clicks a conversation in the sidebar
+    const handleSelectConv = useCallback((conv) => {
+        setActiveConv(conv);
+        setChatKey(k => k + 1);  // remount Chat so it loads the conversation's messages
+        setView("chat");
+    }, []);
+
+    // Called when user clicks "New Chat" button
+    const handleNewChat = useCallback(() => {
+        setActiveConv(null);
+        setChatKey(k => k + 1);
+        setView("chat");
+    }, []);
+
+    // Called from Chat when a new conversation_id is created by the backend
+    const handleConversationCreated = useCallback((conv) => {
+        setActiveConv(conv);
+    }, []);
+
     const renderView = () => {
         switch (view) {
             case "bots": return <BotsPage />;
             case "devices": return <DevicesPage />;
-            case "chat": return <Chat />;
             case "instructions": return <InstructionsPage />;
             case "settings": return <SettingsPage />;
             case "doctor": return <DoctorPage />;
+            case "chat":
+                return (
+                    <Chat
+                        key={chatKey}
+                        conversationId={activeConv?.id || null}
+                        onConversationCreated={handleConversationCreated}
+                    />
+                );
             case "dashboard":
-            default: return <Dashboard setView={setView} />;
+            default:
+                return <Dashboard setView={setView} />;
         }
     };
 
     return (
         <div className="app-layout">
-            <Sidebar view={view} setView={setView} doctorErrors={doctorErrors} />
+            <Sidebar
+                view={view}
+                setView={setView}
+                doctorErrors={doctorErrors}
+                activeConvId={activeConv?.id}
+                onSelectConv={handleSelectConv}
+                onNewChat={handleNewChat}
+            />
             {renderView()}
         </div>
     );

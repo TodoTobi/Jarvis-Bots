@@ -4,11 +4,20 @@ const API_URL = "http://localhost:3001";
    CHAT
 ========================= */
 
-export async function sendMessageToBot(message) {
+/**
+ * Send a message to the bot.
+ * @param {string} message        - The user's message
+ * @param {string|null} conversationId - Existing conversation ID (null = create new)
+ * Returns: { reply, intent, bot, conversation_id, success }
+ */
+export async function sendMessageToBot(message, conversationId = null) {
+    const body = { message };
+    if (conversationId) body.conversation_id = conversationId;
+
     const response = await fetch(`${API_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message })
+        body: JSON.stringify(body),
     });
 
     if (!response.ok) {
@@ -51,7 +60,7 @@ export async function runScript(script, args = []) {
     const response = await fetch(`${API_URL}/api/script/run`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ script, args })
+        body: JSON.stringify({ script, args }),
     });
     if (!response.ok) throw new Error("Script execution failed");
     return response.json();
@@ -77,7 +86,7 @@ export async function sendDeviceCommand(deviceId, action, query = "", value = nu
     const response = await fetch(`${API_URL}/api/device/${deviceId}/command`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, query, value })
+        body: JSON.stringify({ action, query, value }),
     });
     if (!response.ok) throw new Error("Device command failed");
     return response.json();

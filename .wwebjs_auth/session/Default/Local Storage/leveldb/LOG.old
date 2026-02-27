@@ -1,2 +1,3 @@
-2026/02/26-19:46:29.263 6488 Creating DB C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\.wwebjs_auth\session\Default\Local Storage\leveldb since it was missing.
-2026/02/26-19:46:29.292 6488 Reusing MANIFEST C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\.wwebjs_auth\session\Default\Local Storage\leveldb/MANIFEST-000001
+2026/02/27-15:14:27.479 5e64 Reusing MANIFEST C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\.wwebjs_auth\session\Default\Local Storage\leveldb/MANIFEST-000001
+2026/02/27-15:14:27.485 5e64 Recovering log #3
+2026/02/27-15:14:27.489 5e64 Reusing old log C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\.wwebjs_auth\session\Default\Local Storage\leveldb/000003.log 

@@ -1,245 +1,175 @@
 /**
- * ModelService.js — v4
+ * ModelService.js — v5.0
  *
- * FIXES:
- *  - Separated system instruction from user context (models were confusing themselves)
- *  - System prompt is now purely the JSON schema + examples
- *  - User message is now just: [CONTEXT]\n...\n[USER]\nmessage
- *  - This prevents models from "evaluating" the instructions instead of following them
- *  - Better JSON extraction with multiple fallback patterns
- *  - Connection check with retry
+ * FIX CRÍTICO: El LLM no devuelve JSON consistentemente.
+ * Solución: _quickClassify() intercepta comandos ANTES del LLM.
+ * El LLM solo se usa para conversación libre o si no hay match.
  */
 
 const axios = require("axios");
 const logger = require("../logs/logger");
 
-const MAX_USER_MSG_CHARS = 1500; // keep user message short for local models
+// ════════════════════════════════════════════════════════
+//  CLASIFICADOR POR KEYWORDS (sin LLM, 100% confiable)
+// ════════════════════════════════════════════════════════
+const QUICK_RULES = [
+    // WhatsApp QR
+    { patterns: [/qr.*whatsapp|whatsapp.*qr|vincular.*whatsapp|whatsapp.*vincular|mostr[aá].*qr|mand[aá].*qr/], result: () => ({ intent: "whatsapp_qr", parameters: {}, priority: "normal" }) },
+
+    // YouTube
+    { patterns: [/abr[ií].*youtube|abre.*youtube|\byoutube\b|pone.*youtube|ejecut[aá].*youtube/], result: (m) => { const q = m.match(/(?:busca[r]?|busca)\s+(.+)/i)?.[1] || ""; return { intent: "bat_exec", parameters: { script: "media_youtube", args: q ? [q] : [] }, priority: "normal" }; } },
+
+    // Spotify
+    { patterns: [/abr[ií].*spotify|\bspotify\b|pon[ée].*spotify|m[uú]sica.*spotify/], result: () => ({ intent: "bat_exec", parameters: { script: "media_spotify", args: [] }, priority: "normal" }) },
+
+    // VLC
+    { patterns: [/abr[ií].*vlc|\bvlc\b/], result: () => ({ intent: "bat_exec", parameters: { script: "media_vlc", args: [] }, priority: "normal" }) },
+
+    // Pausa
+    { patterns: [/paus[aá]|detener m[uú]sica|para la m[uú]sica|stop m[uú]sica/], result: () => ({ intent: "bat_exec", parameters: { script: "media_pause", args: [] }, priority: "normal" }) },
+
+    // Siguiente / anterior
+    { patterns: [/siguiente canci[oó]n|next track|siguiente tema|skip/], result: () => ({ intent: "bat_exec", parameters: { script: "media_next", args: [] }, priority: "normal" }) },
+    { patterns: [/anterior canci[oó]n|prev track|volver canci[oó]n/], result: () => ({ intent: "bat_exec", parameters: { script: "media_prev", args: [] }, priority: "normal" }) },
+
+    // Volumen
+    { patterns: [/sub[ií].*volumen|m[aá]s.*volumen|volumen.*arriba|aumenta.*volumen/], result: () => ({ intent: "bat_exec", parameters: { script: "volume_up", args: [] }, priority: "normal" }) },
+    { patterns: [/baj[aá].*volumen|menos.*volumen|volumen.*abajo/], result: () => ({ intent: "bat_exec", parameters: { script: "volume_down", args: [] }, priority: "normal" }) },
+    { patterns: [/silencia[r]?|mut[eé][ao]?|sin.*sonido/,], result: () => ({ intent: "bat_exec", parameters: { script: "volume_mute", args: [] }, priority: "normal" }) },
+
+    // Apps
+    { patterns: [/abr[ií].*discord|\bdiscord\b/], result: () => ({ intent: "bat_exec", parameters: { script: "app_discord", args: [] }, priority: "normal" }) },
+    { patterns: [/abr[ií].*vscode|abr[ií].*code|\bvscode\b|visual studio/], result: () => ({ intent: "bat_exec", parameters: { script: "app_vscode", args: [] }, priority: "normal" }) },
+    { patterns: [/abr[ií].*navegador|\bchrome\b|\bfirefox\b|\bbrowser\b|abr[ií].*internet/], result: () => ({ intent: "bat_exec", parameters: { script: "app_browser", args: [] }, priority: "normal" }) },
+    { patterns: [/abr[ií].*fortnite|\bfortnite\b/], result: () => ({ intent: "bat_exec", parameters: { script: "app_fortnite", args: [] }, priority: "normal" }) },
+
+    // Sistema
+    { patterns: [/bloque[aá].*(?:pc|pantalla|compu)|lock pc/], result: () => ({ intent: "bat_exec", parameters: { script: "system_lock", args: [] }, priority: "normal" }) },
+    { patterns: [/(?:sac[aá]|tom[aá]|hac[eé]).*captura|captura.*pantalla|\bscreenshot\b|print screen/], result: () => ({ intent: "bat_exec", parameters: { script: "system_screenshot", args: [] }, priority: "normal" }) },
+    { patterns: [/modo nocturno|modo.*noche|night mode|dark mode|luz.*baja/], result: () => ({ intent: "bat_exec", parameters: { script: "system_night_mode", args: [] }, priority: "normal" }) },
+    { patterns: [/dormir.*(?:pc|compu)|suspensi[oó]n|sleep.*pc/], result: () => ({ intent: "bat_exec", parameters: { script: "system_sleep", args: [] }, priority: "normal" }) },
+
+    // Control PC
+    { patterns: [/tom[aá].*control.*pc|control.*pc|automatiz[aá]|mover.*mouse|abr[ií].*carpeta/], result: (m) => ({ intent: "computer_control", parameters: { task: m }, priority: "normal" }) },
+
+    // ADB Android
+    { patterns: [/youtube.*celu|celu.*youtube/], result: () => ({ intent: "net_adb_youtube", parameters: { device: "phone_tobias", query: "" }, priority: "normal" }) },
+    { patterns: [/captura.*celu|screenshot.*celu|celu.*captura/], result: () => ({ intent: "net_adb_screenshot", parameters: { device: "phone_tobias" }, priority: "normal" }) },
+
+    // .bat genérico
+    { patterns: [/\.bat\b/], result: (m) => { const s = m.match(/([a-z_]+)\.bat/i); return { intent: "bat_exec", parameters: { script: (s?.[1] || "media_youtube").toLowerCase(), args: [] }, priority: "normal" }; } },
+];
+
+function quickClassify(text) {
+    const t = text.toLowerCase().trim();
+    for (const rule of QUICK_RULES) {
+        for (const pattern of rule.patterns) {
+            if (pattern.test(t)) {
+                const r = rule.result(t);
+                logger.info(`QuickClassify: "${t.substring(0, 50)}" → ${r.intent}:${JSON.stringify(r.parameters)}`);
+                return r;
+            }
+        }
+    }
+    return null;
+}
+
+// ════════════════════════════════════════════════════════
 
 class ModelService {
     constructor() {
         this.baseURL = (process.env.LM_API_URL || "").replace(/\/$/, "");
         this.apiKey = process.env.LM_API_TOKEN || "";
         this.model = process.env.LM_MODEL || "";
-
         if (!this.baseURL) throw new Error("LM_API_URL not defined in .env");
-
         this._axiosConfig = {
-            headers: {
-                "Content-Type": "application/json",
-                ...(this.apiKey ? { Authorization: `Bearer ${this.apiKey}` } : {})
-            },
+            headers: { "Content-Type": "application/json", ...(this.apiKey ? { Authorization: `Bearer ${this.apiKey}` } : {}) },
             timeout: 90000
         };
-
         this._checkConnection().catch(() => { });
     }
 
     async _checkConnection() {
         try {
-            const res = await axios.get(`${this.baseURL}/models`, {
-                ...this._axiosConfig, timeout: 5000
-            });
+            const res = await axios.get(`${this.baseURL}/models`, { ...this._axiosConfig, timeout: 5000 });
             const models = res.data?.data || [];
-            if (models.length > 0) {
-                logger.info(`ModelService: LM Studio connected. Loaded models: ${models.map(m => m.id).join(", ")}`);
-            } else {
-                logger.warn("ModelService: LM Studio running but no models loaded.");
-            }
+            logger.info(`ModelService: connected. Models: ${models.map(m => m.id).join(", ") || "(none)"}`);
         } catch (err) {
             logger.error(`ModelService: Cannot reach LM Studio — ${err.message}`);
         }
     }
 
     _buildBody(messages, opts = {}) {
-        const body = {
-            messages,
-            temperature: opts.temperature ?? 0.1,
-            max_tokens: opts.max_tokens ?? 300,
-        };
+        const body = { messages, temperature: opts.temperature ?? 0.1, max_tokens: opts.max_tokens ?? 200 };
         if (this.model) body.model = this.model;
         return body;
     }
 
-    /* =========================
-       INTENT GENERATION
-    ========================= */
-
     async generateIntent(fullContext) {
-        // ── System prompt: ONLY the JSON contract, nothing else ──
-        // Keeping it short is critical for local models (< 7B tend to drift)
-        const systemPrompt = `Eres JarvisCore. Tu ÚNICA tarea es leer el mensaje del usuario y responder con un JSON.
+        // Extraer mensaje del usuario
+        const userMsgMatch = fullContext.match(/\[MENSAJE DEL USUARIO\]\s*([\s\S]+?)(?:\[|$)/);
+        const userMsg = (userMsgMatch ? userMsgMatch[1].trim() : fullContext.trim()).substring(0, 1000);
 
-RESPONDE SOLO CON JSON. Sin explicaciones. Sin texto antes o después del JSON.
+        // 1. Clasificador rápido (keywords) — no usa el LLM
+        const quick = quickClassify(userMsg);
+        if (quick) return this._validateIntent(quick);
 
-Formato exacto:
-{"intent":"nombre_intent","parameters":{},"priority":"normal"}
-
-Intents disponibles:
-chat_response     → conversación, preguntas, saludos
-  params: {"query":"[mensaje original]"}
-
-bat_exec          → ejecutar script en la PC
-  params: {"script":"[clave]","args":[]}
-  Claves: media_youtube, media_spotify, media_pause, media_next, media_prev,
-          volume_up, volume_down, volume_mute,
-          system_lock, system_screenshot, system_sleep, system_night_mode,
-          app_discord, app_vscode, app_browser, app_fortnite
-
-computer_control  → controlar PC con mouse/teclado
-  params: {"task":"[descripción detallada]"}
-
-net_adb_youtube   → YouTube en dispositivo Android/TV
-  params: {"device":"[id]","query":"[búsqueda]"}
-
-net_wol           → encender PC por red (Wake-on-LAN)
-  params: {"device":"[id]"}
-
-Ejemplos:
-- "hola" → {"intent":"chat_response","parameters":{"query":"hola"},"priority":"normal"}
-- "poneme youtube" → {"intent":"bat_exec","parameters":{"script":"media_youtube","query":""},"priority":"normal"}
-- "buscá Metallica en youtube" → {"intent":"bat_exec","parameters":{"script":"media_youtube","query":"Metallica"},"priority":"normal"}
-- "subi el volumen" → {"intent":"bat_exec","parameters":{"script":"volume_up"},"priority":"normal"}
-- "abrí discord" → {"intent":"bat_exec","parameters":{"script":"app_discord"},"priority":"normal"}
-- "bloqueá la pantalla" → {"intent":"bat_exec","parameters":{"script":"system_lock"},"priority":"normal"}`;
-
-        // ── User message: compact context + actual message ──
-        // Trim to avoid token overflow on local models
-        const compactContext = this._buildCompactContext(fullContext);
+        // 2. Fallback LLM para conversación libre
+        logger.info(`ModelService: no quick match, querying LLM: "${userMsg.substring(0, 60)}"`);
+        const systemPrompt = `You are a JSON-only intent classifier. Output ONLY valid JSON.
+Format: {"intent":"chat_response","parameters":{"query":"text"},"priority":"normal"}
+No markdown, no explanation. Only JSON.`;
 
         try {
             const response = await axios.post(
                 `${this.baseURL}/chat/completions`,
                 this._buildBody(
-                    [
-                        { role: "system", content: systemPrompt },
-                        { role: "user", content: compactContext }
-                    ],
-                    { temperature: 0.05, max_tokens: 150 }
+                    [{ role: "system", content: systemPrompt }, { role: "user", content: userMsg.substring(0, 200) }],
+                    { temperature: 0.0, max_tokens: 80 }
                 ),
                 this._axiosConfig
             );
-
-            const raw = response.data?.choices?.[0]?.message?.content;
-            if (!raw) throw new Error("Empty response from model");
-
-            logger.info(`ModelService raw: ${raw.substring(0, 120)}`);
-            const parsed = this._safeParse(raw);
-            return this._validateIntent(parsed);
-
-        } catch (error) {
-            if (error.response) {
-                logger.error(`ModelService generateIntent HTTP ${error.response.status}: ${JSON.stringify(error.response.data || {}).substring(0, 200)}`);
-            } else {
-                logger.error(`ModelService generateIntent: ${error.message}`);
-            }
-            return this._errorIntent("Model communication failure", error.message);
+            const raw = response.data?.choices?.[0]?.message?.content || "";
+            logger.info(`ModelService raw: ${raw.substring(0, 100)}`);
+            return this._validateIntent(this._safeParse(raw, userMsg));
+        } catch (err) {
+            logger.error(`ModelService LLM error: ${err.message}`);
+            return { intent: "chat_response", parameters: { query: userMsg }, priority: "normal" };
         }
     }
 
-    /* =========================
-       TEXT GENERATION
-    ========================= */
-
     async generateText(prompt) {
-        const systemPrompt = "Eres Jarvis, asistente IA local de Tobías. Respondé SIEMPRE en español rioplatense. Sé directo, claro y útil.";
-
+        const systemPrompt = "Sos Jarvis, asistente IA local de Tobías. Respondé SIEMPRE en español rioplatense. Sé directo y conciso.";
         try {
             const response = await axios.post(
                 `${this.baseURL}/chat/completions`,
                 this._buildBody(
-                    [
-                        { role: "system", content: systemPrompt },
-                        { role: "user", content: prompt.replace(/```/g, "").trim().substring(0, 3000) }
-                    ],
+                    [{ role: "system", content: systemPrompt }, { role: "user", content: prompt.replace(/```/g, "").trim().substring(0, 3000) }],
                     { temperature: 0.5, max_tokens: 1024 }
                 ),
                 this._axiosConfig
             );
-
             const text = response.data?.choices?.[0]?.message?.content || "";
             if (!text) throw new Error("Empty text response from model");
             return text.trim();
-
-        } catch (error) {
-            if (error.response) {
-                logger.error(`ModelService generateText HTTP ${error.response.status}: ${JSON.stringify(error.response.data || {}).substring(0, 200)}`);
-            } else {
-                logger.error(`ModelService generateText: ${error.message}`);
-            }
-            throw new Error(`Error al generar respuesta: ${error.message}`);
+        } catch (err) {
+            logger.error(`ModelService generateText: ${err.message}`);
+            throw new Error(`Error al generar respuesta: ${err.message}`);
         }
     }
 
-    /* =========================
-       HELPERS
-    ========================= */
-
-    /**
-     * Extract just what the model needs: user identity + the actual user message.
-     * Avoids passing the full instruction block (which confuses some models).
-     */
-    _buildCompactContext(fullContext) {
-        // Extract just the [MENSAJE DEL USUARIO] section
-        const userMsgMatch = fullContext.match(/\[MENSAJE DEL USUARIO\]\s*([\s\S]+?)(?:\[|$)/);
-        const userMsg = userMsgMatch ? userMsgMatch[1].trim() : fullContext.trim();
-
-        // Extract soul/identity for persona awareness (very short)
-        const identityMatch = fullContext.match(/\[IDENTITY\]\s*([\s\S]{0,150})/);
-        const identity = identityMatch ? identityMatch[1].trim() : "";
-
-        const parts = [];
-        if (identity) parts.push(`[CONTEXTO]\n${identity.substring(0, 100)}`);
-        parts.push(`[MENSAJE DEL USUARIO]\n${userMsg.substring(0, MAX_USER_MSG_CHARS)}`);
-
-        return parts.join("\n\n");
-    }
-
-    _safeParse(raw) {
-        const cleaned = raw.trim()
-            .replace(/^```json\s*/i, "")
-            .replace(/^```\s*/i, "")
-            .replace(/\s*```$/i, "")
-            .trim();
-
-        // 1. Try direct parse
+    _safeParse(raw, fallbackQuery) {
+        const cleaned = raw.trim().replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
         try { return JSON.parse(cleaned); } catch { }
-
-        // 2. Extract first {...} block
         const match = cleaned.match(/\{[\s\S]*?\}/);
-        if (match) {
-            try { return JSON.parse(match[0]); } catch { }
-        }
-
-        // 3. Extract last {...} block (some models add explanation after)
-        const allMatches = [...cleaned.matchAll(/\{[\s\S]*?\}/g)];
-        if (allMatches.length > 1) {
-            for (const m of allMatches.reverse()) {
-                try {
-                    const parsed = JSON.parse(m[0]);
-                    if (parsed.intent) return parsed;
-                } catch { }
-            }
-        }
-
-        // 4. Fallback — treat as chat
-        logger.warn(`ModelService: non-JSON response, treating as chat: ${raw.substring(0, 80)}`);
-        return { intent: "chat_response", parameters: { query: raw.trim() }, priority: "normal" };
+        if (match) { try { return JSON.parse(match[0]); } catch { } }
+        return { intent: "chat_response", parameters: { query: fallbackQuery || raw.trim() }, priority: "normal" };
     }
 
     _validateIntent(obj) {
-        if (!obj || typeof obj !== "object") return this._errorIntent("Intent is not an object");
-        const intent = typeof obj.intent === "string" ? obj.intent.trim().toLowerCase() : null;
-        if (!intent) return this._errorIntent("Missing intent field");
-        return {
-            intent,
-            parameters: (obj.parameters && typeof obj.parameters === "object") ? obj.parameters : {},
-            priority: ["low", "normal", "high"].includes(obj.priority) ? obj.priority : "normal",
-            notes: obj.notes || null
-        };
-    }
-
-    _errorIntent(reason, notes = null) {
-        return { intent: "error", parameters: { reason }, priority: "normal", notes };
+        if (!obj || typeof obj !== "object") return { intent: "chat_response", parameters: {}, priority: "normal" };
+        const intent = typeof obj.intent === "string" ? obj.intent.trim().toLowerCase() : "chat_response";
+        return { intent, parameters: (obj.parameters && typeof obj.parameters === "object") ? obj.parameters : {}, priority: ["low", "normal", "high"].includes(obj.priority) ? obj.priority : "normal" };
     }
 }
 

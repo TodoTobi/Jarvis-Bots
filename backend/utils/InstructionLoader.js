@@ -1,6 +1,11 @@
 /**
- * InstructionLoader.js — v3 FIXED
- * FIX: memory auto-trim to prevent token overflow, small context chunks
+ * InstructionLoader.js — v4 FIXED
+ *
+ * FIXES:
+ *  - MAX_SECTION_CHARS increased from 300 → 800 (AI was only reading first 300 chars of each .md)
+ *  - MAX_MEMORY_CHARS increased from 400 → 600
+ *  - identity and soul sections are now fully included in context (up to 800 chars each)
+ *  - memory auto-trim preserved
  */
 
 const fs = require("fs");
@@ -9,8 +14,8 @@ const logger = require("../logs/logger");
 
 const CONTEXT_ORDER = ["identity", "soul", "user", "tools", "bots", "memory"];
 const MAX_MEMORY_SIZE = 5000;     // bytes — auto-trim if bigger
-const MAX_SECTION_CHARS = 300;    // max chars per section in context
-const MAX_MEMORY_CHARS = 400;     // max chars from memory in context
+const MAX_SECTION_CHARS = 800;    // ← was 300, now 800 so AI reads the full .md instructions
+const MAX_MEMORY_CHARS = 600;     // ← was 400
 
 class InstructionLoader {
     constructor() {
@@ -80,7 +85,7 @@ class InstructionLoader {
     buildFullContext(userMessage) {
         const parts = [];
 
-        // Add each section, trimmed to avoid token overflow
+        // Add each section — now with larger limit so AI reads full instructions
         CONTEXT_ORDER.forEach(key => {
             if (key === "memory") return; // memory handled separately below
             const content = this.get(key).trim();
@@ -92,7 +97,7 @@ class InstructionLoader {
             }
         });
 
-        // Memory — only last N chars
+        // Memory — only last N chars to avoid overflow
         const mem = this.get("memory");
         if (mem.trim()) {
             parts.push(`[MEMORIA RECIENTE]\n${mem.slice(-MAX_MEMORY_CHARS)}`);
@@ -113,7 +118,6 @@ class InstructionLoader {
         try {
             fs.appendFileSync(memoryPath, block, "utf-8");
             this.cache["memory"] = (this.cache["memory"] || "") + block;
-            // Auto-trim after appending
             this._autoTrimMemory();
         } catch (err) {
             logger.warn(`Memory write failed: ${err.message}`);

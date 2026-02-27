@@ -85,3 +85,28 @@ programa o archivo por lotes ejecutable.
 [2026-02-27T12:57:08.443Z] [ERROR] STT error: The model `whisper-large-v3-turbo` is blocked at the organization level. Please have the org admin enable this model in the org settings at https://console.groq.com/settings/limits
 [2026-02-27T12:57:08.931Z] [ERROR] STT error: The model `whisper-large-v3-turbo` is blocked at the organization level. Please have the org admin enable this model in the org settings at https://console.groq.com/settings/limits
 [2026-02-27T12:57:35.411Z] [ERROR] STT error: The model `whisper-large-v3-turbo` is blocked at the organization level. Please have the org admin enable this model in the org settings at https://console.groq.com/settings/limits
+[2026-02-27T16:46:03.483Z] [ERROR] STT error: Audio file is too short. Minimum audio length is 0.01 seconds.
+[2026-02-27T17:58:18.125Z] [ERROR] Chat error: Cannot find module './bots/BotManager'
+Require stack:
+- C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\backend\routes\chatRoutes.js
+- C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\backend\server.js
+[2026-02-27T18:10:35.375Z] [ERROR] STT error: The model `distil-whisper-large-v3-en` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.
+[2026-02-27T18:10:41.889Z] [ERROR] STT error: The model `distil-whisper-large-v3-en` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.
+[2026-02-27T18:49:49.604Z] [ERROR] NetBot failed: NetBot requires parameter: "action"
+[2026-02-27T19:16:49.013Z] [ERROR] STT error: Audio file is too short. Minimum audio length is 0.01 seconds.
+[2026-02-27T19:17:10.213Z] [ERROR] NetBot failed: NetBot requires parameter: "action"
+[2026-02-27T19:18:19.961Z] [ERROR] NetBot failed: ❌ No se pudo conectar a 192.168.0.5:37797
+
+📱 Depuración Inalámbrica (Android 11+):
+  1. Ajustes → Opciones de desarrollador → Depuración inalámbrica
+  2. El PUERTO que aparece ahí es el correcto (ej: 37797)
+  3. Actualizá adb_port en backend/config/devices.json
+  4. Pedime "conectar al celular"
+
+⚠ El puerto actual (37797) puede no coincidir con el dispositivo.
+  El puerto cambia cada vez que reactivás la Depuración Inalámbrica.
+[2026-02-27T19:18:29.630Z] [ERROR] NetBot failed: NetBot requires parameter: "action"
+[2026-02-27T19:18:39.410Z] [ERROR] BatBot failed: Script "volume_set" is not in the whitelist
+[2026-02-27T19:19:22.058Z] [ERROR] NetBot failed: NetBot requires parameter: "action"
+[2026-02-27T19:21:06.016Z] [ERROR] NetBot failed: NetBot requires parameter: "action"
+[2026-02-27T19:44:56.768Z] [ERROR] STT error: Audio file is too short. Minimum audio length is 0.01 seconds.

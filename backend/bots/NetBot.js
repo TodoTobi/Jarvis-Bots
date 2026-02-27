@@ -2,11 +2,11 @@
  * NetBot.js — Controls network devices via ADB (Android TV, phones)
  *
  * FIXES:
+ *  - _parseTarget() handles IP with embedded port (e.g., "192.168.0.5:37797")
  *  - _ensureConnected() verifies connection before running commands
- *  - Handles 'unknown host service 5555:features' with actionable instructions
- *  - Connection state cached per device to avoid repeated connect overhead
+ *  - 'unknown host service' → actionable instructions with correct port
+ *  - Connection state cached per device per session
  *  - Added 'adb_connect' action for manual reconnect from chat
- *  - Wireless Debugging (Android 11+) vs legacy TCP mode properly handled
  */
 
 const { exec } = require("child_process");
@@ -21,7 +21,7 @@ class NetBot extends Bot {
         this.devicesPath = path.resolve(__dirname, "../config/devices.json");
         this.devices = this._loadDevices();
         this.adbExe = this._resolveAdbPath();
-        this._connectedDevices = new Set(); // cache per session
+        this._connectedDevices = new Set();
     }
 
     /* ─── ADB PATH ────────────────────────────────────────── */
@@ -69,14 +69,26 @@ class NetBot extends Bot {
         return (
             `❌ No se pudo conectar a ${ip}:${port}\n\n` +
             `📱 Depuración Inalámbrica (Android 11+):\n` +
-            `  • Ajustes → Opciones de desarrollador → Depuración inalámbrica\n` +
-            `  • El PUERTO mostrado ahí es el correcto — actualizalo en devices.json\n` +
-            `  • Luego pedime "conectar al celular"\n\n` +
-            `🔌 Método legacy (USB primero):\n` +
-            `  • Conectá por USB y ejecutá: adb tcpip 5555\n` +
-            `  • Desconectá USB y ejecutá: adb connect ${ip}:5555\n\n` +
-            `El puerto actual configurado (${port}) no coincide con el dispositivo.`
+            `  1. Ajustes → Opciones de desarrollador → Depuración inalámbrica\n` +
+            `  2. El PUERTO que aparece ahí es el correcto (ej: 37797)\n` +
+            `  3. Actualizá adb_port en backend/config/devices.json\n` +
+            `  4. Pedime "conectar al celular"\n\n` +
+            `⚠ El puerto actual (${port}) puede no coincidir con el dispositivo.\n` +
+            `  El puerto cambia cada vez que reactivás la Depuración Inalámbrica.`
         );
+    }
+
+    /* ─── PARSE TARGET: handles "192.168.0.5:37797" or separate ip + port ── */
+
+    _parseTarget(device) {
+        const ip = device.ip || "";
+        // If IP already has an embedded port (contains ":"), use it directly
+        if (ip.includes(":")) {
+            const [host, portStr] = ip.split(":");
+            return { host, port: parseInt(portStr, 10), target: ip };
+        }
+        const port = device.adb_port || 5555;
+        return { host: ip, port, target: `${ip}:${port}` };
     }
 
     /* ─── DEVICE REGISTRY ─────────────────────────────────── */
@@ -101,18 +113,22 @@ class NetBot extends Bot {
 
     getDevice(id) {
         const device = this.devices.find(
-            (d) => d.id === id || d.name.toLowerCase() === id.toLowerCase()
+            (d) => d.id === id || (d.name && d.name.toLowerCase() === id.toLowerCase())
         );
-        if (!device) throw new Error(`Dispositivo "${id}" no encontrado`);
+        if (!device) throw new Error(`Dispositivo "${id}" no encontrado en devices.json`);
         if (!device.authorized) throw new Error(`Dispositivo "${id}" no está autorizado`);
         return device;
     }
 
     getDeviceList() {
-        return this.devices.map((d) => ({
-            id: d.id, name: d.name, type: d.type,
-            ip: d.ip, adb_port: d.adb_port || 5555, authorized: d.authorized,
-        }));
+        return this.devices.map((d) => {
+            const { target } = this._parseTarget(d);
+            return {
+                id: d.id, name: d.name, type: d.type,
+                ip: d.ip, adb_port: d.adb_port || 5555,
+                target, authorized: d.authorized,
+            };
+        });
     }
 
     isAdbAvailable() {
@@ -148,14 +164,10 @@ class NetBot extends Bot {
 
     /* ─── CONNECTION MANAGEMENT ───────────────────────────── */
 
-    /**
-     * Ensures device is connected via ADB.
-     * Caches connections and handles the 'unknown host service' bug.
-     */
     async _ensureConnected(device) {
-        const target = `${device.ip}:${device.adb_port || 5555}`;
+        const { host, port, target } = this._parseTarget(device);
 
-        // Quick check if we think we're already connected
+        // Quick check if already cached as connected
         if (this._connectedDevices.has(target)) {
             try {
                 await this._execRaw(`${this.adbExe} -s ${target} shell echo ok`, 4000);
@@ -166,36 +178,35 @@ class NetBot extends Bot {
             }
         }
 
-        // Attempt connection
+        // Connect
         logger.info(`NetBot: connecting to ${target}...`);
         let connectOut = "";
         try {
             connectOut = await this._execRaw(`${this.adbExe} connect ${target}`, 8000);
         } catch (err) {
-            const msg = err.message || "";
+            const msg = (err.message || "").toLowerCase();
             if (msg.includes("no se reconoce") || msg.includes("not recognized") || msg.includes("command not found")) {
                 throw new Error(this._getAdbNotFoundMessage());
             }
-            throw new Error(this._getWirelessDebugHelp(device.ip, device.adb_port || 5555));
+            throw new Error(this._getWirelessDebugHelp(host, port));
         }
 
-        logger.info(`NetBot: adb connect → ${connectOut}`);
+        logger.info(`NetBot: adb connect → ${connectOut.substring(0, 120)}`);
 
         if (!connectOut.includes("connected")) {
-            throw new Error(this._getWirelessDebugHelp(device.ip, device.adb_port || 5555));
+            throw new Error(this._getWirelessDebugHelp(host, port));
         }
 
-        // Verify a real command works (catches the '5555:features' error)
+        // Verify a shell command actually works (catches '5555:features' port mismatch)
         try {
             await this._execRaw(`${this.adbExe} -s ${target} shell echo ok`, 5000);
         } catch (err) {
-            const msg = err.message || "";
-            // 'unknown host service 5555:features' — wrong port for wireless debugging
+            const msg = (err.message || "");
             if (msg.includes("unknown host service") || msg.includes("features")) {
                 throw new Error(
                     `⚠️ ADB conectó pero el dispositivo rechazó el comando.\n\n` +
-                    `Error: ${msg}\n\n` +
-                    this._getWirelessDebugHelp(device.ip, device.adb_port || 5555)
+                    `Error técnico: ${msg}\n\n` +
+                    this._getWirelessDebugHelp(host, port)
                 );
             }
             throw new Error(`Conectado pero el dispositivo no responde: ${msg}`);
@@ -208,7 +219,7 @@ class NetBot extends Bot {
 
     async _adbForceConnect(deviceId) {
         const device = this.getDevice(deviceId);
-        const target = `${device.ip}:${device.adb_port || 5555}`;
+        const { target } = this._parseTarget(device);
         this._connectedDevices.delete(target);
         const connected = await this._ensureConnected(device);
         return `✅ Conectado a ${device.name} (${connected})`;
@@ -289,14 +300,15 @@ class NetBot extends Bot {
 
     async _pingDevice(deviceId) {
         const device = this.getDevice(deviceId);
+        const { host } = this._parseTarget(device);
         const cmd = process.platform === "win32"
-            ? `ping -n 1 -w 1000 ${device.ip}`
-            : `ping -c 1 -W 1 ${device.ip}`;
+            ? `ping -n 1 -w 1000 ${host}`
+            : `ping -c 1 -W 1 ${host}`;
         try {
             await this._execRaw(cmd, 5000);
-            return `✅ ${device.name} (${device.ip}) está en línea`;
+            return `✅ ${device.name} (${host}) está en línea`;
         } catch {
-            return `❌ ${device.name} (${device.ip}) no responde`;
+            return `❌ ${device.name} (${host}) no responde`;
         }
     }
 

@@ -1,63 +1,67 @@
 # Memory
 
-ciones comunes.
-- NetBot failed: adb.exe: unknown host service '5555:features': 2026-02-27T12:22:36.724Z — NetBot failed: adb.exe: unknown host service '5555:features'
-- NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:31.853Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
+Z — NetBot failed: NetBot requires parameter: "action"
+- BatBot failed: Script "volume_set" is not in the whitelist: 2026-02-27T19:18:39.410Z — BatBot failed: Script "volume_set" is not in the whitelist
 
 
-## 2026-02-27T12:55:32.827Z
-## DoctorBot Scan [2026-02-27T12:55:32.827Z]
-- ADB no encontrado: adb.exe no está en el PATH ni en ubicaciones comunes.
-- NetBot failed: adb.exe: unknown host service '5555:features': 2026-02-27T12:22:36.724Z — NetBot failed: adb.exe: unknown host service '5555:features'
-- NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:31.853Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
+## 2026-02-27T20:11:57.360Z
+## DoctorBot Scan [2026-02-27T20:11:57.360Z]
+- STT error: Audio file is too short. Minimum audio length is 0.01 seconds.: 2026-02-27T19:44:56.768Z — STT error: Audio file is too short. Minimum audio length is 0.01 seconds.
+- NetBot failed: NetBot requires parameter: "action": 2026-02-27T19:21:06.016Z — NetBot failed: NetBot requires parameter: "action"
+- BatBot failed: Script "volume_set" is not in the whitelist: 2026-02-27T19:18:39.410Z — BatBot failed: Script "volume_set" is not in the whitelist
 
 
-## 2026-02-27T12:55:41.387Z
-## DoctorBot Scan [2026-02-27T12:55:41.387Z]
-- ADB no encontrado: adb.exe no está en el PATH ni en ubicaciones comunes.
-- NetBot failed: adb.exe: unknown host service '5555:features': 2026-02-27T12:22:36.724Z — NetBot failed: adb.exe: unknown host service '5555:features'
-- NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:31.853Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
+## 2026-02-27T20:12:27.417Z
+## DoctorBot Scan [2026-02-27T20:12:27.417Z]
+- STT error: Audio file is too short. Minimum audio length is 0.01 seconds.: 2026-02-27T19:44:56.768Z — STT error: Audio file is too short. Minimum audio length is 0.01 seconds.
+- NetBot failed: NetBot requires parameter: "action": 2026-02-27T19:21:06.016Z — NetBot failed: NetBot requires parameter: "action"
+- BatBot failed: Script "volume_set" is not in the whitelist: 2026-02-27T19:18:39.410Z — BatBot failed: Script "volume_set" is not in the whitelist
 
 
-## 2026-02-27T12:56:11.357Z
-## DoctorBot Scan [2026-02-27T12:56:11.357Z]
-- ADB no encontrado: adb.exe no está en el PATH ni en ubicaciones comunes.
-- NetBot failed: adb.exe: unknown host service '5555:features': 2026-02-27T12:22:36.724Z — NetBot failed: adb.exe: unknown host service '5555:features'
-- NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:31.853Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
+## 2026-02-27T20:12:57.410Z
+## DoctorBot Scan [2026-02-27T20:12:57.410Z]
+- STT error: Audio file is too short. Minimum audio length is 0.01 seconds.: 2026-02-27T19:44:56.768Z — STT error: Audio file is too short. Minimum audio length is 0.01 seconds.
+- NetBot failed: NetBot requires parameter: "action": 2026-02-27T19:21:06.016Z — NetBot failed: NetBot requires parameter: "action"
+- BatBot failed: Script "volume_set" is not in the whitelist: 2026-02-27T19:18:39.410Z — BatBot failed: Script "volume_set" is not in the whitelist
 
 
-## 2026-02-27T12:56:41.194Z
-## DoctorBot Scan [2026-02-27T12:56:41.194Z]
-- ADB no encontrado: adb.exe no está en el PATH ni en ubicaciones comunes.
-- NetBot failed: adb.exe: unknown host service '5555:features': 2026-02-27T12:22:36.724Z — NetBot failed: adb.exe: unknown host service '5555:features'
-- NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:31.853Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
+## 2026-02-27T20:13:27.384Z
+## DoctorBot Scan [2026-02-27T20:13:27.384Z]
+- STT error: Audio file is too short. Minimum audio length is 0.01 seconds.: 2026-02-27T19:44:56.768Z — STT error: Audio file is too short. Minimum audio length is 0.01 seconds.
+- NetBot failed: NetBot requires parameter: "action": 2026-02-27T19:21:06.016Z — NetBot failed: NetBot requires parameter: "action"
+- BatBot failed: Script "volume_set" is not in the whitelist: 2026-02-27T19:18:39.410Z — BatBot failed: Script "volume_set" is not in the whitelist
 
 
-## 2026-02-27T12:57:11.197Z
-## DoctorBot Scan [2026-02-27T12:57:11.197Z]
-- ADB no encontrado: adb.exe no está en el PATH ni en ubicaciones comunes.
-- STT error: The model `whisper-large-v3-turbo` is blocked at the organization lev: 2026-02-27T12:57:08.931Z — STT error: The model `whisper-large-v3-turbo` is blocked at the organization level. Please have the org admin enable this model in the org settings at https://console.groq.com/settings/limits
-- NetBot failed: adb.exe: unknown host service '5555:features': 2026-02-27T12:22:36.724Z — NetBot failed: adb.exe: unknown host service '5555:features'
-- NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:31.853Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
+## 2026-02-27T20:13:57.392Z
+## DoctorBot Scan [2026-02-27T20:13:57.392Z]
+- STT error: Audio file is too short. Minimum audio length is 0.01 seconds.: 2026-02-27T19:44:56.768Z — STT error: Audio file is too short. Minimum audio length is 0.01 seconds.
+- NetBot failed: NetBot requires parameter: "action": 2026-02-27T19:21:06.016Z — NetBot failed: NetBot requires parameter: "action"
+- BatBot failed: Script "volume_set" is not in the whitelist: 2026-02-27T19:18:39.410Z — BatBot failed: Script "volume_set" is not in the whitelist
 
 
-## 2026-02-27T12:57:16.246Z
-## DoctorBot Scan [2026-02-27T12:57:16.246Z]
-- ADB no encontrado: adb.exe no está en el PATH ni en ubicaciones comunes.
-- STT error: The model `whisper-large-v3-turbo` is blocked at the organization lev: 2026-02-27T12:57:08.931Z — STT error: The model `whisper-large-v3-turbo` is blocked at the organization level. Please have the org admin enable this model in the org settings at https://console.groq.com/settings/limits
-- NetBot failed: adb.exe: unknown host service '5555:features': 2026-02-27T12:22:36.724Z — NetBot failed: adb.exe: unknown host service '5555:features'
-- NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:31.853Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
+## 2026-02-27T20:14:27.400Z
+## DoctorBot Scan [2026-02-27T20:14:27.400Z]
+- STT error: Audio file is too short. Minimum audio length is 0.01 seconds.: 2026-02-27T19:44:56.768Z — STT error: Audio file is too short. Minimum audio length is 0.01 seconds.
+- NetBot failed: NetBot requires parameter: "action": 2026-02-27T19:21:06.016Z — NetBot failed: NetBot requires parameter: "action"
+- BatBot failed: Script "volume_set" is not in the whitelist: 2026-02-27T19:18:39.410Z — BatBot failed: Script "volume_set" is not in the whitelist
 
 
-## 2026-02-27T12:57:46.365Z
-## DoctorBot Scan [2026-02-27T12:57:46.365Z]
-- ADB no encontrado: adb.exe no está en el PATH ni en ubicaciones comunes.
-- STT error: The model `whisper-large-v3-turbo` is blocked at the organization lev: 2026-02-27T12:57:35.411Z — STT error: The model `whisper-large-v3-turbo` is blocked at the organization level. Please have the org admin enable this model in the org settings at https://console.groq.com/settings/limits
-- NetBot failed: adb.exe: unknown host service '5555:features': 2026-02-27T12:22:36.724Z — NetBot failed: adb.exe: unknown host service '5555:features'
+## 2026-02-27T20:14:57.402Z
+## DoctorBot Scan [2026-02-27T20:14:57.402Z]
+- STT error: Audio file is too short. Minimum audio length is 0.01 seconds.: 2026-02-27T19:44:56.768Z — STT error: Audio file is too short. Minimum audio length is 0.01 seconds.
+- NetBot failed: NetBot requires parameter: "action": 2026-02-27T19:21:06.016Z — NetBot failed: NetBot requires parameter: "action"
+- BatBot failed: Script "volume_set" is not in the whitelist: 2026-02-27T19:18:39.410Z — BatBot failed: Script "volume_set" is not in the whitelist
 
 
-## 2026-02-27T12:58:16.239Z
-## DoctorBot Scan [2026-02-27T12:58:16.239Z]
-- ADB no encontrado: adb.exe no está en el PATH ni en ubicaciones comunes.
-- STT error: The model `whisper-large-v3-turbo` is blocked at the organization lev: 2026-02-27T12:57:35.411Z — STT error: The model `whisper-large-v3-turbo` is blocked at the organization level. Please have the org admin enable this model in the org settings at https://console.groq.com/settings/limits
-- NetBot failed: adb.exe: unknown host service '5555:features': 2026-02-27T12:22:36.724Z — NetBot failed: adb.exe: unknown host service '5555:features'
+## 2026-02-27T20:15:27.412Z
+## DoctorBot Scan [2026-02-27T20:15:27.412Z]
+- STT error: Audio file is too short. Minimum audio length is 0.01 seconds.: 2026-02-27T19:44:56.768Z — STT error: Audio file is too short. Minimum audio length is 0.01 seconds.
+- NetBot failed: NetBot requires parameter: "action": 2026-02-27T19:21:06.016Z — NetBot failed: NetBot requires parameter: "action"
+- BatBot failed: Script "volume_set" is not in the whitelist: 2026-02-27T19:18:39.410Z — BatBot failed: Script "volume_set" is not in the whitelist
+
+
+## 2026-02-27T20:15:57.411Z
+## DoctorBot Scan [2026-02-27T20:15:57.411Z]
+- STT error: Audio file is too short. Minimum audio length is 0.01 seconds.: 2026-02-27T19:44:56.768Z — STT error: Audio file is too short. Minimum audio length is 0.01 seconds.
+- NetBot failed: NetBot requires parameter: "action": 2026-02-27T19:21:06.016Z — NetBot failed: NetBot requires parameter: "action"
+- BatBot failed: Script "volume_set" is not in the whitelist: 2026-02-27T19:18:39.410Z — BatBot failed: Script "volume_set" is not in the whitelist

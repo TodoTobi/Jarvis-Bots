@@ -1,5 +1,12 @@
 /**
- * BotManager.js — v2 with ComputerBot and VisionBot
+ * BotManager.js — v2.2
+ *
+ * FIXES:
+ *  - NetBot: auto-injects "action" from intent name
+ *  - MediaBot: auto-injects "intent" from intent name
+ *  - ComputerBot: auto-injects "task"
+ *  - BatBot: normalizes wrong script keys via BAT_SCRIPT_ALIASES
+ *  - whatsapp_qr: nuevo intent que devuelve el QR inline para el chat
  */
 
 const WebBot = require("./WebBot");
@@ -12,11 +19,13 @@ const ComputerBot = require("./ComputerBot");
 const VisionBot = require("./VisionBot");
 const logger = require("../logs/logger");
 
+// ── Intent prefix → Bot name ──────────────────────────────────────────────────
 const INTENT_MAP = {
     "computer_": "ComputerBot",
     "vision_": "VisionBot",
     "bat_": "BatBot",
     "media_": "MediaBot",
+    "net_music": "MediaBot",
     "net_": "NetBot",
     "diagnose_": "DoctorBot",
     "doctor_": "DoctorBot",
@@ -26,6 +35,94 @@ const INTENT_MAP = {
     "web_": "WebBot",
     "search_": "WebBot",
     "talk_": "WebBot"
+};
+
+// ── net_ intent suffix → NetBot action ───────────────────────────────────────
+const NET_ACTION_MAP = {
+    "adb_youtube": "adb_youtube",
+    "adb_volume": "adb_volume",
+    "adb_screenshot": "adb_screenshot",
+    "adb_home": "adb_home",
+    "adb_back": "adb_back",
+    "adb_wakeup": "adb_wakeup",
+    "adb_open_app": "adb_open_app",
+    "adb_input_text": "adb_input_text",
+    "adb_connect": "adb_connect",
+    "screenshot": "adb_screenshot",
+    "wol": "wol",
+    "ping": "ping",
+};
+
+// ── media_ intent → MediaBot intent key ──────────────────────────────────────
+const MEDIA_INTENT_MAP = {
+    "net_music_player": "media_play_spotify",
+    "media_youtube": "media_play_youtube",
+    "media_spotify": "media_play_spotify",
+    "media_vlc": "media_play_vlc",
+    "media_pause": "media_pause",
+    "media_next": "media_next",
+    "media_prev": "media_prev",
+    "media_volume_up": "media_volume_up",
+    "media_volume_down": "media_volume_down",
+    "media_mute": "media_mute",
+};
+
+// ── BatBot script key normalization ──────────────────────────────────────────
+// The LLM sometimes invents script keys that don't exist in the whitelist.
+// This map redirects wrong keys to the correct whitelisted ones.
+const BAT_SCRIPT_ALIASES = {
+    // Volume
+    "volume_set": "volume_up",
+    "volume_increase": "volume_up",
+    "set_volume": "volume_up",
+    "volume_decrease": "volume_down",
+    "mute": "volume_mute",
+    "toggle_mute": "volume_mute",
+    "unmute": "volume_mute",
+    // YouTube / media
+    "youtube": "media_youtube",
+    "open_youtube": "media_youtube",
+    "play_youtube": "media_youtube",
+    "abrir_youtube": "media_youtube",
+    "spotify": "media_spotify",
+    "open_spotify": "media_spotify",
+    "play_spotify": "media_spotify",
+    "vlc": "media_vlc",
+    "open_vlc": "media_vlc",
+    "pause": "media_pause",
+    "play_pause": "media_pause",
+    "play": "media_pause",
+    "next_track": "media_next",
+    "next": "media_next",
+    "previous": "media_prev",
+    "prev_track": "media_prev",
+    "prev": "media_prev",
+    // Apps
+    "discord": "app_discord",
+    "open_discord": "app_discord",
+    "abrir_discord": "app_discord",
+    "vscode": "app_vscode",
+    "code": "app_vscode",
+    "open_vscode": "app_vscode",
+    "open_code": "app_vscode",
+    "fortnite": "app_fortnite",
+    "open_fortnite": "app_fortnite",
+    "browser": "app_browser",
+    "open_browser": "app_browser",
+    "chrome": "app_browser",
+    "firefox": "app_browser",
+    // System
+    "screenshot": "system_screenshot",
+    "captura": "system_screenshot",
+    "lock": "system_lock",
+    "lock_pc": "system_lock",
+    "bloquear": "system_lock",
+    "sleep": "system_sleep",
+    "suspend": "system_sleep",
+    "dormir": "system_sleep",
+    "night_mode": "system_night_mode",
+    "dark_mode": "system_night_mode",
+    "modo_noche": "system_night_mode",
 };
 
 class BotManager {
@@ -93,7 +190,6 @@ class BotManager {
     }
 
     async _startWhatsApp() {
-        const { handleChat } = require("../controllers/chatController");
         this.bots.WhatsAppBot = new WhatsAppBot(async (message) => {
             const instructionLoader = require("../utils/InstructionLoader");
             const modelService = require("../services/ModelService");
@@ -117,7 +213,52 @@ class BotManager {
             );
         }
 
+        // ── Intercept: whatsapp_qr → devuelve QR inline en el chat ─────────
+        if (normalized.intent === "whatsapp_qr") {
+            return this._handleWhatsAppQR();
+        }
+
         const targetBot = this._mapIntent(normalized.intent);
+
+        // ── FIX: Auto-inject "action" for NetBot ─────────────────────────────
+        if (targetBot === "NetBot") {
+            if (!normalized.parameters.action) {
+                const suffix = normalized.intent.replace(/^net_/, "");
+                const mappedAction = NET_ACTION_MAP[suffix] || suffix;
+                normalized.parameters.action = mappedAction;
+                logger.info(`NetBot: injected action="${mappedAction}" from intent "${normalized.intent}"`);
+            }
+        }
+
+        // ── FIX: Auto-inject "intent" for MediaBot ───────────────────────────
+        if (targetBot === "MediaBot") {
+            if (!normalized.parameters.intent) {
+                const mappedIntent = MEDIA_INTENT_MAP[normalized.intent] || normalized.intent;
+                normalized.parameters.intent = mappedIntent;
+                logger.info(`MediaBot: injected intent="${mappedIntent}" from "${normalized.intent}"`);
+            }
+        }
+
+        // ── FIX: Auto-inject "task" for ComputerBot ──────────────────────────
+        if (targetBot === "ComputerBot") {
+            if (!normalized.parameters.task) {
+                normalized.parameters.task =
+                    normalized.parameters.query ||
+                    normalized.parameters.command ||
+                    normalized.parameters.description ||
+                    "";
+                logger.info(`ComputerBot: injected task="${normalized.parameters.task}"`);
+            }
+        }
+
+        // ── FIX: Normalize BatBot script keys via aliases ─────────────────────
+        if (targetBot === "BatBot" && normalized.parameters.script) {
+            const raw = normalized.parameters.script;
+            if (BAT_SCRIPT_ALIASES[raw]) {
+                logger.info(`BatBot: aliased script "${raw}" → "${BAT_SCRIPT_ALIASES[raw]}"`);
+                normalized.parameters.script = BAT_SCRIPT_ALIASES[raw];
+            }
+        }
 
         if (!targetBot) {
             if (!this.isBotActive("WebBot")) this.activateBot("WebBot");
@@ -130,6 +271,58 @@ class BotManager {
         }
 
         return this._runSafe(targetBot, normalized.parameters);
+    }
+
+    // ── WhatsApp QR handler ──────────────────────────────────────────────────
+    async _handleWhatsAppQR() {
+        try {
+            // Activate bot if needed (triggers QR generation)
+            if (!this.isBotActive("WhatsAppBot")) {
+                logger.info("WhatsAppBot: activating to generate QR...");
+                this.activateBot("WhatsAppBot");
+                // Give it time to generate
+                await new Promise(r => setTimeout(r, 3000));
+            }
+
+            // Read QR state
+            let waState;
+            try {
+                waState = require("../routes/whatsappRoutes");
+            } catch {
+                return this._response("❌ WhatsApp module no disponible.", true);
+            }
+
+            const state = waState.state;
+
+            if (state.status === "connected" && state.phone) {
+                return this._response(
+                    `✅ WhatsApp ya está vinculado al número +${state.phone}.\n[WHATSAPP_CONNECTED:${state.phone}]`,
+                    false
+                );
+            }
+
+            if (state.qr) {
+                const age = Date.now() - (state.qrTimestamp || 0);
+                if (age > 60000) {
+                    return this._response(
+                        "⏳ El QR expiró. Estoy generando uno nuevo, pedímelo en unos segundos.",
+                        false
+                    );
+                }
+                return this._response(
+                    `📱 Escaneá este QR con WhatsApp:\n[WHATSAPP_QR:${state.qr}]`,
+                    false
+                );
+            }
+
+            return this._response(
+                "⏳ Estoy iniciando WhatsApp... Esperá 10 segundos y volvé a pedirme el QR.",
+                false
+            );
+        } catch (err) {
+            logger.error(`WhatsApp QR handler: ${err.message}`);
+            return this._response(`Error al obtener QR de WhatsApp: ${err.message}`, true);
+        }
     }
 
     async _runSafe(botName, parameters) {
