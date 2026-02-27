@@ -13,11 +13,11 @@ function App() {
     const [view, setView] = useState("dashboard");
     const [doctorErrors, setDoctorErrors] = useState(0);
 
-    // ── Conversation state (shared between Sidebar and Chat) ──
-    const [activeConv, setActiveConv] = useState(null);  // { id, title }
-    const [chatKey, setChatKey] = useState(0);     // Force Chat remount on new conv
+    const [currentConvId, setCurrentConvId] = useState(() => {
+        return localStorage.getItem("jarvis_current_conv") || null;
+    });
+    const [chatKey, setChatKey] = useState(0);
 
-    // Poll doctor errors silently
     useEffect(() => {
         const check = async () => {
             try {
@@ -31,23 +31,16 @@ function App() {
         return () => clearInterval(iv);
     }, []);
 
-    // Called when user clicks a conversation in the sidebar
-    const handleSelectConv = useCallback((conv) => {
-        setActiveConv(conv);
-        setChatKey(k => k + 1);  // remount Chat so it loads the conversation's messages
-        setView("chat");
-    }, []);
-
-    // Called when user clicks "New Chat" button
-    const handleNewChat = useCallback(() => {
-        setActiveConv(null);
+    const handleSelectConversation = useCallback((id) => {
+        setCurrentConvId(id);
         setChatKey(k => k + 1);
         setView("chat");
     }, []);
 
-    // Called from Chat when a new conversation_id is created by the backend
-    const handleConversationCreated = useCallback((conv) => {
-        setActiveConv(conv);
+    const handleNewConversation = useCallback((id) => {
+        setCurrentConvId(id);
+        setChatKey(k => k + 1);
+        setView("chat");
     }, []);
 
     const renderView = () => {
@@ -61,8 +54,7 @@ function App() {
                 return (
                     <Chat
                         key={chatKey}
-                        conversationId={activeConv?.id || null}
-                        onConversationCreated={handleConversationCreated}
+                        propConvId={currentConvId}
                     />
                 );
             case "dashboard":
@@ -74,12 +66,9 @@ function App() {
     return (
         <div className="app-layout">
             <Sidebar
-                view={view}
-                setView={setView}
-                doctorErrors={doctorErrors}
-                activeConvId={activeConv?.id}
-                onSelectConv={handleSelectConv}
-                onNewChat={handleNewChat}
+                currentConvId={currentConvId}
+                onSelectConversation={handleSelectConversation}
+                onNewConversation={handleNewConversation}
             />
             {renderView()}
         </div>
