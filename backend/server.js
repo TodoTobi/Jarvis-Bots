@@ -1,7 +1,9 @@
 /**
- * server.js — JarvisCore Backend v3
- * FIX: multer is now a lazy optional require — won't crash if not installed
- *      Run: npm install multer   to enable file upload
+ * server.js — JarvisCore Backend v3.1
+ * FIXES:
+ *  - Added historyRoutes (was completely missing — /api/history/* returned 404)
+ *  - multer remains optional lazy-require
+ *  - Graceful shutdown handlers
  */
 
 const path = require("path");
@@ -16,6 +18,7 @@ const botRoutes = require("./routes/botRoutes");
 const deviceRoutes = require("./routes/deviceRoutes");
 const mdRoutes = require("./routes/mdRoutes");
 const doctorRoutes = require("./routes/doctorRoutes");
+const historyRoutes = require("./routes/historyRoutes"); // ← WAS MISSING
 const logger = require("./logs/logger");
 
 const app = express();
@@ -42,6 +45,7 @@ app.use("/api", botRoutes);
 app.use("/api", deviceRoutes);
 app.use("/api", mdRoutes);
 app.use("/api", doctorRoutes);
+app.use("/api", historyRoutes); // ← FIXED
 
 /* ── Upload endpoint (optional — needs: npm install multer) ── */
 const uploadDir = path.resolve(__dirname, "../tmp/uploads");
@@ -91,6 +95,11 @@ app.post("/api/upload", (req, res, next) => {
    });
 });
 
+/* ── 404 handler ─────────────────────────────────────── */
+app.use((req, res) => {
+   res.status(404).json({ success: false, error: `Route not found: ${req.method} ${req.path}` });
+});
+
 /* ── Error handler ───────────────────────────────────── */
 app.use((err, req, res, next) => {
    logger.error(`[${req.method} ${req.path}] ${err.message}`);
@@ -99,7 +108,17 @@ app.use((err, req, res, next) => {
 
 /* ── Start ───────────────────────────────────────────── */
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
    logger.info(`JarvisCore backend running on http://localhost:${PORT}`);
-   logger.info("Routes: /api/chat | /api/bots | /api/devices | /api/md | /api/settings | /api/doctor | /api/upload");
+   logger.info("Routes: /api/chat | /api/bots | /api/devices | /api/md | /api/settings | /api/doctor | /api/history | /api/upload");
+});
+
+/* ── Graceful shutdown ───────────────────────────────── */
+process.on("SIGTERM", () => {
+   logger.info("SIGTERM received — shutting down gracefully");
+   server.close(() => process.exit(0));
+});
+process.on("SIGINT", () => {
+   logger.info("SIGINT received — shutting down gracefully");
+   server.close(() => process.exit(0));
 });

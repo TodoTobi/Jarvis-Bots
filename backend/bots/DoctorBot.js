@@ -1,11 +1,10 @@
 /**
  * DoctorBot.js — Error diagnostics, logging and auto-recovery
  *
- * Responsibilities:
- *  - Diagnose errors from other bots
- *  - Log error patterns to memory
- *  - Suggest or apply known fixes automatically
- *  - Report to chat panel
+ * CHANGES:
+ *  - Added ADB_NOT_FOUND error pattern with detailed fix instructions
+ *  - Added SUPABASE_NOT_INSTALLED pattern
+ *  - Improved report formatting
  */
 
 const Bot = require("./Bot");
@@ -13,43 +12,63 @@ const logger = require("../logs/logger");
 const path = require("path");
 const fs = require("fs");
 
-// Known error patterns and their auto-fix strategies
 const ERROR_PATTERNS = [
     {
         pattern: /ENOENT|file not found/i,
         label: "Archivo no encontrado",
-        suggestion: "Verificá que el archivo .bat exista en la ruta configurada",
-        autoFix: null
+        suggestion: "Verificá que el archivo .bat exista en la ruta configurada (bats/)"
     },
     {
         pattern: /ECONNREFUSED|ECONNRESET|connection refused/i,
         label: "Conexión rechazada",
-        suggestion: "El servicio de destino no está corriendo o la IP es incorrecta",
-        autoFix: null
+        suggestion: "El servicio de destino no está corriendo o la IP/puerto es incorrecta"
     },
     {
         pattern: /not authorized|unauthorized/i,
         label: "Dispositivo ADB no autorizado",
-        suggestion: "Corré 'adb devices' y aceptá la solicitud de depuración en el dispositivo",
-        autoFix: null
+        suggestion: "Corré 'adb devices' y aceptá la solicitud de depuración en el dispositivo Android"
     },
     {
         pattern: /whitelist|not in the whitelist/i,
         label: "Script no en la whitelist",
-        suggestion: "El modelo intentó ejecutar un script no autorizado. Revisá bat_whitelist.json",
-        autoFix: null
+        suggestion: "El modelo intentó ejecutar un script no autorizado. Revisá bat_whitelist.json o agregá el script faltante"
     },
     {
         pattern: /timeout/i,
         label: "Timeout de ejecución",
-        suggestion: "El script tardó demasiado. Revisá la conexión o aumentá el timeout en la whitelist",
-        autoFix: null
+        suggestion: "El script tardó demasiado. Revisá la conexión o aumentá el timeout en bat_whitelist.json"
     },
     {
         pattern: /model communication failure|empty response/i,
         label: "Falla de comunicación con el modelo",
-        suggestion: "LM Studio no responde. Verificá que esté corriendo en la IP/puerto configurados",
-        autoFix: null
+        suggestion: "LM Studio no responde. Verificá que esté corriendo en la IP/puerto configurados en .env (LM_API_URL)"
+    },
+    {
+        // Windows: "adb" no se reconoce / Unix: adb: command not found
+        pattern: /no se reconoce|not recognized|command not found|is not recognized/i,
+        label: "ADB no encontrado en el sistema",
+        suggestion:
+            "ADB (Android Debug Bridge) no está instalado o no está en el PATH.\n" +
+            "     Pasos para solucionar:\n" +
+            "       1. Descargá Android Platform Tools:\n" +
+            "          https://developer.android.com/studio/releases/platform-tools\n" +
+            "       2. Descomprimí en C:\\platform-tools\\\n" +
+            "       3. Agregá en backend/config/.env:\n" +
+            "          ADB_PATH=C:\\platform-tools\\adb.exe\n" +
+            "       4. Reiniciá el servidor"
+    },
+    {
+        pattern: /@supabase\/supabase-js|supabase.*not installed/i,
+        label: "Paquete Supabase no instalado",
+        suggestion:
+            "Ejecutá en la terminal del backend:\n" +
+            "       npm install @supabase/supabase-js\n" +
+            "     Luego reiniciá el servidor"
+    },
+    {
+        pattern: /MODULE_NOT_FOUND/i,
+        label: "Módulo Node.js faltante",
+        suggestion: "Ejecutá 'npm install' en la carpeta backend/ para instalar todas las dependencias"
     }
 ];
 
@@ -73,13 +92,8 @@ class DoctorBot extends Bot {
 
         const { failedBot, error, action } = parameters;
 
-        if (action === "status") {
-            return this._systemStatusReport();
-        }
-
-        if (action === "history") {
-            return this._errorHistoryReport();
-        }
+        if (action === "status") return this._systemStatusReport();
+        if (action === "history") return this._errorHistoryReport();
 
         return this._diagnose(failedBot, error);
     }
@@ -91,7 +105,6 @@ class DoctorBot extends Bot {
     async _diagnose(botName, errorMessage) {
         logger.info(`DoctorBot diagnosing: ${botName || "unknown"} → ${errorMessage || "no error info"}`);
 
-        // Match against known patterns
         const matched = ERROR_PATTERNS.find(p => p.pattern.test(errorMessage || ""));
 
         const diagnosis = {
@@ -103,7 +116,6 @@ class DoctorBot extends Bot {
             autoFixed: false
         };
 
-        // Attempt auto-fix if available
         if (matched?.autoFix) {
             try {
                 await matched.autoFix(botName);
@@ -114,27 +126,22 @@ class DoctorBot extends Bot {
             }
         }
 
-        // Store in history
         this.errorHistory.unshift(diagnosis);
-        if (this.errorHistory.length > this.maxHistory) {
-            this.errorHistory.pop();
-        }
+        if (this.errorHistory.length > this.maxHistory) this.errorHistory.pop();
 
-        // Write to memory.md
         this._persistDiagnosis(diagnosis);
 
         const report = [
             `🩺 **DoctorBot — Diagnóstico**`,
             ``,
             `⚠ Bot: \`${diagnosis.bot}\``,
-            `❌ Error: ${diagnosis.error}`,
+            `❌ Error: ${diagnosis.error.split("\n")[0]}`,  // first line only
             `📋 Tipo: ${diagnosis.label}`,
             `💡 Sugerencia: ${diagnosis.suggestion}`,
             diagnosis.autoFixed ? `✅ Auto-fix aplicado` : `🔧 Requiere intervención manual`
         ].join("\n");
 
         logger.info(`DoctorBot diagnosis complete for ${botName}`);
-
         return report;
     }
 
@@ -148,22 +155,15 @@ class DoctorBot extends Bot {
             return "✅ DoctorBot: No se registraron errores recientes. Sistema saludable.";
         }
 
-        const lines = [
-            `🩺 **Reporte de sistema — últimos ${recent.length} errores:**`,
-            ""
-        ];
-
+        const lines = [`🩺 **Reporte de sistema — últimos ${recent.length} errores:**`, ""];
         recent.forEach((entry, i) => {
             lines.push(`${i + 1}. [${entry.timestamp}] ${entry.bot}: ${entry.label}`);
         });
-
         return lines.join("\n");
     }
 
     _errorHistoryReport() {
-        if (this.errorHistory.length === 0) {
-            return "📋 Sin historial de errores registrado.";
-        }
+        if (this.errorHistory.length === 0) return "📋 Sin historial de errores registrado.";
         return JSON.stringify(this.errorHistory, null, 2);
     }
 
@@ -176,9 +176,9 @@ class DoctorBot extends Bot {
             const entry = [
                 `\n## ERROR [${diagnosis.timestamp}]`,
                 `**Bot:** ${diagnosis.bot}`,
-                `**Error:** ${diagnosis.error}`,
+                `**Error:** ${diagnosis.error.split("\n")[0]}`,
                 `**Diagnóstico:** ${diagnosis.label}`,
-                `**Sugerencia:** ${diagnosis.suggestion}`,
+                `**Sugerencia:** ${diagnosis.suggestion.split("\n")[0]}`,
                 `**Auto-fix:** ${diagnosis.autoFixed ? "Sí" : "No"}`,
                 ""
             ].join("\n");

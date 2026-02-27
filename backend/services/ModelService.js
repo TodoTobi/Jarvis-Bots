@@ -1,12 +1,19 @@
 /**
- * ModelService.js — v3 FIXED
- * FIX: removes response_format (causes 400), trims context, forces Spanish
+ * ModelService.js — v4
+ *
+ * FIXES:
+ *  - Separated system instruction from user context (models were confusing themselves)
+ *  - System prompt is now purely the JSON schema + examples
+ *  - User message is now just: [CONTEXT]\n...\n[USER]\nmessage
+ *  - This prevents models from "evaluating" the instructions instead of following them
+ *  - Better JSON extraction with multiple fallback patterns
+ *  - Connection check with retry
  */
 
 const axios = require("axios");
 const logger = require("../logs/logger");
 
-const MAX_CONTEXT_CHARS = 2000; // keep context small for local models
+const MAX_USER_MSG_CHARS = 1500; // keep user message short for local models
 
 class ModelService {
     constructor() {
@@ -44,7 +51,6 @@ class ModelService {
     }
 
     _buildBody(messages, opts = {}) {
-        // NO response_format — causes 400 on most local models
         const body = {
             messages,
             temperature: opts.temperature ?? 0.1,
@@ -54,38 +60,62 @@ class ModelService {
         return body;
     }
 
-    async generateIntent(fullContext) {
-        // Compact system prompt — local models can't handle massive contexts
-        const systemPrompt = [
-            "Eres el orquestador de JarvisCore. RESPONDE SOLO con un JSON válido, sin texto adicional.",
-            "",
-            "Formato: {\"intent\":\"nombre\",\"parameters\":{},\"priority\":\"normal\"}",
-            "",
-            "Intents disponibles:",
-            "- Conversación/pregunta → {\"intent\":\"chat_response\",\"parameters\":{\"query\":\"[mensaje]\"},\"priority\":\"normal\"}",
-            "- Subir volumen → {\"intent\":\"bat_exec\",\"parameters\":{\"script\":\"volume_up\"},\"priority\":\"normal\"}",
-            "- Bajar volumen → {\"intent\":\"bat_exec\",\"parameters\":{\"script\":\"volume_down\"},\"priority\":\"normal\"}",
-            "- YouTube PC → {\"intent\":\"bat_exec\",\"parameters\":{\"script\":\"media_youtube\",\"query\":\"[búsqueda]\"},\"priority\":\"normal\"}",
-            "- Spotify → {\"intent\":\"bat_exec\",\"parameters\":{\"script\":\"media_spotify\"},\"priority\":\"normal\"}",
-            "- Bloquear PC → {\"intent\":\"bat_exec\",\"parameters\":{\"script\":\"system_lock\"},\"priority\":\"normal\"}",
-            "- Screenshot → {\"intent\":\"bat_exec\",\"parameters\":{\"script\":\"system_screenshot\"},\"priority\":\"normal\"}",
-            "- Discord → {\"intent\":\"bat_exec\",\"parameters\":{\"script\":\"app_discord\"},\"priority\":\"normal\"}",
-            "- VS Code → {\"intent\":\"bat_exec\",\"parameters\":{\"script\":\"app_vscode\"},\"priority\":\"normal\"}",
-            "- Control PC → {\"intent\":\"computer_control\",\"parameters\":{\"task\":\"[tarea]\"},\"priority\":\"high\"}",
-        ].join("\n");
+    /* =========================
+       INTENT GENERATION
+    ========================= */
 
-        // Trim context to avoid token overflow
-        const trimmedContext = fullContext.length > MAX_CONTEXT_CHARS
-            ? fullContext.slice(-MAX_CONTEXT_CHARS)
-            : fullContext;
+    async generateIntent(fullContext) {
+        // ── System prompt: ONLY the JSON contract, nothing else ──
+        // Keeping it short is critical for local models (< 7B tend to drift)
+        const systemPrompt = `Eres JarvisCore. Tu ÚNICA tarea es leer el mensaje del usuario y responder con un JSON.
+
+RESPONDE SOLO CON JSON. Sin explicaciones. Sin texto antes o después del JSON.
+
+Formato exacto:
+{"intent":"nombre_intent","parameters":{},"priority":"normal"}
+
+Intents disponibles:
+chat_response     → conversación, preguntas, saludos
+  params: {"query":"[mensaje original]"}
+
+bat_exec          → ejecutar script en la PC
+  params: {"script":"[clave]","args":[]}
+  Claves: media_youtube, media_spotify, media_pause, media_next, media_prev,
+          volume_up, volume_down, volume_mute,
+          system_lock, system_screenshot, system_sleep, system_night_mode,
+          app_discord, app_vscode, app_browser, app_fortnite
+
+computer_control  → controlar PC con mouse/teclado
+  params: {"task":"[descripción detallada]"}
+
+net_adb_youtube   → YouTube en dispositivo Android/TV
+  params: {"device":"[id]","query":"[búsqueda]"}
+
+net_wol           → encender PC por red (Wake-on-LAN)
+  params: {"device":"[id]"}
+
+Ejemplos:
+- "hola" → {"intent":"chat_response","parameters":{"query":"hola"},"priority":"normal"}
+- "poneme youtube" → {"intent":"bat_exec","parameters":{"script":"media_youtube","query":""},"priority":"normal"}
+- "buscá Metallica en youtube" → {"intent":"bat_exec","parameters":{"script":"media_youtube","query":"Metallica"},"priority":"normal"}
+- "subi el volumen" → {"intent":"bat_exec","parameters":{"script":"volume_up"},"priority":"normal"}
+- "abrí discord" → {"intent":"bat_exec","parameters":{"script":"app_discord"},"priority":"normal"}
+- "bloqueá la pantalla" → {"intent":"bat_exec","parameters":{"script":"system_lock"},"priority":"normal"}`;
+
+        // ── User message: compact context + actual message ──
+        // Trim to avoid token overflow on local models
+        const compactContext = this._buildCompactContext(fullContext);
 
         try {
             const response = await axios.post(
                 `${this.baseURL}/chat/completions`,
-                this._buildBody([
-                    { role: "system", content: systemPrompt },
-                    { role: "user", content: trimmedContext.replace(/```/g, "").trim() }
-                ], { temperature: 0.1, max_tokens: 200 }),
+                this._buildBody(
+                    [
+                        { role: "system", content: systemPrompt },
+                        { role: "user", content: compactContext }
+                    ],
+                    { temperature: 0.05, max_tokens: 150 }
+                ),
                 this._axiosConfig
             );
 
@@ -98,7 +128,7 @@ class ModelService {
 
         } catch (error) {
             if (error.response) {
-                logger.error(`ModelService generateIntent HTTP ${error.response.status}: ${JSON.stringify(error.response.data).substring(0, 300)}`);
+                logger.error(`ModelService generateIntent HTTP ${error.response.status}: ${JSON.stringify(error.response.data || {}).substring(0, 200)}`);
             } else {
                 logger.error(`ModelService generateIntent: ${error.message}`);
             }
@@ -106,17 +136,23 @@ class ModelService {
         }
     }
 
+    /* =========================
+       TEXT GENERATION
+    ========================= */
+
     async generateText(prompt) {
-        // Always force Spanish in generateText
-        const systemPrompt = "Eres Jarvis, un asistente IA local. Responde SIEMPRE en español de Argentina. Sé directo y claro.";
+        const systemPrompt = "Eres Jarvis, asistente IA local de Tobías. Respondé SIEMPRE en español rioplatense. Sé directo, claro y útil.";
 
         try {
             const response = await axios.post(
                 `${this.baseURL}/chat/completions`,
-                this._buildBody([
-                    { role: "system", content: systemPrompt },
-                    { role: "user", content: prompt.replace(/```/g, "").trim().substring(0, 3000) }
-                ], { temperature: 0.5, max_tokens: 1024 }),
+                this._buildBody(
+                    [
+                        { role: "system", content: systemPrompt },
+                        { role: "user", content: prompt.replace(/```/g, "").trim().substring(0, 3000) }
+                    ],
+                    { temperature: 0.5, max_tokens: 1024 }
+                ),
                 this._axiosConfig
             );
 
@@ -126,7 +162,7 @@ class ModelService {
 
         } catch (error) {
             if (error.response) {
-                logger.error(`ModelService generateText HTTP ${error.response.status}: ${JSON.stringify(error.response.data).substring(0, 300)}`);
+                logger.error(`ModelService generateText HTTP ${error.response.status}: ${JSON.stringify(error.response.data || {}).substring(0, 200)}`);
             } else {
                 logger.error(`ModelService generateText: ${error.message}`);
             }
@@ -134,22 +170,60 @@ class ModelService {
         }
     }
 
+    /* =========================
+       HELPERS
+    ========================= */
+
+    /**
+     * Extract just what the model needs: user identity + the actual user message.
+     * Avoids passing the full instruction block (which confuses some models).
+     */
+    _buildCompactContext(fullContext) {
+        // Extract just the [MENSAJE DEL USUARIO] section
+        const userMsgMatch = fullContext.match(/\[MENSAJE DEL USUARIO\]\s*([\s\S]+?)(?:\[|$)/);
+        const userMsg = userMsgMatch ? userMsgMatch[1].trim() : fullContext.trim();
+
+        // Extract soul/identity for persona awareness (very short)
+        const identityMatch = fullContext.match(/\[IDENTITY\]\s*([\s\S]{0,150})/);
+        const identity = identityMatch ? identityMatch[1].trim() : "";
+
+        const parts = [];
+        if (identity) parts.push(`[CONTEXTO]\n${identity.substring(0, 100)}`);
+        parts.push(`[MENSAJE DEL USUARIO]\n${userMsg.substring(0, MAX_USER_MSG_CHARS)}`);
+
+        return parts.join("\n\n");
+    }
+
     _safeParse(raw) {
-        try {
-            let cleaned = raw.trim()
-                .replace(/^```json\s*/i, "")
-                .replace(/^```\s*/i, "")
-                .replace(/\s*```$/i, "")
-                .trim();
+        const cleaned = raw.trim()
+            .replace(/^```json\s*/i, "")
+            .replace(/^```\s*/i, "")
+            .replace(/\s*```$/i, "")
+            .trim();
 
-            const match = cleaned.match(/\{[\s\S]*\}/);
-            if (match) cleaned = match[0];
+        // 1. Try direct parse
+        try { return JSON.parse(cleaned); } catch { }
 
-            return JSON.parse(cleaned);
-        } catch {
-            logger.warn(`ModelService: non-JSON response, treating as chat: ${raw.substring(0, 80)}`);
-            return { intent: "chat_response", parameters: { query: raw.trim() }, priority: "normal" };
+        // 2. Extract first {...} block
+        const match = cleaned.match(/\{[\s\S]*?\}/);
+        if (match) {
+            try { return JSON.parse(match[0]); } catch { }
         }
+
+        // 3. Extract last {...} block (some models add explanation after)
+        const allMatches = [...cleaned.matchAll(/\{[\s\S]*?\}/g)];
+        if (allMatches.length > 1) {
+            for (const m of allMatches.reverse()) {
+                try {
+                    const parsed = JSON.parse(m[0]);
+                    if (parsed.intent) return parsed;
+                } catch { }
+            }
+        }
+
+        // 4. Fallback — treat as chat
+        logger.warn(`ModelService: non-JSON response, treating as chat: ${raw.substring(0, 80)}`);
+        return { intent: "chat_response", parameters: { query: raw.trim() }, priority: "normal" };
     }
 
     _validateIntent(obj) {
