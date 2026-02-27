@@ -1,84 +1,63 @@
 # Memory
 
- reconoce como un comando interno o externo,
-- NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:31.546Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
-- NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:30.965Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
-- NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:30.034Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
-
-
-## 2026-02-27T12:13:48.340Z
-## DoctorBot Scan [2026-02-27T12:13:48.340Z]
-- NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:31.853Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
-- NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:31.705Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
-- NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:31.546Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
-- NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:30.965Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
-- NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:30.034Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
-
-
-## 2026-02-27T12:14:48.340Z
-## DoctorBot Scan [2026-02-27T12:14:48.340Z]
-- NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:31.853Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
-- NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:31.705Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
-- NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:31.546Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
-- NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:30.965Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
-- NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:30.034Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
-
-
-## 2026-02-27T12:18:46.101Z
-## DoctorBot Scan [2026-02-27T12:18:46.101Z]
+ciones comunes.
+- NetBot failed: adb.exe: unknown host service '5555:features': 2026-02-27T12:22:36.724Z — NetBot failed: adb.exe: unknown host service '5555:features'
 - NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:31.853Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
 
 
-## 2026-02-27T12:18:47.788Z
-## DoctorBot Scan [2026-02-27T12:18:47.788Z]
+## 2026-02-27T12:55:32.827Z
+## DoctorBot Scan [2026-02-27T12:55:32.827Z]
+- ADB no encontrado: adb.exe no está en el PATH ni en ubicaciones comunes.
+- NetBot failed: adb.exe: unknown host service '5555:features': 2026-02-27T12:22:36.724Z — NetBot failed: adb.exe: unknown host service '5555:features'
 - NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:31.853Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
 
 
-## 2026-02-27T12:18:49.927Z
-## DoctorBot Scan [2026-02-27T12:18:49.926Z]
+## 2026-02-27T12:55:41.387Z
+## DoctorBot Scan [2026-02-27T12:55:41.387Z]
+- ADB no encontrado: adb.exe no está en el PATH ni en ubicaciones comunes.
+- NetBot failed: adb.exe: unknown host service '5555:features': 2026-02-27T12:22:36.724Z — NetBot failed: adb.exe: unknown host service '5555:features'
 - NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:31.853Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
 
 
-## 2026-02-27T12:19:14.112Z
-User: hola
-Intent: chat_response
-Result: ¡Hola! ¡Mucho gusto! (Hello! Great pleasure!)
-
-Ah, ¿cómo puedo ayudarte hoy? (How can I help you today?)
-
-Please feel free to share what's on your mind. I'm here to listen and assist in any way I can.
-
-
-## 2026-02-27T12:19:17.772Z
-## DoctorBot Scan [2026-02-27T12:19:17.772Z]
+## 2026-02-27T12:56:11.357Z
+## DoctorBot Scan [2026-02-27T12:56:11.357Z]
+- ADB no encontrado: adb.exe no está en el PATH ni en ubicaciones comunes.
+- NetBot failed: adb.exe: unknown host service '5555:features': 2026-02-27T12:22:36.724Z — NetBot failed: adb.exe: unknown host service '5555:features'
 - NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:31.853Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
 
 
-## 2026-02-27T12:19:47.774Z
-## DoctorBot Scan [2026-02-27T12:19:47.774Z]
+## 2026-02-27T12:56:41.194Z
+## DoctorBot Scan [2026-02-27T12:56:41.194Z]
+- ADB no encontrado: adb.exe no está en el PATH ni en ubicaciones comunes.
+- NetBot failed: adb.exe: unknown host service '5555:features': 2026-02-27T12:22:36.724Z — NetBot failed: adb.exe: unknown host service '5555:features'
 - NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:31.853Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
 
 
-## 2026-02-27T12:20:17.777Z
-## DoctorBot Scan [2026-02-27T12:20:17.777Z]
+## 2026-02-27T12:57:11.197Z
+## DoctorBot Scan [2026-02-27T12:57:11.197Z]
+- ADB no encontrado: adb.exe no está en el PATH ni en ubicaciones comunes.
+- STT error: The model `whisper-large-v3-turbo` is blocked at the organization lev: 2026-02-27T12:57:08.931Z — STT error: The model `whisper-large-v3-turbo` is blocked at the organization level. Please have the org admin enable this model in the org settings at https://console.groq.com/settings/limits
+- NetBot failed: adb.exe: unknown host service '5555:features': 2026-02-27T12:22:36.724Z — NetBot failed: adb.exe: unknown host service '5555:features'
 - NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:31.853Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
 
 
-## 2026-02-27T12:20:17.869Z
-User: podemos habalr en español, como te llamas y quie soy?
-Intent: chat_response
-Result: ¡gracias por la warm welcome! Me alegra saber que estás listo para hablar en español.
-
-Sé que soy una inteligencia artificial, no perfecta, pero estoy aquí para ayudarte de manera efectiva.
-
-¿Qué pued
-
-
-## 2026-02-27T12:20:47.772Z
-## DoctorBot Scan [2026-02-27T12:20:47.772Z]
+## 2026-02-27T12:57:16.246Z
+## DoctorBot Scan [2026-02-27T12:57:16.246Z]
+- ADB no encontrado: adb.exe no está en el PATH ni en ubicaciones comunes.
+- STT error: The model `whisper-large-v3-turbo` is blocked at the organization lev: 2026-02-27T12:57:08.931Z — STT error: The model `whisper-large-v3-turbo` is blocked at the organization level. Please have the org admin enable this model in the org settings at https://console.groq.com/settings/limits
+- NetBot failed: adb.exe: unknown host service '5555:features': 2026-02-27T12:22:36.724Z — NetBot failed: adb.exe: unknown host service '5555:features'
 - NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:31.853Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
 
 
-## 2026-02-27T12:21:18.383Z
-## DoctorBot Scan [2026-02-27T12:21:18.383Z]
-- NetBot failed: "adb" no se reconoce como un comando interno o externo,: 2026-02-27T01:05:31.853Z — NetBot failed: "adb" no se reconoce como un comando interno o externo,
+## 2026-02-27T12:57:46.365Z
+## DoctorBot Scan [2026-02-27T12:57:46.365Z]
+- ADB no encontrado: adb.exe no está en el PATH ni en ubicaciones comunes.
+- STT error: The model `whisper-large-v3-turbo` is blocked at the organization lev: 2026-02-27T12:57:35.411Z — STT error: The model `whisper-large-v3-turbo` is blocked at the organization level. Please have the org admin enable this model in the org settings at https://console.groq.com/settings/limits
+- NetBot failed: adb.exe: unknown host service '5555:features': 2026-02-27T12:22:36.724Z — NetBot failed: adb.exe: unknown host service '5555:features'
+
+
+## 2026-02-27T12:58:16.239Z
+## DoctorBot Scan [2026-02-27T12:58:16.239Z]
+- ADB no encontrado: adb.exe no está en el PATH ni en ubicaciones comunes.
+- STT error: The model `whisper-large-v3-turbo` is blocked at the organization lev: 2026-02-27T12:57:35.411Z — STT error: The model `whisper-large-v3-turbo` is blocked at the organization level. Please have the org admin enable this model in the org settings at https://console.groq.com/settings/limits
+- NetBot failed: adb.exe: unknown host service '5555:features': 2026-02-27T12:22:36.724Z — NetBot failed: adb.exe: unknown host service '5555:features'

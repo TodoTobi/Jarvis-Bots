@@ -76,3 +76,12 @@ programa o archivo por lotes ejecutable.
 programa o archivo por lotes ejecutable.
 [2026-02-27T01:05:31.853Z] [ERROR] NetBot failed: "adb" no se reconoce como un comando interno o externo,
 programa o archivo por lotes ejecutable.
+[2026-02-27T12:22:35.073Z] [ERROR] NetBot failed: adb.exe: unknown host service '5555:features'
+[2026-02-27T12:22:35.401Z] [ERROR] NetBot failed: adb.exe: unknown host service '5555:features'
+[2026-02-27T12:22:35.874Z] [ERROR] NetBot failed: adb.exe: unknown host service '5555:features'
+[2026-02-27T12:22:36.202Z] [ERROR] NetBot failed: adb.exe: unknown host service '5555:features'
+[2026-02-27T12:22:36.452Z] [ERROR] NetBot failed: adb.exe: unknown host service '5555:features'
+[2026-02-27T12:22:36.724Z] [ERROR] NetBot failed: adb.exe: unknown host service '5555:features'
+[2026-02-27T12:57:08.443Z] [ERROR] STT error: The model `whisper-large-v3-turbo` is blocked at the organization level. Please have the org admin enable this model in the org settings at https://console.groq.com/settings/limits
+[2026-02-27T12:57:08.931Z] [ERROR] STT error: The model `whisper-large-v3-turbo` is blocked at the organization level. Please have the org admin enable this model in the org settings at https://console.groq.com/settings/limits
+[2026-02-27T12:57:35.411Z] [ERROR] STT error: The model `whisper-large-v3-turbo` is blocked at the organization level. Please have the org admin enable this model in the org settings at https://console.groq.com/settings/limits

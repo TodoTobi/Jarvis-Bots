@@ -1,4 +1,4 @@
-// === Sidebar.jsx — ChatGPT-style with history + projects ===
+// === Sidebar.jsx — with drag conversations into projects ===
 import React, { useState, useEffect, useRef, useCallback } from "react";
 
 const API = "http://localhost:3001/api";
@@ -15,11 +15,10 @@ const NAV_SYSTEM = [
     { key: "settings", icon: "⚙️", label: "Configuración" },
 ];
 
-/* ── Date grouping ── */
+/* ── Date grouping ────────────────────────────────────── */
 function getDateGroup(dateStr) {
     const date = new Date(dateStr);
-    const now = new Date();
-    const diffDays = Math.floor((now - date) / 86400000);
+    const diffDays = Math.floor((Date.now() - date) / 86400000);
     if (diffDays === 0) return "Hoy";
     if (diffDays === 1) return "Ayer";
     if (diffDays <= 7) return "Últimos 7 días";
@@ -29,7 +28,6 @@ function getDateGroup(dateStr) {
 
 const DATE_GROUP_ORDER = ["Hoy", "Ayer", "Últimos 7 días", "Últimos 30 días", "Anteriores"];
 
-/* ── Project dot color ── */
 function ProjectDot({ color }) {
     return (
         <span style={{
@@ -39,93 +37,96 @@ function ProjectDot({ color }) {
     );
 }
 
-/* ── Conversation item ── */
-function ConvItem({ conv, active, onSelect, onRename, onDelete }) {
+/* ── Conversation item — draggable ────────────────────── */
+function ConvItem({ conv, active, onSelect, onRename, onDelete, onDragStart }) {
     const [editing, setEditing] = useState(false);
     const [val, setVal] = useState(conv.title);
     const inputRef = useRef(null);
 
-    const startEdit = (e) => {
-        e.stopPropagation();
-        setEditing(true);
-        setTimeout(() => inputRef.current?.focus(), 50);
-    };
-
+    const startEdit = (e) => { e.stopPropagation(); setEditing(true); setTimeout(() => inputRef.current?.focus(), 50); };
     const commitEdit = () => {
         setEditing(false);
-        if (val.trim() && val.trim() !== conv.title) {
-            onRename(conv.id, val.trim());
-        } else {
-            setVal(conv.title);
-        }
+        if (val.trim() && val.trim() !== conv.title) onRename(conv.id, val.trim());
+        else setVal(conv.title);
     };
 
     return (
         <div
+            draggable
+            onDragStart={(e) => {
+                e.dataTransfer.setData("conv_id", conv.id);
+                e.dataTransfer.setData("conv_title", conv.title);
+                onDragStart?.(conv.id);
+                // Style the drag ghost
+                e.currentTarget.style.opacity = "0.5";
+            }}
+            onDragEnd={(e) => { e.currentTarget.style.opacity = "1"; }}
             onClick={() => onSelect(conv)}
             onDoubleClick={startEdit}
+            title="Arrastrá para mover a un proyecto"
             style={{
                 display: "flex", alignItems: "center", gap: 6,
                 padding: "7px 10px", borderRadius: 8,
                 background: active ? "rgba(255,255,255,0.1)" : "transparent",
-                cursor: "pointer", position: "relative", group: true,
-                transition: "background 0.12s"
+                cursor: "grab", position: "relative",
+                transition: "background 0.12s",
+                userSelect: "none",
             }}
             onMouseEnter={e => { if (!active) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
             onMouseLeave={e => { if (!active) e.currentTarget.style.background = "transparent"; }}
         >
+            {/* Drag handle indicator */}
+            <span style={{ fontSize: 10, color: "#3a3a3a", flexShrink: 0, cursor: "grab" }}>⠿</span>
+
             {editing ? (
                 <input
                     ref={inputRef}
                     value={val}
                     onChange={e => setVal(e.target.value)}
                     onBlur={commitEdit}
-                    onKeyDown={e => { if (e.key === "Enter") commitEdit(); if (e.key === "Escape") { setEditing(false); setVal(conv.title); } }}
+                    onKeyDown={e => {
+                        if (e.key === "Enter") commitEdit();
+                        if (e.key === "Escape") { setEditing(false); setVal(conv.title); }
+                    }}
                     onClick={e => e.stopPropagation()}
                     style={{
                         flex: 1, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)",
                         borderRadius: 5, padding: "2px 6px", color: "#fff", fontSize: 13,
-                        fontFamily: "'DM Sans', sans-serif", outline: "none"
+                        fontFamily: "'DM Sans', sans-serif", outline: "none",
                     }}
                 />
             ) : (
                 <span style={{
                     flex: 1, fontSize: 13, color: active ? "#ececec" : "#9b9b9b",
-                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                    lineHeight: "1.4"
+                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: "1.4",
                 }}>
                     {conv.title}
                 </span>
             )}
+
             <button
                 onClick={e => { e.stopPropagation(); onDelete(conv.id); }}
+                className="conv-delete-btn"
                 style={{
                     background: "none", border: "none", color: "#616161", cursor: "pointer",
-                    fontSize: 13, padding: "0 2px", flexShrink: 0,
-                    opacity: 0, transition: "opacity 0.12s"
+                    fontSize: 13, padding: "0 2px", flexShrink: 0, opacity: 0, transition: "opacity 0.12s",
                 }}
-                onMouseEnter={e => e.currentTarget.style.opacity = "1"}
-                onMouseLeave={e => e.currentTarget.style.opacity = "0"}
-                onMouseEnterCapture={e => e.currentTarget.parentElement?.querySelector("button")?.style.setProperty("opacity", "1")}
-                className="conv-delete-btn"
-            >
-                ×
-            </button>
+            >×</button>
         </div>
     );
 }
 
-/* ── Project item (draggable) ── */
-function ProjectItem({ project, open, onToggle, onRename, onDelete, onDragStart, onDragOver, onDrop }) {
+/* ── Project item — drop target ───────────────────────── */
+function ProjectItem({
+    project, open, onToggle, onRename, onDelete,
+    onDragStart, onDragOver, onDrop,
+    onConvDropped, // NEW: called when a conversation is dropped onto project
+    isDragOver,
+}) {
     const [editing, setEditing] = useState(false);
     const [val, setVal] = useState(project.name);
     const inputRef = useRef(null);
-
-    const startEdit = (e) => {
-        e.stopPropagation();
-        setEditing(true);
-        setTimeout(() => inputRef.current?.focus(), 50);
-    };
+    const [convDragOver, setConvDragOver] = useState(false);
 
     const commitEdit = () => {
         setEditing(false);
@@ -136,21 +137,45 @@ function ProjectItem({ project, open, onToggle, onRename, onDelete, onDragStart,
     return (
         <div
             draggable
-            onDragStart={() => onDragStart(project.id)}
-            onDragOver={e => { e.preventDefault(); onDragOver(project.id); }}
-            onDrop={() => onDrop(project.id)}
+            onDragStart={(e) => {
+                // Only start project drag if not dragging a conversation
+                if (e.dataTransfer.getData("conv_id")) return;
+                onDragStart(project.id);
+            }}
+            onDragOver={(e) => {
+                e.preventDefault();
+                const convId = e.dataTransfer.types.includes("text/plain");
+                // Detect if dragging a conversation (not a project)
+                setConvDragOver(true);
+                onDragOver(project.id);
+            }}
+            onDragLeave={() => setConvDragOver(false)}
+            onDrop={(e) => {
+                e.preventDefault();
+                setConvDragOver(false);
+                const convId = e.dataTransfer.getData("conv_id");
+                if (convId) {
+                    // A conversation was dropped onto this project
+                    onConvDropped(convId, project.id);
+                } else {
+                    // A project was dropped — reorder
+                    onDrop(project.id);
+                }
+            }}
             style={{ cursor: "grab" }}
         >
             <div
                 onClick={() => onToggle(project.id)}
-                onDoubleClick={startEdit}
+                onDoubleClick={(e) => { e.stopPropagation(); setEditing(true); setTimeout(() => inputRef.current?.focus(), 50); }}
                 style={{
                     display: "flex", alignItems: "center", gap: 8,
                     padding: "7px 10px", borderRadius: 8,
-                    cursor: "pointer", transition: "background 0.12s"
+                    cursor: "pointer", transition: "background 0.12s",
+                    background: convDragOver ? "rgba(16,163,127,0.15)" : "transparent",
+                    border: convDragOver ? "1px dashed rgba(16,163,127,0.6)" : "1px solid transparent",
                 }}
-                onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}
-                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                onMouseEnter={e => { if (!convDragOver) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+                onMouseLeave={e => { if (!convDragOver) e.currentTarget.style.background = "transparent"; }}
             >
                 <ProjectDot color={project.color} />
                 {editing ? (
@@ -159,17 +184,21 @@ function ProjectItem({ project, open, onToggle, onRename, onDelete, onDragStart,
                         value={val}
                         onChange={e => setVal(e.target.value)}
                         onBlur={commitEdit}
-                        onKeyDown={e => { if (e.key === "Enter") commitEdit(); if (e.key === "Escape") { setEditing(false); setVal(project.name); } }}
+                        onKeyDown={e => {
+                            if (e.key === "Enter") commitEdit();
+                            if (e.key === "Escape") { setEditing(false); setVal(project.name); }
+                        }}
                         onClick={e => e.stopPropagation()}
                         style={{
                             flex: 1, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)",
                             borderRadius: 5, padding: "2px 6px", color: "#fff", fontSize: 13,
-                            fontFamily: "'DM Sans', sans-serif", outline: "none"
+                            fontFamily: "'DM Sans', sans-serif", outline: "none",
                         }}
                     />
                 ) : (
-                    <span style={{ flex: 1, fontSize: 13, color: "#9b9b9b", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    <span style={{ flex: 1, fontSize: 13, color: convDragOver ? "#10a37f" : "#9b9b9b", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                         {project.name}
+                        {convDragOver && <span style={{ fontSize: 10, marginLeft: 6, opacity: 0.8 }}>soltar aquí</span>}
                     </span>
                 )}
                 <span style={{ fontSize: 11, color: "#616161", transform: open ? "rotate(90deg)" : "none", transition: "transform 0.2s" }}>▶</span>
@@ -197,7 +226,6 @@ export function Sidebar({ view, setView, doctorErrors = 0, activeConvId, onSelec
     const [dragOverId, setDragOverId] = useState(null);
     const newProjectRef = useRef(null);
 
-    /* ── Load data ── */
     const loadAll = useCallback(async () => {
         try {
             const [statusRes, convsRes, projsRes] = await Promise.all([
@@ -217,7 +245,6 @@ export function Sidebar({ view, setView, doctorErrors = 0, activeConvId, onSelec
         return () => clearInterval(iv);
     }, [loadAll]);
 
-    // Load convs for open projects
     useEffect(() => {
         projects.forEach(async proj => {
             if (openProjects[proj.id]) {
@@ -229,10 +256,8 @@ export function Sidebar({ view, setView, doctorErrors = 0, activeConvId, onSelec
         });
     }, [openProjects, projects]);
 
-    /* ── Conversations without project ── */
     const rootConvs = conversations.filter(c => !c.project_id);
 
-    /* ── Group by date ── */
     const grouped = {};
     rootConvs.forEach(c => {
         const g = getDateGroup(c.updated_at || c.created_at);
@@ -247,23 +272,9 @@ export function Sidebar({ view, setView, doctorErrors = 0, activeConvId, onSelec
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ title: "Nueva conversación" })
             }).then(r => r.json());
-            if (conv?.id) {
-                await loadAll();
-                onSelectConv?.(conv);
-                setView("chat");
-            } else {
-                onNewChat?.();
-                setView("chat");
-            }
-        } catch {
-            onNewChat?.();
-            setView("chat");
-        }
-    };
-
-    const handleSelectConv = (conv) => {
-        onSelectConv?.(conv);
-        setView("chat");
+            if (conv?.id) { await loadAll(); onSelectConv?.(conv); setView("chat"); }
+            else { onNewChat?.(); setView("chat"); }
+        } catch { onNewChat?.(); setView("chat"); }
     };
 
     const handleRenameConv = async (id, title) => {
@@ -285,9 +296,7 @@ export function Sidebar({ view, setView, doctorErrors = 0, activeConvId, onSelec
             method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name })
         });
-        setNewProjectName("");
-        setShowNewProject(false);
-        loadAll();
+        setNewProjectName(""); setShowNewProject(false); loadAll();
     };
 
     const handleRenameProject = async (id, name) => {
@@ -303,11 +312,24 @@ export function Sidebar({ view, setView, doctorErrors = 0, activeConvId, onSelec
         loadAll();
     };
 
-    const toggleProject = (id) => {
-        setOpenProjects(p => ({ ...p, [id]: !p[id] }));
+    const toggleProject = (id) => setOpenProjects(p => ({ ...p, [id]: !p[id] }));
+
+    /* ── Drag conversations into projects ── */
+    const handleConvDroppedOnProject = async (convId, projectId) => {
+        try {
+            await fetch(`${API}/history/conversations/${convId}`, {
+                method: "PUT", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ project_id: projectId })
+            });
+            // Auto-open the project to show the moved conversation
+            setOpenProjects(p => ({ ...p, [projectId]: true }));
+            loadAll();
+        } catch (err) {
+            console.error("Failed to move conversation to project:", err);
+        }
     };
 
-    /* ── Drag & drop reorder projects ── */
+    /* ── Drag project reorder ── */
     const handleDragStart = (id) => setDragId(id);
     const handleDragOver = (id) => setDragOverId(id);
     const handleDrop = async (targetId) => {
@@ -318,8 +340,7 @@ export function Sidebar({ view, setView, doctorErrors = 0, activeConvId, onSelec
         const [moved] = reordered.splice(fromIdx, 1);
         reordered.splice(toIdx, 0, moved);
         setProjects(reordered);
-        setDragId(null);
-        setDragOverId(null);
+        setDragId(null); setDragOverId(null);
         await fetch(`${API}/history/projects/reorder`, {
             method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ orderedIds: reordered.map(p => p.id) })
@@ -332,32 +353,20 @@ export function Sidebar({ view, setView, doctorErrors = 0, activeConvId, onSelec
             display: "flex", flexDirection: "column", overflow: "hidden",
             borderRight: "1px solid rgba(255,255,255,0.07)"
         }}>
-
             {/* ── Logo + New Chat ── */}
             <div style={{ padding: "10px 8px 6px", flexShrink: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 6px 8px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <div style={{
-                            width: 28, height: 28, borderRadius: "50%", background: "#10a37f",
-                            display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "#fff"
-                        }}>⚡</div>
+                        <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#10a37f", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "#fff" }}>⚡</div>
                         <span style={{ fontSize: 15, fontWeight: 600, color: "#ececec", letterSpacing: "-0.01em" }}>Jarvis AI</span>
                     </div>
-                    <button
-                        onClick={handleNewChat}
-                        title="Nueva conversación"
-                        style={{
-                            background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
-                            borderRadius: 8, color: "#9b9b9b", cursor: "pointer",
-                            width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center",
-                            fontSize: 16, transition: "all 0.12s"
-                        }}
+                    <button onClick={handleNewChat} title="Nueva conversación"
+                        style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: "#9b9b9b", cursor: "pointer", width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, transition: "all 0.12s" }}
                         onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "#ececec"; }}
                         onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "#9b9b9b"; }}
                     >✏️</button>
                 </div>
 
-                {/* Nav */}
                 {NAV_MAIN.map(item => (
                     <NavBtn key={item.key} item={item} active={view === item.key} onClick={() => setView(item.key)} />
                 ))}
@@ -366,18 +375,13 @@ export function Sidebar({ view, setView, doctorErrors = 0, activeConvId, onSelec
             {/* ── Scrollable history + projects ── */}
             <div style={{ flex: 1, overflowY: "auto", padding: "0 8px" }}>
 
-                {/* Supabase warning */}
                 {!supabaseOk && (
-                    <div style={{
-                        margin: "6px 4px", padding: "8px 10px", borderRadius: 8,
-                        background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)",
-                        fontSize: 11, color: "#f59e0b", lineHeight: 1.5
-                    }}>
-                        ⚠ Supabase no conectado. Agrega SUPABASE_URL y SUPABASE_ANON_KEY en .env para activar el historial.
+                    <div style={{ margin: "6px 4px", padding: "8px 10px", borderRadius: 8, background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)", fontSize: 11, color: "#f59e0b", lineHeight: 1.5 }}>
+                        ⚠ Sin Supabase. Agrega SUPABASE_URL y SUPABASE_ANON_KEY en .env
                     </div>
                 )}
 
-                {/* ── Projects section ── */}
+                {/* ── Projects (drop targets) ── */}
                 <div style={{ marginTop: 8 }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 8px 2px" }}>
                         <span style={{ fontSize: 11, fontWeight: 500, color: "#616161", textTransform: "uppercase", letterSpacing: "0.04em" }}>
@@ -392,28 +396,18 @@ export function Sidebar({ view, setView, doctorErrors = 0, activeConvId, onSelec
 
                     {showNewProject && (
                         <div style={{ display: "flex", gap: 4, padding: "4px 6px" }}>
-                            <input
-                                ref={newProjectRef}
-                                value={newProjectName}
-                                onChange={e => setNewProjectName(e.target.value)}
+                            <input ref={newProjectRef} value={newProjectName} onChange={e => setNewProjectName(e.target.value)}
                                 onKeyDown={e => { if (e.key === "Enter") handleCreateProject(); if (e.key === "Escape") { setShowNewProject(false); setNewProjectName(""); } }}
                                 placeholder="Nombre del proyecto..."
-                                style={{
-                                    flex: 1, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)",
-                                    borderRadius: 6, padding: "5px 8px", color: "#ececec", fontSize: 12,
-                                    fontFamily: "'DM Sans', sans-serif", outline: "none"
-                                }}
+                                style={{ flex: 1, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 6, padding: "5px 8px", color: "#ececec", fontSize: 12, fontFamily: "'DM Sans', sans-serif", outline: "none" }}
                             />
                             <button onClick={handleCreateProject}
-                                style={{ background: "#10a37f", border: "none", borderRadius: 6, padding: "5px 8px", color: "#fff", cursor: "pointer", fontSize: 11, fontWeight: 600 }}>
-                                ✓
-                            </button>
+                                style={{ background: "#10a37f", border: "none", borderRadius: 6, padding: "5px 8px", color: "#fff", cursor: "pointer", fontSize: 11, fontWeight: 600 }}>✓</button>
                         </div>
                     )}
 
                     {projects.map(proj => (
-                        <div key={proj.id}
-                            style={{ outline: dragOverId === proj.id && dragId !== proj.id ? "1px dashed #10a37f" : "none", borderRadius: 8 }}>
+                        <div key={proj.id} style={{ outline: dragOverId === proj.id && dragId !== proj.id ? "1px dashed #10a37f" : "none", borderRadius: 8 }}>
                             <ProjectItem
                                 project={proj}
                                 open={!!openProjects[proj.id]}
@@ -423,20 +417,22 @@ export function Sidebar({ view, setView, doctorErrors = 0, activeConvId, onSelec
                                 onDragStart={handleDragStart}
                                 onDragOver={handleDragOver}
                                 onDrop={handleDrop}
+                                onConvDropped={handleConvDroppedOnProject}
+                                isDragOver={dragOverId === proj.id}
                             />
                             {openProjects[proj.id] && (
                                 <div style={{ paddingLeft: 16, marginBottom: 4 }}>
                                     {(projectConvs[proj.id] || []).length === 0 ? (
-                                        <div style={{ fontSize: 12, color: "#616161", padding: "4px 10px" }}>Sin chats</div>
+                                        <div style={{ fontSize: 12, color: "#616161", padding: "4px 10px", fontStyle: "italic" }}>Sin chats</div>
                                     ) : (
                                         (projectConvs[proj.id] || []).map(conv => (
                                             <ConvItem
-                                                key={conv.id}
-                                                conv={conv}
+                                                key={conv.id} conv={conv}
                                                 active={activeConvId === conv.id}
-                                                onSelect={handleSelectConv}
+                                                onSelect={(c) => { onSelectConv?.(c); setView("chat"); }}
                                                 onRename={handleRenameConv}
                                                 onDelete={handleDeleteConv}
+                                                onDragStart={() => { }}
                                             />
                                         ))
                                     )}
@@ -452,6 +448,13 @@ export function Sidebar({ view, setView, doctorErrors = 0, activeConvId, onSelec
 
                 <div style={{ height: 1, background: "rgba(255,255,255,0.07)", margin: "10px 4px 8px" }} />
 
+                {/* ── Tip for dragging ── */}
+                {supabaseOk && rootConvs.length > 0 && projects.length > 0 && (
+                    <div style={{ fontSize: 10, color: "#3a3a3a", padding: "0 10px 6px", lineHeight: 1.4 }}>
+                        ⠿ Arrastrá chats a un proyecto
+                    </div>
+                )}
+
                 {/* ── Conversations grouped by date ── */}
                 {supabaseOk ? (
                     DATE_GROUP_ORDER.map(group => {
@@ -464,12 +467,12 @@ export function Sidebar({ view, setView, doctorErrors = 0, activeConvId, onSelec
                                 </div>
                                 {items.map(conv => (
                                     <ConvItem
-                                        key={conv.id}
-                                        conv={conv}
+                                        key={conv.id} conv={conv}
                                         active={activeConvId === conv.id}
-                                        onSelect={handleSelectConv}
+                                        onSelect={(c) => { onSelectConv?.(c); setView("chat"); }}
                                         onRename={handleRenameConv}
                                         onDelete={handleDeleteConv}
+                                        onDragStart={() => { }}
                                     />
                                 ))}
                             </div>
@@ -495,10 +498,7 @@ export function Sidebar({ view, setView, doctorErrors = 0, activeConvId, onSelec
                     />
                 ))}
                 <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px 4px" }}>
-                    <span style={{
-                        width: 7, height: 7, borderRadius: "50%", background: "#19c37d",
-                        animation: "pulseSidebar 3s ease-in-out infinite", flexShrink: 0
-                    }} />
+                    <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#19c37d", animation: "pulseSidebar 3s ease-in-out infinite", flexShrink: 0 }} />
                     <span style={{ fontSize: 13, color: "#616161" }}>Sistema activo</span>
                     {supabaseOk && <span style={{ marginLeft: "auto", width: 6, height: 6, borderRadius: "50%", background: "#10a37f" }} title="Supabase conectado" />}
                 </div>
@@ -516,8 +516,7 @@ export function Sidebar({ view, setView, doctorErrors = 0, activeConvId, onSelec
 
 function NavBtn({ item, active, onClick, badge }) {
     return (
-        <button
-            onClick={onClick}
+        <button onClick={onClick}
             style={{
                 display: "flex", alignItems: "center", gap: 10, width: "100%",
                 background: active ? "rgba(255,255,255,0.1)" : "transparent",
@@ -526,7 +525,7 @@ function NavBtn({ item, active, onClick, badge }) {
                 padding: "9px 12px", borderRadius: 8, cursor: "pointer",
                 fontSize: 14, fontWeight: active ? 500 : 400,
                 fontFamily: "'DM Sans', sans-serif", textAlign: "left",
-                transition: "all 0.12s", position: "relative", marginBottom: 1
+                transition: "all 0.12s", position: "relative", marginBottom: 1,
             }}
             onMouseEnter={e => { if (!active) { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "#ececec"; } }}
             onMouseLeave={e => { if (!active) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#9b9b9b"; } }}
