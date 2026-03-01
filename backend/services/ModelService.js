@@ -74,15 +74,30 @@ const QUICK_RULES = [
     },
 
     // ── Búsqueda web con resultados ──────────────────────────────────────────
-    // "busca X en google", "buscame X", "googleá X", "qué es X", "quién es X"
+    // Cubre: "busca X", "buscame X", "busca en la web X", "busca en google X",
+    //        "googleá X", "cuántos años tiene X", "quién es X", "qué es X"
     {
-        patterns: [/buscá?(?:me|nos)?\s+(?:en\s+(?:google|web|internet|bing|duckduckgo)\s+)?(.+)|search[ea]?\s+(.+)|gogle[aá]?\s+(.+)|googlea[r]?\s+(.+)/i],
+        patterns: [
+            /buscá?(?:me|nos|r)?[\s,]+(?:en[\s]+(?:la[\s]+)?(?:web|google|internet|bing|duckduckgo)[\s]+)?(.+)/i,
+            /search[ea]?[\s]+(.+)/i,
+            /googl[eé][aá]?[\s]+(.+)/i,
+            /cu[aá]ntos[\s]+a[ñn]os[\s]+(?:tiene|tenía|tenia|cumple)[\s]+(.+)/i,
+            /qu[eé][\s]+(?:edad|a[ñn]os)[\s]+tiene[\s]+(.+)/i,
+            /qui[eé]n[\s]+(?:es|fue|era|son)[\s]+(.+)/i,
+            /qu[eé][\s]+es[\s]+(?:el|la|los|las|un|una)?[\s]*(.+)/i,
+            /cu[aá]ndo[\s]+(?:naci[oó]|muri[oó]|fue|empez[oó])[\s]+(.+)/i,
+        ],
         result: (m) => {
-            const match = m.match(/buscá?(?:me|nos)?\s+(?:en\s+(?:google|web|internet|bing|duckduckgo)\s+)?(.+)/i)
-                || m.match(/search[ea]?\s+(.+)/i)
-                || m.match(/googl[eé][aá]?\s+(.+)/i);
+            const match =
+                m.match(/buscá?(?:me|nos|r)?[\s,]+(?:en[\s]+(?:la[\s]+)?(?:web|google|internet|bing|duckduckgo)[\s]+)?(.+)/i) ||
+                m.match(/search[ea]?[\s]+(.+)/i) ||
+                m.match(/googl[eé][aá]?[\s]+(.+)/i) ||
+                m.match(/cu[aá]ntos[\s]+a[ñn]os[\s]+(?:tiene|tenía|tenia|cumple)[\s]+(.+)/i) ||
+                m.match(/qui[eé]n[\s]+(?:es|fue|era)[\s]+(.+)/i) ||
+                m.match(/qu[eé][\s]+es[\s]+(?:el|la|un|una)?[\s]*(.+)/i) ||
+                m.match(/cu[aá]ndo[\s]+\w+[\s]+(.+)/i);
             const query = match ? match[1].trim() : m.trim();
-            // Excluir si es "busca youtube X" (eso lo maneja la regla de YouTube)
+            // Excluir YouTube (regla aparte)
             if (/y[ouo][ut][ut][ub][be]e?/.test(query)) return null;
             return { intent: "search_web", parameters: { query } };
         }

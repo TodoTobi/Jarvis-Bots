@@ -202,15 +202,83 @@ class WhatsAppBot extends Bot {
             await this._handleMessage(msg);
         });
 
+        // ── Self-chat: mensajes enviados AL PROPIO NÚMERO ──────────────────
+        // Cuando mandás un mensaje a tu propio chat de WhatsApp (chat "Tú mismo"),
+        // fromMe=true y msg.to contiene tu propio JID.
+        // Esto permite controlar Jarvis directamente desde WhatsApp.
         this.client.on("message_create", async (msg) => {
             if (!msg.fromMe) return;
+
             if (this.debugMode) {
-                logger.info(`WhatsAppBot DEBUG: self-message from="${msg.from}" to="${msg.to}" body="${msg.body?.substring(0, 50)}"`);
+                logger.info(`WhatsAppBot DEBUG: self-message from="${msg.from}" to="${msg.to}" body="${msg.body?.substring(0, 60)}"`);
+            }
+
+            // Solo procesar si fue enviado al propio número (self-chat)
+            try {
+                const myJid = this.client.info?.wid?.user;
+                if (!myJid) return;
+
+                const toNumber = (msg.to || "").replace(/@.*/, "").replace(/\D/g, "");
+                const myNumber = myJid.replace(/\D/g, "");
+
+                // Chequear coincidencia numérica (con o sin prefijo 549)
+                const isSelfChat = toNumber === myNumber
+                    || toNumber === myNumber.replace(/^549/, "54")
+                    || "549" + toNumber.replace(/^54/, "") === myNumber
+                    || toNumber === myNumber;
+
+                if (!isSelfChat) return;
+
+                const text = msg.body?.trim();
+                if (!text) return;
+
+                logger.info(`WhatsAppBot: self-chat command: "${text.substring(0, 80)}"`);
+                await this._handleSelfMessage(msg, text);
+
+            } catch (err) {
+                logger.warn(`WhatsAppBot self-message error: ${err.message}`);
             }
         });
 
         await this.client.initialize();
         return "WhatsAppBot iniciado — escanear QR en la UI o terminal para vincular el teléfono";
+    }
+
+    /* ── Self-chat message handler ───────────────────────── */
+    // Procesa mensajes que vos mismo enviaste a tu propio número de WhatsApp.
+    // Funciona exactamente igual al chat del panel web.
+
+    async _handleSelfMessage(msg, text) {
+        try {
+            // Chequear comandos de silencio
+            if (SILENCE_TRIGGERS.some(r => r.test(text))) {
+                this.silenced = true;
+                logger.info("WhatsAppBot: silence mode ON (self-chat)");
+                await msg.reply("🔇 Modo silencio activado.");
+                return;
+            }
+
+            if (RESUME_TRIGGERS.some(r => r.test(text))) {
+                this.silenced = false;
+                logger.info("WhatsAppBot: silence mode OFF (self-chat)");
+                await msg.reply("🔊 De vuelta. ¿En qué puedo ayudarte?");
+                return;
+            }
+
+            if (this.silenced) return;
+
+            logger.info(`WhatsAppBot self-chat → orchestrator: "${text.substring(0, 80)}"`);
+
+            const result = await this.orchestrator(text);
+            const reply = result?.reply || "Sin respuesta del sistema.";
+
+            // Responder en el mismo chat (self-chat)
+            await msg.reply(reply);
+
+        } catch (err) {
+            logger.error(`WhatsAppBot _handleSelfMessage error: ${err.message}`);
+            try { await msg.reply("❌ Error interno del sistema."); } catch { }
+        }
     }
 
     async stop() {

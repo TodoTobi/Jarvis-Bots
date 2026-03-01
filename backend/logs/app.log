@@ -8681,3 +8681,498 @@ This code
 [2026-03-01T16:09:31.050Z] [INFO] GET /api/history/status
 [2026-03-01T16:09:31.052Z] [INFO] GET /api/history/conversations
 [2026-03-01T16:09:31.053Z] [INFO] GET /api/history/projects
+[2026-03-01T16:37:18.592Z] [INFO] InstructionLoader: loaded 8 md files from C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\md
+[2026-03-01T16:37:18.594Z] [INFO] InstructionLoader: memory.md trimmed from 5094B to ~5000B
+[2026-03-01T16:37:18.655Z] [INFO] BatBot: whitelist loaded (28 scripts)
+[2026-03-01T16:37:18.655Z] [INFO] NetBot: 2 devices loaded
+[2026-03-01T16:37:18.656Z] [INFO] NetBot: ADB from ADB_PATH: C:\Users\usuario\Desktop\platform-tools\adb.exe
+[2026-03-01T16:37:18.657Z] [INFO] BotManager initialized with 9 bots
+[2026-03-01T16:37:18.727Z] [INFO] Upload endpoint enabled
+[2026-03-01T16:37:18.730Z] [INFO] JarvisCore backend running on http://localhost:3001
+[2026-03-01T16:37:18.731Z] [INFO] Routes: /api/chat | /api/bots | /api/devices | /api/md | /api/settings | /api/doctor | /api/history | /api/stt | /api/whatsapp | /api/gemini | /api/system | /api/upload
+[2026-03-01T16:37:18.746Z] [INFO] ModelService: connected. Models: meta-llama-3.1-13b-instruct-abliterated, meta-llama-3.1-8b-instruct, liquid/lfm2.5-1.2b, text-embedding-nomic-embed-text-v1.5, openai/gpt-oss-20b
+[2026-03-01T16:37:19.923Z] [INFO] SupabaseService: conectado ✅ → https://eznjcwfpvrurfdydpell.supabase.co
+[2026-03-01T16:37:23.348Z] [INFO] GET /api/history/status
+[2026-03-01T16:37:23.356Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:37:23.359Z] [INFO] GET /api/history/projects
+[2026-03-01T16:37:23.363Z] [INFO] GET /api/doctor/scan
+[2026-03-01T16:37:23.473Z] [INFO] InstructionLoader: memory.md trimmed from 6061B to ~5000B
+[2026-03-01T16:37:24.688Z] [INFO] GET /api/history/status
+[2026-03-01T16:37:24.690Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:37:24.692Z] [INFO] GET /api/history/projects
+[2026-03-01T16:37:24.694Z] [INFO] GET /api/doctor/scan
+[2026-03-01T16:37:24.713Z] [INFO] GET /api/bots
+[2026-03-01T16:37:24.772Z] [INFO] InstructionLoader: memory.md trimmed from 6063B to ~5000B
+[2026-03-01T16:37:28.646Z] [INFO] DELETE /api/history/conversations/8055d089-1b86-4a7f-b032-2c31c0303d49
+[2026-03-01T16:37:28.879Z] [INFO] GET /api/history/status
+[2026-03-01T16:37:28.880Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:37:28.881Z] [INFO] GET /api/history/projects
+[2026-03-01T16:37:29.689Z] [INFO] GET /api/bots
+[2026-03-01T16:37:39.693Z] [INFO] GET /api/history/status
+[2026-03-01T16:37:39.695Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:37:39.697Z] [INFO] GET /api/history/projects
+[2026-03-01T16:37:44.080Z] [INFO] POST /api/chat
+[2026-03-01T16:37:44.082Z] [INFO] Chat request: "busca en la web la edad de maduro nicolas maduro"
+[2026-03-01T16:37:44.084Z] [INFO] ModelService: no quick match, querying LLM: "busca en la web la edad de maduro nicolas maduro"
+[2026-03-01T16:37:45.684Z] [INFO] ModelService raw: {
+  "intent": "define_age",
+  "parameters": {
+    "query": "Nicolas Maduro"
+  },
+  "priority": "norm
+[2026-03-01T16:37:45.685Z] [INFO] Intent resolved: define_age
+[2026-03-01T16:37:45.686Z] [INFO] Intent: define_age | Params: {"query":"Nicolas Maduro"}
+[2026-03-01T16:37:45.686Z] [INFO] Bot activated: WebBot
+[2026-03-01T16:37:45.687Z] [INFO] Executing: WebBot
+[2026-03-01T16:37:45.687Z] [INFO] WebBot processing: "Nicolas Maduro"
+[2026-03-01T16:37:47.756Z] [INFO] WebBot response: 173 chars
+[2026-03-01T16:37:47.757Z] [INFO] Done: WebBot
+[2026-03-01T16:37:49.132Z] [INFO] InstructionLoader: memory.md trimmed from 5390B to ~5000B
+[2026-03-01T16:37:54.693Z] [INFO] GET /api/history/status
+[2026-03-01T16:37:54.694Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:37:54.697Z] [INFO] GET /api/history/projects
+[2026-03-01T16:37:54.698Z] [INFO] GET /api/doctor/scan
+[2026-03-01T16:37:54.770Z] [INFO] InstructionLoader: memory.md trimmed from 6065B to ~5000B
+[2026-03-01T16:37:58.839Z] [INFO] POST /api/chat
+[2026-03-01T16:37:58.840Z] [INFO] Chat request: "nono busca en al web la edad de donald trump"
+[2026-03-01T16:37:58.841Z] [INFO] ModelService: no quick match, querying LLM: "nono busca en al web la edad de donald trump"
+[2026-03-01T16:38:00.713Z] [INFO] ModelService raw: {
+  "intent": "inform",
+  "parameters": {
+    "query": "¿Cuál fue la edad de Donald Trump?"
+  },
+  "
+[2026-03-01T16:38:00.714Z] [INFO] Intent resolved: inform
+[2026-03-01T16:38:00.714Z] [INFO] Intent: inform | Params: {"query":"¿Cuál fue la edad de Donald Trump?"}
+[2026-03-01T16:38:00.715Z] [INFO] Executing: WebBot
+[2026-03-01T16:38:00.715Z] [INFO] WebBot processing: "¿Cuál fue la edad de Donald Trump?"
+[2026-03-01T16:38:05.387Z] [INFO] WebBot response: 419 chars
+[2026-03-01T16:38:05.388Z] [INFO] Done: WebBot
+[2026-03-01T16:38:06.313Z] [INFO] InstructionLoader: memory.md trimmed from 5409B to ~5000B
+[2026-03-01T16:38:09.694Z] [INFO] GET /api/history/status
+[2026-03-01T16:38:09.695Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:38:09.696Z] [INFO] GET /api/history/projects
+[2026-03-01T16:38:24.689Z] [INFO] GET /api/history/status
+[2026-03-01T16:38:24.697Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:38:24.699Z] [INFO] GET /api/history/projects
+[2026-03-01T16:38:24.702Z] [INFO] GET /api/doctor/scan
+[2026-03-01T16:38:24.778Z] [INFO] InstructionLoader: memory.md trimmed from 6067B to ~5000B
+[2026-03-01T16:38:39.689Z] [INFO] GET /api/history/status
+[2026-03-01T16:38:39.691Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:38:39.692Z] [INFO] GET /api/history/projects
+[2026-03-01T16:38:54.690Z] [INFO] GET /api/history/status
+[2026-03-01T16:38:54.691Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:38:54.693Z] [INFO] GET /api/history/projects
+[2026-03-01T16:38:54.695Z] [INFO] GET /api/doctor/scan
+[2026-03-01T16:38:54.763Z] [INFO] InstructionLoader: memory.md trimmed from 6067B to ~5000B
+[2026-03-01T16:39:09.690Z] [INFO] GET /api/history/status
+[2026-03-01T16:39:09.692Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:39:09.694Z] [INFO] GET /api/history/projects
+[2026-03-01T16:39:24.690Z] [INFO] GET /api/history/status
+[2026-03-01T16:39:24.692Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:39:24.693Z] [INFO] GET /api/history/projects
+[2026-03-01T16:39:24.695Z] [INFO] GET /api/doctor/scan
+[2026-03-01T16:39:24.762Z] [INFO] InstructionLoader: memory.md trimmed from 6067B to ~5000B
+[2026-03-01T16:39:39.692Z] [INFO] GET /api/history/status
+[2026-03-01T16:39:39.693Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:39:39.695Z] [INFO] GET /api/history/projects
+[2026-03-01T16:39:54.691Z] [INFO] GET /api/history/status
+[2026-03-01T16:39:54.693Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:39:54.695Z] [INFO] GET /api/history/projects
+[2026-03-01T16:39:54.696Z] [INFO] GET /api/doctor/scan
+[2026-03-01T16:39:54.763Z] [INFO] InstructionLoader: memory.md trimmed from 6067B to ~5000B
+[2026-03-01T16:40:09.692Z] [INFO] GET /api/history/status
+[2026-03-01T16:40:09.693Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:40:09.695Z] [INFO] GET /api/history/projects
+[2026-03-01T16:40:24.693Z] [INFO] GET /api/history/status
+[2026-03-01T16:40:24.694Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:40:24.696Z] [INFO] GET /api/history/projects
+[2026-03-01T16:40:24.698Z] [INFO] GET /api/doctor/scan
+[2026-03-01T16:40:24.765Z] [INFO] InstructionLoader: memory.md trimmed from 6063B to ~5000B
+[2026-03-01T16:40:39.694Z] [INFO] GET /api/history/status
+[2026-03-01T16:40:39.695Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:40:39.697Z] [INFO] GET /api/history/projects
+[2026-03-01T16:40:54.691Z] [INFO] GET /api/history/status
+[2026-03-01T16:40:54.693Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:40:54.694Z] [INFO] GET /api/history/projects
+[2026-03-01T16:40:54.696Z] [INFO] GET /api/doctor/scan
+[2026-03-01T16:40:54.766Z] [INFO] InstructionLoader: memory.md trimmed from 6063B to ~5000B
+[2026-03-01T16:41:09.695Z] [INFO] GET /api/history/status
+[2026-03-01T16:41:09.696Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:41:09.699Z] [INFO] GET /api/history/projects
+[2026-03-01T16:41:24.690Z] [INFO] GET /api/history/status
+[2026-03-01T16:41:24.691Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:41:24.693Z] [INFO] GET /api/history/projects
+[2026-03-01T16:41:24.694Z] [INFO] GET /api/doctor/scan
+[2026-03-01T16:41:24.762Z] [INFO] InstructionLoader: memory.md trimmed from 6061B to ~5000B
+[2026-03-01T16:41:39.689Z] [INFO] GET /api/history/status
+[2026-03-01T16:41:39.690Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:41:39.692Z] [INFO] GET /api/history/projects
+[2026-03-01T16:41:54.690Z] [INFO] GET /api/history/status
+[2026-03-01T16:41:54.691Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:41:54.693Z] [INFO] GET /api/history/projects
+[2026-03-01T16:41:54.695Z] [INFO] GET /api/doctor/scan
+[2026-03-01T16:41:54.762Z] [INFO] InstructionLoader: memory.md trimmed from 6061B to ~5000B
+[2026-03-01T16:42:09.691Z] [INFO] GET /api/history/status
+[2026-03-01T16:42:09.692Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:42:09.694Z] [INFO] GET /api/history/projects
+[2026-03-01T16:42:24.691Z] [INFO] GET /api/history/status
+[2026-03-01T16:42:24.692Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:42:24.693Z] [INFO] GET /api/history/projects
+[2026-03-01T16:42:24.696Z] [INFO] GET /api/doctor/scan
+[2026-03-01T16:42:24.766Z] [INFO] InstructionLoader: memory.md trimmed from 6061B to ~5000B
+[2026-03-01T16:42:39.692Z] [INFO] GET /api/history/status
+[2026-03-01T16:42:39.694Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:42:39.696Z] [INFO] GET /api/history/projects
+[2026-03-01T16:42:54.692Z] [INFO] GET /api/history/status
+[2026-03-01T16:42:54.694Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:42:54.695Z] [INFO] GET /api/history/projects
+[2026-03-01T16:42:54.697Z] [INFO] GET /api/doctor/scan
+[2026-03-01T16:42:54.763Z] [INFO] InstructionLoader: memory.md trimmed from 6061B to ~5000B
+[2026-03-01T16:43:09.693Z] [INFO] GET /api/history/status
+[2026-03-01T16:43:09.695Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:43:09.697Z] [INFO] GET /api/history/projects
+[2026-03-01T16:43:24.693Z] [INFO] GET /api/history/status
+[2026-03-01T16:43:24.695Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:43:24.696Z] [INFO] GET /api/history/projects
+[2026-03-01T16:43:24.698Z] [INFO] GET /api/doctor/scan
+[2026-03-01T16:43:24.768Z] [INFO] InstructionLoader: memory.md trimmed from 6061B to ~5000B
+[2026-03-01T16:43:39.695Z] [INFO] GET /api/history/status
+[2026-03-01T16:43:39.696Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:43:39.698Z] [INFO] GET /api/history/projects
+[2026-03-01T16:43:54.689Z] [INFO] GET /api/history/status
+[2026-03-01T16:43:54.691Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:43:54.692Z] [INFO] GET /api/history/projects
+[2026-03-01T16:43:54.694Z] [INFO] GET /api/doctor/scan
+[2026-03-01T16:43:54.763Z] [INFO] InstructionLoader: memory.md trimmed from 6061B to ~5000B
+[2026-03-01T16:44:09.690Z] [INFO] GET /api/history/status
+[2026-03-01T16:44:09.691Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:44:09.692Z] [INFO] GET /api/history/projects
+[2026-03-01T16:44:25.319Z] [INFO] GET /api/history/status
+[2026-03-01T16:44:25.321Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:44:25.322Z] [INFO] GET /api/history/projects
+[2026-03-01T16:44:25.323Z] [INFO] GET /api/doctor/scan
+[2026-03-01T16:44:25.392Z] [INFO] InstructionLoader: memory.md trimmed from 6061B to ~5000B
+[2026-03-01T16:44:40.325Z] [INFO] GET /api/history/status
+[2026-03-01T16:44:40.326Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:44:40.328Z] [INFO] GET /api/history/projects
+[2026-03-01T16:44:55.317Z] [INFO] GET /api/history/status
+[2026-03-01T16:44:55.319Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:44:55.320Z] [INFO] GET /api/history/projects
+[2026-03-01T16:44:55.322Z] [INFO] GET /api/doctor/scan
+[2026-03-01T16:44:55.389Z] [INFO] InstructionLoader: memory.md trimmed from 6061B to ~5000B
+[2026-03-01T16:45:10.319Z] [INFO] GET /api/history/status
+[2026-03-01T16:45:10.321Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:45:10.322Z] [INFO] GET /api/history/projects
+[2026-03-01T16:46:11.315Z] [INFO] GET /api/history/status
+[2026-03-01T16:46:11.317Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:46:11.319Z] [INFO] GET /api/history/projects
+[2026-03-01T16:46:11.320Z] [INFO] GET /api/doctor/scan
+[2026-03-01T16:46:11.386Z] [INFO] InstructionLoader: memory.md trimmed from 6061B to ~5000B
+[2026-03-01T16:46:34.548Z] [INFO] GET /api/history/status
+[2026-03-01T16:46:34.551Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:46:34.554Z] [INFO] GET /api/history/projects
+[2026-03-01T16:46:34.557Z] [INFO] GET /api/doctor/scan
+[2026-03-01T16:46:34.645Z] [INFO] InstructionLoader: memory.md trimmed from 6061B to ~5000B
+[2026-03-01T16:46:39.205Z] [INFO] POST /api/chat
+[2026-03-01T16:46:39.206Z] [INFO] Chat request: "ok, abre youtube"
+[2026-03-01T16:46:39.206Z] [INFO] QuickClassify: "ok, abre youtube" → bat_exec:{"script":"media_youtube","args":[]}
+[2026-03-01T16:46:39.207Z] [INFO] Intent resolved: bat_exec
+[2026-03-01T16:46:39.207Z] [INFO] Intent: bat_exec | Params: {"script":"media_youtube","args":[]}
+[2026-03-01T16:46:39.207Z] [INFO] Auto-activating BatBot
+[2026-03-01T16:46:39.208Z] [INFO] Bot activated: BatBot
+[2026-03-01T16:46:39.208Z] [INFO] Executing: BatBot
+[2026-03-01T16:46:39.209Z] [INFO] BatBot executing: media_youtube → pc/media/play_youtube.bat 
+[2026-03-01T16:46:39.317Z] [INFO] BatBot success (media_youtube): YouTube opened
+[2026-03-01T16:46:39.318Z] [INFO] Done: BatBot
+[2026-03-01T16:46:40.282Z] [INFO] InstructionLoader: memory.md trimmed from 5187B to ~5000B
+[2026-03-01T16:46:40.323Z] [INFO] GET /api/history/status
+[2026-03-01T16:46:40.324Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:46:40.325Z] [INFO] GET /api/history/projects
+[2026-03-01T16:46:54.694Z] [INFO] GET /api/history/status
+[2026-03-01T16:46:54.695Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:46:54.697Z] [INFO] GET /api/history/projects
+[2026-03-01T16:46:54.699Z] [INFO] GET /api/doctor/scan
+[2026-03-01T16:46:54.774Z] [INFO] InstructionLoader: memory.md trimmed from 6059B to ~5000B
+[2026-03-01T16:46:59.812Z] [INFO] POST /api/stt/transcribe
+[2026-03-01T16:46:59.819Z] [INFO] STT: transcribing rec.webm (73 KB)
+[2026-03-01T16:47:00.312Z] [INFO] STT: transcribed 31 chars with whisper-large-v3
+[2026-03-01T16:47:00.318Z] [INFO] POST /api/chat
+[2026-03-01T16:47:00.319Z] [INFO] Chat request: "Bueno, pasame el QR de Whatsapp"
+[2026-03-01T16:47:00.320Z] [INFO] QuickClassify: "Bueno, pasame el QR de Whatsapp" → whatsapp_qr:{}
+[2026-03-01T16:47:00.321Z] [INFO] Intent resolved: whatsapp_qr
+[2026-03-01T16:47:00.321Z] [INFO] Intent: whatsapp_qr | Params: {}
+[2026-03-01T16:47:00.322Z] [INFO] WhatsAppBot: auto-activating para generar QR...
+[2026-03-01T16:47:00.322Z] [WARN] WhatsAppBot: WHATSAPP_ALLOWED_NUMBERS not set in .env
+[2026-03-01T16:47:00.785Z] [INFO] WhatsAppBot: initializing...
+[2026-03-01T16:47:00.786Z] [INFO] Bot activated: WhatsAppBot
+[2026-03-01T16:47:04.934Z] [INFO] WhatsAppBot: authenticated ✅
+[2026-03-01T16:47:05.119Z] [INFO] WhatsAppBot: ready ✅ Listening for messages...
+[2026-03-01T16:47:05.120Z] [INFO] WhatsAppBot: allowed numbers = 
+[2026-03-01T16:47:05.120Z] [INFO] WhatsAppBot: TIP — if messages aren't received, set WHATSAPP_DEBUG=true in .env to log all message sources
+[2026-03-01T16:47:05.121Z] [INFO] WhatsApp: conectado como 5491160597308
+[2026-03-01T16:47:05.805Z] [INFO] WhatsAppBot DEBUG: message from="120363300543490796@g.us" fromMe=false type="sticker" allowed=false
+[2026-03-01T16:47:06.201Z] [INFO] WhatsAppBot DEBUG: message from="120363161854316501@newsletter" fromMe=false type="video" allowed=false
+[2026-03-01T16:47:06.212Z] [INFO] InstructionLoader: memory.md trimmed from 5282B to ~5000B
+[2026-03-01T16:47:06.501Z] [INFO] WhatsAppBot DEBUG: message from="status@broadcast" fromMe=false type="image" allowed=false
+[2026-03-01T16:47:06.933Z] [INFO] GET /api/whatsapp/qr
+[2026-03-01T16:47:09.690Z] [INFO] GET /api/history/status
+[2026-03-01T16:47:09.691Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:47:09.693Z] [INFO] GET /api/history/projects
+[2026-03-01T16:47:11.543Z] [INFO] GET /api/devices
+[2026-03-01T16:47:12.518Z] [INFO] GET /api/bots
+[2026-03-01T16:47:15.994Z] [INFO] GET /api/history/conversations/560cc332-1a7b-4afd-b935-80447dab898a/messages
+[2026-03-01T16:47:24.691Z] [INFO] GET /api/history/status
+[2026-03-01T16:47:24.692Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:47:24.693Z] [INFO] GET /api/history/projects
+[2026-03-01T16:47:24.695Z] [INFO] GET /api/doctor/scan
+[2026-03-01T16:47:24.778Z] [INFO] InstructionLoader: memory.md trimmed from 6061B to ~5000B
+[2026-03-01T16:47:28.063Z] [INFO] WhatsAppBot: self-chat command: "Hola"
+[2026-03-01T16:47:28.064Z] [INFO] WhatsAppBot self-chat → orchestrator: "Hola"
+[2026-03-01T16:47:28.066Z] [INFO] ModelService: no quick match, querying LLM: "Hola"
+[2026-03-01T16:47:29.029Z] [INFO] ModelService raw: {"intent": "greetings", "parameters": {}, "priority": "normal" }
+[2026-03-01T16:47:29.030Z] [INFO] Intent: greetings | Params: {}
+[2026-03-01T16:47:29.030Z] [WARN] WebBot: no query found, using intent name as fallback
+[2026-03-01T16:47:29.031Z] [INFO] Executing: WebBot
+[2026-03-01T16:47:29.031Z] [INFO] WebBot processing: "greetings"
+[2026-03-01T16:47:30.952Z] [INFO] WebBot response: 153 chars
+[2026-03-01T16:47:30.953Z] [INFO] Done: WebBot
+[2026-03-01T16:47:30.987Z] [INFO] WhatsAppBot: self-chat command: "¡Hola! ¿Cómo estás hoy? ¿Neces algo en particular? Estoy aquí para ayudarte lo m"
+[2026-03-01T16:47:30.988Z] [INFO] WhatsAppBot self-chat → orchestrator: "¡Hola! ¿Cómo estás hoy? ¿Neces algo en particular? Estoy aquí para ayudarte lo m"
+[2026-03-01T16:47:30.989Z] [INFO] ModelService: no quick match, querying LLM: "¡Hola! ¿Cómo estás hoy? ¿Neces algo en particular? Estoy aqu"
+[2026-03-01T16:47:33.119Z] [INFO] ModelService raw: {
+  "intent": "greetings",
+  "parameters": {
+    "query": "¡Hola! ¿Cómo estás hoy? ¿Neces algo en pa
+[2026-03-01T16:47:33.120Z] [INFO] Intent: greetings | Params: {"query":"¡Hola! ¿Cómo estás hoy? ¿Neces algo en particular?"}
+[2026-03-01T16:47:33.121Z] [INFO] Executing: WebBot
+[2026-03-01T16:47:33.121Z] [INFO] WebBot processing: "¡Hola! ¿Cómo estás hoy? ¿Neces algo en particular?"
+[2026-03-01T16:47:35.460Z] [INFO] WebBot response: 197 chars
+[2026-03-01T16:47:35.461Z] [INFO] Done: WebBot
+[2026-03-01T16:47:35.467Z] [INFO] WhatsAppBot: self-chat command: "¡Hola! ¿Qué puedo hacer para ayudarte hoy?
+
+¿Podrías ser más específamente sobre"
+[2026-03-01T16:47:35.468Z] [INFO] WhatsAppBot self-chat → orchestrator: "¡Hola! ¿Qué puedo hacer para ayudarte hoy?
+
+¿Podrías ser más específamente sobre"
+[2026-03-01T16:47:35.469Z] [INFO] ModelService: no quick match, querying LLM: "¡Hola! ¿Qué puedo hacer para ayudarte hoy?
+
+¿Podrías ser más"
+[2026-03-01T16:47:36.540Z] [INFO] ModelService raw: {
+"intent": "greeting",
+"parameters": {},
+"priority": "normal"
+}
+[2026-03-01T16:47:36.540Z] [INFO] Intent: greeting | Params: {}
+[2026-03-01T16:47:36.541Z] [WARN] WebBot: no query found, using intent name as fallback
+[2026-03-01T16:47:36.542Z] [INFO] Executing: WebBot
+[2026-03-01T16:47:36.542Z] [INFO] WebBot processing: "greeting"
+[2026-03-01T16:47:38.716Z] [INFO] WebBot response: 188 chars
+[2026-03-01T16:47:38.716Z] [INFO] Done: WebBot
+[2026-03-01T16:47:38.723Z] [INFO] WhatsAppBot: self-chat command: "¡Hola! ¿En qué puedo ayudarte hoy? ¿Tienes una pregunta específica o necesitas a"
+[2026-03-01T16:47:38.724Z] [INFO] WhatsAppBot: silence mode OFF (self-chat)
+[2026-03-01T16:47:38.749Z] [INFO] WhatsAppBot: self-chat command: "🔊 De vuelta. ¿En qué puedo ayudarte?"
+[2026-03-01T16:47:38.751Z] [INFO] WhatsAppBot self-chat → orchestrator: "🔊 De vuelta. ¿En qué puedo ayudarte?"
+[2026-03-01T16:47:38.752Z] [INFO] ModelService: no quick match, querying LLM: "🔊 De vuelta. ¿En qué puedo ayudarte?"
+[2026-03-01T16:47:39.698Z] [INFO] GET /api/history/status
+[2026-03-01T16:47:39.700Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:47:39.706Z] [INFO] GET /api/history/projects
+[2026-03-01T16:47:39.795Z] [INFO] ModelService raw: {
+"intent": "greetings",
+"parameters": {},
+"priority": "normal"
+}
+[2026-03-01T16:47:39.795Z] [INFO] Intent: greetings | Params: {}
+[2026-03-01T16:47:39.796Z] [WARN] WebBot: no query found, using intent name as fallback
+[2026-03-01T16:47:39.796Z] [INFO] Executing: WebBot
+[2026-03-01T16:47:39.797Z] [INFO] WebBot processing: "greetings"
+[2026-03-01T16:47:42.096Z] [INFO] WebBot response: 191 chars
+[2026-03-01T16:47:42.097Z] [INFO] Done: WebBot
+[2026-03-01T16:47:42.103Z] [INFO] WhatsAppBot: self-chat command: "¡Hola! ¿Cómo te va hoy? ¿Neces ayuda con algo específico? Estoy aquí para escuch"
+[2026-03-01T16:47:42.104Z] [INFO] WhatsAppBot: silence mode OFF (self-chat)
+[2026-03-01T16:47:42.132Z] [INFO] WhatsAppBot: self-chat command: "🔊 De vuelta. ¿En qué puedo ayudarte?"
+[2026-03-01T16:47:42.133Z] [INFO] WhatsAppBot self-chat → orchestrator: "🔊 De vuelta. ¿En qué puedo ayudarte?"
+[2026-03-01T16:47:42.134Z] [INFO] ModelService: no quick match, querying LLM: "🔊 De vuelta. ¿En qué puedo ayudarte?"
+[2026-03-01T16:47:42.861Z] [INFO] WhatsAppBot: self-chat command: "Abre youtube"
+[2026-03-01T16:47:42.862Z] [INFO] WhatsAppBot self-chat → orchestrator: "Abre youtube"
+[2026-03-01T16:47:42.863Z] [INFO] QuickClassify: "Abre youtube" → bat_exec:{"script":"media_youtube","args":[]}
+[2026-03-01T16:47:42.863Z] [INFO] Intent: bat_exec | Params: {"script":"media_youtube","args":[]}
+[2026-03-01T16:47:42.864Z] [INFO] Executing: BatBot
+[2026-03-01T16:47:42.864Z] [INFO] BatBot executing: media_youtube → pc/media/play_youtube.bat 
+[2026-03-01T16:47:43.030Z] [INFO] BatBot success (media_youtube): YouTube opened
+[2026-03-01T16:47:43.030Z] [INFO] Done: BatBot
+[2026-03-01T16:47:43.035Z] [INFO] WhatsAppBot: self-chat command: "YouTube opened"
+[2026-03-01T16:47:43.036Z] [INFO] WhatsAppBot self-chat → orchestrator: "YouTube opened"
+[2026-03-01T16:47:43.037Z] [INFO] ModelService: no quick match, querying LLM: "YouTube opened"
+[2026-03-01T16:47:43.053Z] [INFO] ModelService raw: {
+"intent": "greetings",
+"parameters": {},
+"priority": "normal"
+}
+[2026-03-01T16:47:43.053Z] [INFO] Intent: greetings | Params: {}
+[2026-03-01T16:47:43.054Z] [WARN] WebBot: no query found, using intent name as fallback
+[2026-03-01T16:47:43.055Z] [INFO] Executing: WebBot
+[2026-03-01T16:47:43.056Z] [INFO] WebBot processing: "greetings"
+[2026-03-01T16:47:43.890Z] [INFO] ModelService raw: {"intent": "youtube", "parameters": {}, "priority": "normal" }
+[2026-03-01T16:47:43.891Z] [INFO] Intent: youtube | Params: {}
+[2026-03-01T16:47:43.892Z] [WARN] WebBot: no query found, using intent name as fallback
+[2026-03-01T16:47:43.892Z] [INFO] Executing: WebBot
+[2026-03-01T16:47:43.893Z] [INFO] WebBot processing: "youtube"
+[2026-03-01T16:47:46.439Z] [INFO] WebBot response: 220 chars
+[2026-03-01T16:47:46.440Z] [INFO] Done: WebBot
+[2026-03-01T16:47:46.448Z] [INFO] WhatsAppBot: self-chat command: "¡hola! ¿En qué puedo ayudarte hoy? ¿Tienes una pregunta específica o necesitas a"
+[2026-03-01T16:47:46.449Z] [INFO] WhatsAppBot: silence mode OFF (self-chat)
+[2026-03-01T16:47:46.487Z] [INFO] WhatsAppBot: self-chat command: "🔊 De vuelta. ¿En qué puedo ayudarte?"
+[2026-03-01T16:47:46.488Z] [INFO] WhatsAppBot self-chat → orchestrator: "🔊 De vuelta. ¿En qué puedo ayudarte?"
+[2026-03-01T16:47:46.489Z] [INFO] ModelService: no quick match, querying LLM: "🔊 De vuelta. ¿En qué puedo ayudarte?"
+[2026-03-01T16:47:48.661Z] [INFO] WebBot response: 250 chars
+[2026-03-01T16:47:48.662Z] [INFO] Done: WebBot
+[2026-03-01T16:47:48.669Z] [INFO] WhatsAppBot: self-chat command: "**Resultado de la búsqueda en YouTube**
+
+Lo siento, pero no encontré resultados "
+[2026-03-01T16:47:48.670Z] [INFO] WhatsAppBot self-chat → orchestrator: "**Resultado de la búsqueda en YouTube**
+
+Lo siento, pero no encontré resultados "
+[2026-03-01T16:47:48.671Z] [INFO] QuickClassify: "**Resultado de la búsqueda en YouTube**
+
+Lo siento, pero no " → search_web:{"query":"terms that might help you find what you're looking for:"}
+[2026-03-01T16:47:48.672Z] [INFO] Intent: search_web | Params: {"query":"terms that might help you find what you're looking for:"}
+[2026-03-01T16:47:48.673Z] [INFO] Bot activated: SearchBot
+[2026-03-01T16:47:48.674Z] [INFO] Executing: SearchBot
+[2026-03-01T16:47:48.674Z] [INFO] SearchBot: searching "terms that might help you find what you're looking for:"
+[2026-03-01T16:47:49.628Z] [INFO] ModelService raw: {
+"intent": "greetings",
+"parameters": {},
+"priority": "normal"
+}
+[2026-03-01T16:47:49.629Z] [INFO] Intent: greetings | Params: {}
+[2026-03-01T16:47:49.630Z] [WARN] WebBot: no query found, using intent name as fallback
+[2026-03-01T16:47:49.630Z] [INFO] Executing: WebBot
+[2026-03-01T16:47:49.631Z] [INFO] WebBot processing: "greetings"
+[2026-03-01T16:47:50.098Z] [INFO] SearchBot: found 5 results for "terms that might help you find what you're looking for:"
+[2026-03-01T16:47:50.099Z] [INFO] Done: SearchBot
+[2026-03-01T16:47:50.622Z] [INFO] WhatsAppBot: self-chat command: "🔍 **Resultados para:** "terms that might help you find what you're looking for:"
+[2026-03-01T16:47:50.623Z] [INFO] WhatsAppBot self-chat → orchestrator: "🔍 **Resultados para:** "terms that might help you find what you're looking for:"
+[2026-03-01T16:47:50.624Z] [INFO] QuickClassify: "🔍 **Resultados para:** "terms that might help you find what" → search_web:{"query":"terms & keywords - Library DIY - University of West Georgia**"}
+[2026-03-01T16:47:50.624Z] [INFO] Intent: search_web | Params: {"query":"terms & keywords - Library DIY - University of West Georgia**"}
+[2026-03-01T16:47:50.625Z] [INFO] Executing: SearchBot
+[2026-03-01T16:47:50.625Z] [INFO] SearchBot: searching "terms & keywords - Library DIY - University of West Georgia**"
+[2026-03-01T16:47:51.532Z] [INFO] WebBot response: 137 chars
+[2026-03-01T16:47:51.533Z] [INFO] Done: WebBot
+[2026-03-01T16:47:51.539Z] [INFO] WhatsAppBot: self-chat command: "¡Hola! ¿Cómo te va? ¿Neces algo específico de ayuda? Estoy aquí para escuchar y "
+[2026-03-01T16:47:51.540Z] [INFO] WhatsAppBot self-chat → orchestrator: "¡Hola! ¿Cómo te va? ¿Neces algo específico de ayuda? Estoy aquí para escuchar y "
+[2026-03-01T16:47:51.541Z] [INFO] ModelService: no quick match, querying LLM: "¡Hola! ¿Cómo te va? ¿Neces algo específico de ayuda? Estoy a"
+[2026-03-01T16:47:51.573Z] [INFO] SearchBot: found 5 results for "terms & keywords - Library DIY - University of West Georgia**"
+[2026-03-01T16:47:51.575Z] [INFO] Done: SearchBot
+[2026-03-01T16:47:52.125Z] [INFO] WhatsAppBot: self-chat command: "🔍 **Resultados para:** "terms & keywords - Library DIY - University of West Geo"
+[2026-03-01T16:47:52.126Z] [INFO] WhatsAppBot self-chat → orchestrator: "🔍 **Resultados para:** "terms & keywords - Library DIY - University of West Geo"
+[2026-03-01T16:47:52.126Z] [INFO] QuickClassify: "🔍 **Resultados para:** "terms & keywords - Library DIY - Un" → search_web:{"query":"terms & keywords - Library DIY - University of West Georgia**"}
+[2026-03-01T16:47:52.127Z] [INFO] Intent: search_web | Params: {"query":"terms & keywords - Library DIY - University of West Georgia**"}
+[2026-03-01T16:47:52.127Z] [INFO] Executing: SearchBot
+[2026-03-01T16:47:52.128Z] [INFO] SearchBot: searching "terms & keywords - Library DIY - University of West Georgia**"
+[2026-03-01T16:47:52.293Z] [INFO] SearchBot: DDG gave no results, trying Bing...
+[2026-03-01T16:47:52.582Z] [INFO] SearchBot: found 0 results for "terms & keywords - Library DIY - University of West Georgia**"
+[2026-03-01T16:47:52.583Z] [INFO] Done: SearchBot
+[2026-03-01T16:47:52.601Z] [INFO] WhatsAppBot: self-chat command: "🔍 **Resultados para:** "terms & keywords - Library DIY - University of West Geo"
+[2026-03-01T16:47:52.604Z] [INFO] WhatsAppBot self-chat → orchestrator: "🔍 **Resultados para:** "terms & keywords - Library DIY - University of West Geo"
+[2026-03-01T16:47:52.605Z] [INFO] ModelService: no quick match, querying LLM: "🔍 **Resultados para:** "terms & keywords - Library DIY - Un"
+[2026-03-01T16:47:52.976Z] [INFO] ModelService raw: {
+  "intent": "greeting",
+  "parameters": {
+    "query": ""
+  },
+  "priority": "normal"
+}
+[2026-03-01T16:47:52.977Z] [INFO] Intent: greeting | Params: {"query":""}
+[2026-03-01T16:47:52.978Z] [WARN] WebBot: no query found, using intent name as fallback
+[2026-03-01T16:47:52.978Z] [INFO] Executing: WebBot
+[2026-03-01T16:47:52.979Z] [INFO] WebBot processing: "greeting"
+[2026-03-01T16:47:54.198Z] [INFO] ModelService raw: {"intent": "inform", "parameters": {"query": "reformular la búsqueda o ser más específico."}},
+[2026-03-01T16:47:54.200Z] [INFO] Intent: chat_response | Params: {"query":"🔍 **Resultados para:** \"terms & keywords - Library DIY - University of West Georgia**\"\n\n⚠️ No se encontraron resultados web.\nIntentá reformular la búsqueda o ser más específico."}
+[2026-03-01T16:47:54.200Z] [INFO] Executing: WebBot
+[2026-03-01T16:47:54.201Z] [INFO] WebBot processing: "🔍 **Resultados para:** "terms & keywords - Library DIY - University of West Geo..."
+[2026-03-01T16:47:55.323Z] [INFO] GET /api/history/status
+[2026-03-01T16:47:55.325Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:47:55.333Z] [INFO] GET /api/history/projects
+[2026-03-01T16:47:55.340Z] [INFO] GET /api/doctor/scan
+[2026-03-01T16:47:55.466Z] [INFO] InstructionLoader: memory.md trimmed from 6061B to ~5000B
+[2026-03-01T16:47:57.134Z] [INFO] WebBot response: 251 chars
+[2026-03-01T16:47:57.135Z] [INFO] Done: WebBot
+[2026-03-01T16:47:57.142Z] [INFO] WhatsAppBot: self-chat command: "¡Hola! ¿Cómo puedo ayudarte hoy? ¿Tienes una pregunta específica o necesitas ayu"
+[2026-03-01T16:47:57.142Z] [INFO] WhatsAppBot: silence mode OFF (self-chat)
+[2026-03-01T16:47:57.193Z] [INFO] WhatsAppBot: self-chat command: "🔊 De vuelta. ¿En qué puedo ayudarte?"
+[2026-03-01T16:47:57.195Z] [INFO] WhatsAppBot self-chat → orchestrator: "🔊 De vuelta. ¿En qué puedo ayudarte?"
+[2026-03-01T16:47:57.197Z] [INFO] ModelService: no quick match, querying LLM: "🔊 De vuelta. ¿En qué puedo ayudarte?"
+[2026-03-01T16:47:59.997Z] [INFO] WebBot response: 271 chars
+[2026-03-01T16:47:59.998Z] [INFO] Done: WebBot
+[2026-03-01T16:48:00.006Z] [INFO] WhatsAppBot: self-chat command: "Disculpa por no haber encontrado resultados web relevantes para tu búsqueda.
+
+¿P"
+[2026-03-01T16:48:00.007Z] [INFO] WhatsAppBot self-chat → orchestrator: "Disculpa por no haber encontrado resultados web relevantes para tu búsqueda.
+
+¿P"
+[2026-03-01T16:48:00.009Z] [INFO] ModelService: no quick match, querying LLM: "Disculpa por no haber encontrado resultados web relevantes p"
+[2026-03-01T16:48:01.089Z] [INFO] ModelService raw: {
+"intent": "greetings",
+"parameters": {},
+"priority": "normal"
+}
+[2026-03-01T16:48:01.090Z] [INFO] Intent: greetings | Params: {}
+[2026-03-01T16:48:01.091Z] [WARN] WebBot: no query found, using intent name as fallback
+[2026-03-01T16:48:01.091Z] [INFO] Executing: WebBot
+[2026-03-01T16:48:01.092Z] [INFO] WebBot processing: "greetings"
+[2026-03-01T16:48:03.009Z] [INFO] ModelService raw: {
+  "intent": "chat_response",
+  "parameters": {
+    "query": "Disculpa por no haber encontrado resu
+[2026-03-01T16:48:03.010Z] [INFO] Intent: chat_response | Params: {"query":"Disculpa por no haber encontrado resultados web relevantes para tu búsqueda."}
+[2026-03-01T16:48:03.010Z] [INFO] Executing: WebBot
+[2026-03-01T16:48:03.010Z] [INFO] WebBot processing: "Disculpa por no haber encontrado resultados web relevantes para tu búsqueda."
+[2026-03-01T16:48:03.777Z] [INFO] WhatsAppBot: self-chat command: "Abre github desktop"
+[2026-03-01T16:48:03.782Z] [INFO] WhatsAppBot self-chat → orchestrator: "Abre github desktop"
+[2026-03-01T16:48:03.784Z] [INFO] QuickClassify: "Abre github desktop" → bat_exec:{"script":"app_github_desktop","args":[]}
+[2026-03-01T16:48:03.787Z] [INFO] Intent: bat_exec | Params: {"script":"app_github_desktop","args":[]}
+[2026-03-01T16:48:03.789Z] [INFO] Executing: BatBot
+[2026-03-01T16:48:03.792Z] [INFO] BatBot executing: app_github_desktop → pc/apps/app_github_desktop.bat 
+[2026-03-01T16:48:04.976Z] [INFO] WebBot response: 162 chars
+[2026-03-01T16:48:04.977Z] [INFO] Done: WebBot
+[2026-03-01T16:48:04.992Z] [INFO] WhatsAppBot: self-chat command: "¡Hola! ¿Cómo puedo ayudarte hoy? ¿Tienes una pregunta específica o simplemente q"
+[2026-03-01T16:48:04.994Z] [INFO] WhatsAppBot self-chat → orchestrator: "¡Hola! ¿Cómo puedo ayudarte hoy? ¿Tienes una pregunta específica o simplemente q"
+[2026-03-01T16:48:04.995Z] [INFO] ModelService: no quick match, querying LLM: "¡Hola! ¿Cómo puedo ayudarte hoy? ¿Tienes una pregunta especí"
+[2026-03-01T16:48:07.683Z] [INFO] WebBot response: 199 chars
+[2026-03-01T16:48:07.683Z] [INFO] Done: WebBot
+[2026-03-01T16:48:07.691Z] [INFO] WhatsAppBot: self-chat command: "Gracias por entender. No hay problema si no encontraste resultados relevantes.
+
+"
+[2026-03-01T16:48:07.692Z] [INFO] WhatsAppBot self-chat → orchestrator: "Gracias por entender. No hay problema si no encontraste resultados relevantes.
+
+"
+[2026-03-01T16:48:07.693Z] [INFO] ModelService: no quick match, querying LLM: "Gracias por entender. No hay problema si no encontraste resu"
+[2026-03-01T16:48:09.129Z] [INFO] ModelService raw: {
+  "intent": "greeting",
+  "parameters": {
+    "query": ""
+  },
+  "priority": "normal"
+}
+[2026-03-01T16:48:09.130Z] [INFO] Intent: greeting | Params: {"query":""}
+[2026-03-01T16:48:09.130Z] [WARN] WebBot: no query found, using intent name as fallback
+[2026-03-01T16:48:09.131Z] [INFO] Executing: WebBot
+[2026-03-01T16:48:09.131Z] [INFO] WebBot processing: "greeting"
+[2026-03-01T16:48:10.218Z] [INFO] ModelService raw: {
+  "intent": "thankyou",
+  "parameters": {},
+  "priority": "normal"
+}
+[2026-03-01T16:48:10.219Z] [INFO] Intent: thankyou | Params: {}
+[2026-03-01T16:48:10.219Z] [WARN] WebBot: no query found, using intent name as fallback
+[2026-03-01T16:48:10.220Z] [INFO] Executing: WebBot
+[2026-03-01T16:48:10.220Z] [INFO] WebBot processing: "thankyou"
+[2026-03-01T16:48:10.327Z] [INFO] GET /api/history/status
+[2026-03-01T16:48:10.328Z] [INFO] GET /api/history/conversations
+[2026-03-01T16:48:10.331Z] [INFO] GET /api/history/projects
+[2026-03-01T16:48:12.785Z] [INFO] WebBot response: 228 chars
+[2026-03-01T16:48:12.786Z] [INFO] Done: WebBot
+[2026-03-01T16:48:12.793Z] [INFO] WhatsAppBot: self-chat command: "¡Hola! ¿En qué puedo ayudarte hoy? ¿Tienes una pregunta específica o simplemente"
+[2026-03-01T16:48:12.793Z] [INFO] WhatsAppBot self-chat → orchestrator: "¡Hola! ¿En qué puedo ayudarte hoy? ¿Tienes una pregunta específica o simplemente"
+[2026-03-01T16:48:12.794Z] [INFO] ModelService: no quick match, querying LLM: "¡Hola! ¿En qué puedo ayudarte hoy? ¿Tienes una pregunta espe"
