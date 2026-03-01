@@ -1,12 +1,12 @@
 /**
- * BotManager.js — v2.2
+ * BotManager.js — v2.3
  *
- * FIXES:
- *  - NetBot: auto-injects "action" from intent name
- *  - MediaBot: auto-injects "intent" from intent name
- *  - ComputerBot: auto-injects "task"
- *  - BatBot: normalizes wrong script keys via BAT_SCRIPT_ALIASES
- *  - whatsapp_qr: nuevo intent que devuelve el QR inline para el chat
+ * FIXES vs v2.2:
+ *  - WebBot: si parameters no tiene query/message/text, se inyecta desde
+ *    normalized.parameters.query o desde el intent name como fallback.
+ *    Esto evita "WebBot requires a text query parameter" cuando el LLM
+ *    devuelve intents custom como "greetings", "default", "farewell", etc.
+ *    sin incluir el mensaje original en parameters.
  */
 
 const WebBot = require("./WebBot");
@@ -68,10 +68,7 @@ const MEDIA_INTENT_MAP = {
 };
 
 // ── BatBot script key normalization ──────────────────────────────────────────
-// The LLM sometimes invents script keys that don't exist in the whitelist.
-// This map redirects wrong keys to the correct whitelisted ones.
 const BAT_SCRIPT_ALIASES = {
-    // Volume
     "volume_set": "volume_up",
     "volume_increase": "volume_up",
     "set_volume": "volume_up",
@@ -79,7 +76,6 @@ const BAT_SCRIPT_ALIASES = {
     "mute": "volume_mute",
     "toggle_mute": "volume_mute",
     "unmute": "volume_mute",
-    // YouTube / media
     "youtube": "media_youtube",
     "open_youtube": "media_youtube",
     "play_youtube": "media_youtube",
@@ -97,7 +93,6 @@ const BAT_SCRIPT_ALIASES = {
     "previous": "media_prev",
     "prev_track": "media_prev",
     "prev": "media_prev",
-    // Apps
     "discord": "app_discord",
     "open_discord": "app_discord",
     "abrir_discord": "app_discord",
@@ -111,7 +106,6 @@ const BAT_SCRIPT_ALIASES = {
     "open_browser": "app_browser",
     "chrome": "app_browser",
     "firefox": "app_browser",
-    // System
     "screenshot": "system_screenshot",
     "captura": "system_screenshot",
     "lock": "system_lock",
@@ -213,7 +207,6 @@ class BotManager {
             );
         }
 
-        // ── Intercept: whatsapp_qr → devuelve QR inline en el chat ─────────
         if (normalized.intent === "whatsapp_qr") {
             return this._handleWhatsAppQR();
         }
@@ -260,6 +253,40 @@ class BotManager {
             }
         }
 
+        // ── FIX v2.3: Ensure WebBot always has a query ───────────────────────
+        // The LLM sometimes returns intents like "greetings", "default", "farewell"
+        // (no known prefix) or "chat_response" (known prefix) WITHOUT including
+        // the original user message in parameters. WebBot then throws because it
+        // has no text to process.
+        // Solution: if the resolved bot is WebBot and there's no usable text
+        // parameter, fall back to the original message stored in parameters._originalMessage,
+        // or the intent name itself as a last resort.
+        const effectiveBot = targetBot || "WebBot";
+        if (effectiveBot === "WebBot") {
+            const hasQuery =
+                normalized.parameters.query ||
+                normalized.parameters.message ||
+                normalized.parameters.prompt ||
+                normalized.parameters.text;
+
+            if (!hasQuery) {
+                // Try to recover original message from controller (passed via _originalMessage)
+                const fallback =
+                    normalized.parameters._originalMessage ||
+                    normalized.parameters.input ||
+                    "";
+
+                normalized.parameters.query = fallback;
+
+                if (fallback) {
+                    logger.info(`WebBot: injected query from _originalMessage: "${fallback.substring(0, 60)}"`);
+                } else {
+                    logger.warn(`WebBot: no query found in parameters for intent "${normalized.intent}" — using intent name as fallback`);
+                    normalized.parameters.query = normalized.intent;
+                }
+            }
+        }
+
         if (!targetBot) {
             if (!this.isBotActive("WebBot")) this.activateBot("WebBot");
             return this._runSafe("WebBot", normalized.parameters);
@@ -273,18 +300,14 @@ class BotManager {
         return this._runSafe(targetBot, normalized.parameters);
     }
 
-    // ── WhatsApp QR handler ──────────────────────────────────────────────────
     async _handleWhatsAppQR() {
         try {
-            // Activate bot if needed (triggers QR generation)
             if (!this.isBotActive("WhatsAppBot")) {
                 logger.info("WhatsAppBot: activating to generate QR...");
                 this.activateBot("WhatsAppBot");
-                // Give it time to generate
                 await new Promise(r => setTimeout(r, 3000));
             }
 
-            // Read QR state
             let waState;
             try {
                 waState = require("../routes/whatsappRoutes");

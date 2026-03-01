@@ -139,7 +139,6 @@ function AssistantMessage({ msg, isNew }) {
                         )}
                     </div>
 
-                    {/* Inline QR widget — appears after message animation completes */}
                     {showQR && (done || !isNew) && <InlineWhatsAppQR />}
 
                     {msg.intent && !isError && (
@@ -208,7 +207,6 @@ function AudioRecorder({ onTranscribed, disabled }) {
                 stream.getTracks().forEach(t => t.stop());
                 const duration = Date.now() - recordingStartRef.current;
 
-                // Too short — user just clicked without speaking
                 if (duration < 600) {
                     showError("Muy corto — mantené presionado mientras hablás");
                     setProcessing(false);
@@ -245,7 +243,7 @@ function AudioRecorder({ onTranscribed, disabled }) {
                 setProcessing(false);
             };
 
-            mediaRecorder.start(100); // collect data every 100ms
+            mediaRecorder.start(100);
             setRecording(true);
         } catch (err) {
             showError("Micrófono no disponible");
@@ -258,7 +256,6 @@ function AudioRecorder({ onTranscribed, disabled }) {
         mediaRecorderRef.current.stop();
     }, [recording]);
 
-    // Global mouse/touch up to handle releasing outside button
     useEffect(() => {
         const handleGlobalUp = () => { if (recording) stopRecording(); };
         document.addEventListener("mouseup", handleGlobalUp);
@@ -292,7 +289,6 @@ function AudioRecorder({ onTranscribed, disabled }) {
                 ) : recording ? "⏹" : "🎤"}
             </button>
 
-            {/* Floating error bubble */}
             {floatError && (
                 <div style={{
                     position: "absolute", bottom: "calc(100% + 10px)", left: "50%", transform: "translateX(-50%)",
@@ -305,12 +301,10 @@ function AudioRecorder({ onTranscribed, disabled }) {
                     pointerEvents: "none",
                 }}>
                     ⚠ {floatError}
-                    {/* Arrow */}
                     <div style={{ position: "absolute", top: "100%", left: "50%", transform: "translateX(-50%)", borderLeft: "5px solid transparent", borderRight: "5px solid transparent", borderTop: "5px solid rgba(239,68,68,0.95)" }} />
                 </div>
             )}
 
-            {/* Recording pulse ring */}
             {recording && (
                 <div style={{
                     position: "absolute", inset: -4, borderRadius: 12,
@@ -356,17 +350,75 @@ function shouldShowQR(userMsg) {
     );
 }
 
-/* ─── Main Chat ───────────────────────────────────────── */
-function Chat() {
+/* ─── Convert Supabase message role to display role ──── */
+function dbRoleToDisplay(role) {
+    if (role === "user") return "user";
+    if (role === "error") return "error";
+    return "assistant"; // "assistant" and anything else
+}
+
+/* ═══════════════════════════════════════
+   MAIN CHAT
+   
+   Props:
+     propConvId  — conversation ID passed from App when user selects
+                   an existing chat from the sidebar. null = new chat.
+═══════════════════════════════════════ */
+function Chat({ propConvId = null }) {
+    // conversationId tracks the ACTIVE conversation for this Chat instance.
+    // Initialised from propConvId so selecting a sidebar item loads it.
+    const [conversationId, setConversationId] = useState(propConvId);
+
     const [messages, setMessages] = useState([WELCOME]);
+    const [historyLoaded, setHistoryLoaded] = useState(false);
     const [newMsgIdx, setNewMsgIdx] = useState(-1);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
     const [uploadLabel, setUploadLabel] = useState("");
-    // Track current conversation to avoid creating new chat on each message
-    const [conversationId, setConversationId] = useState(null);
     const bottomRef = useRef(null);
     const textareaRef = useRef(null);
+
+    /* ── Load history when propConvId is provided ── */
+    useEffect(() => {
+        // Reset state whenever the target conversation changes
+        setConversationId(propConvId);
+        setHistoryLoaded(false);
+
+        if (!propConvId) {
+            // New chat — just show the welcome message
+            setMessages([WELCOME]);
+            return;
+        }
+
+        // Load messages for the selected conversation
+        const loadHistory = async () => {
+            try {
+                const res = await fetch(`${API}/api/history/conversations/${propConvId}/messages`);
+                const data = await res.json();
+
+                if (Array.isArray(data) && data.length > 0) {
+                    // Convert Supabase message rows → display format
+                    const loaded = data.map(m => ({
+                        role: dbRoleToDisplay(m.role),
+                        content: m.content || "",
+                        intent: m.intent || null,
+                        bot: m.bot || null,
+                    }));
+                    setMessages(loaded);
+                } else {
+                    // Conversation exists but has no messages yet
+                    setMessages([WELCOME]);
+                }
+            } catch (err) {
+                console.error("Failed to load history:", err);
+                setMessages([WELCOME]);
+            } finally {
+                setHistoryLoaded(true);
+            }
+        };
+
+        loadHistory();
+    }, [propConvId]);
 
     useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading]);
 
@@ -397,15 +449,15 @@ function Chat() {
         setLoading(true);
 
         try {
-            // Include conversation_id in request so backend appends to same chat
+            // Always pass conversationId (null on first message of a new chat)
             const data = await sendMessageToBot(trimmed, conversationId);
 
-            // Save conversation ID for subsequent messages
-            if (data.conversationId && !conversationId) {
-                setConversationId(data.conversationId);
+            // Backend returns conversation_id — save it for all subsequent messages
+            // so they all go to the same conversation.
+            if (data.conversation_id && !conversationId) {
+                setConversationId(data.conversation_id);
             }
 
-            // If user asked for WhatsApp QR, attach the inline widget
             const msgExtra = wantsQR ? { showQR: true } : {};
 
             addMessage(
@@ -482,7 +534,15 @@ function Chat() {
             </div>
 
             <div className="chat-box" style={{ paddingTop: 12 }}>
-                {messages.map((msg, i) => {
+                {/* Loading indicator while fetching history */}
+                {propConvId && !historyLoaded && (
+                    <div style={{ display: "flex", justifyContent: "center", padding: "40px 0", color: "var(--text-muted)", fontSize: 13 }}>
+                        <span style={{ animation: "spin 1s linear infinite", display: "inline-block", marginRight: 8 }}>⟳</span>
+                        Cargando historial...
+                    </div>
+                )}
+
+                {(!propConvId || historyLoaded) && messages.map((msg, i) => {
                     const isNew = i === newMsgIdx;
                     if (msg.role === "user") return <UserMessage key={i} msg={msg} isNew={isNew} />;
                     return <AssistantMessage key={i} msg={msg} isNew={isNew} />;

@@ -13,9 +13,13 @@ function App() {
     const [view, setView] = useState("dashboard");
     const [doctorErrors, setDoctorErrors] = useState(0);
 
-    const [currentConvId, setCurrentConvId] = useState(() => {
-        return localStorage.getItem("jarvis_current_conv") || null;
-    });
+    // currentConvId = the conversation being displayed in <Chat>.
+    // null  → new chat (no conversation yet, will be created on first message)
+    // uuid  → existing conversation loaded from sidebar
+    const [currentConvId, setCurrentConvId] = useState(null);
+
+    // chatKey forces Chat to remount when we switch conversations,
+    // so its internal state (messages, historyLoaded) resets cleanly.
     const [chatKey, setChatKey] = useState(0);
 
     useEffect(() => {
@@ -31,14 +35,17 @@ function App() {
         return () => clearInterval(iv);
     }, []);
 
-    const handleSelectConversation = useCallback((id) => {
-        setCurrentConvId(id);
+    /* Called when user clicks a conversation in the sidebar */
+    const handleSelectConversation = useCallback((conv) => {
+        const id = typeof conv === "string" ? conv : conv?.id;
+        setCurrentConvId(id || null);
         setChatKey(k => k + 1);
         setView("chat");
     }, []);
 
-    const handleNewConversation = useCallback((id) => {
-        setCurrentConvId(id);
+    /* Called when user clicks "Nueva Conversación" in the sidebar */
+    const handleNewConversation = useCallback(() => {
+        setCurrentConvId(null);    // no pre-existing id → Chat starts fresh
         setChatKey(k => k + 1);
         setView("chat");
     }, []);
@@ -66,9 +73,12 @@ function App() {
     return (
         <div className="app-layout">
             <Sidebar
-                currentConvId={currentConvId}
-                onSelectConversation={handleSelectConversation}
-                onNewConversation={handleNewConversation}
+                view={view}
+                setView={setView}
+                doctorErrors={doctorErrors}
+                activeConvId={currentConvId}
+                onSelectConv={handleSelectConversation}
+                onNewChat={handleNewConversation}
             />
             {renderView()}
         </div>
