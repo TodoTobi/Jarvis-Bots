@@ -111,3 +111,6 @@ Require stack:
 [2026-02-27T19:21:06.016Z] [ERROR] NetBot failed: NetBot requires parameter: "action"
 [2026-02-27T19:44:56.768Z] [ERROR] STT error: Audio file is too short. Minimum audio length is 0.01 seconds.
 [2026-02-27T21:04:06.389Z] [ERROR] [POST /api/chat] Invalid intent structure from model
+[2026-03-01T13:34:30.542Z] [ERROR] ModelService: Cannot reach LM Studio — 
+[2026-03-01T13:40:37.832Z] [ERROR] WebBot failed: WebBot requires a text query parameter
+[2026-03-01T13:40:45.963Z] [ERROR] WebBot failed: WebBot requires a text query parameter
