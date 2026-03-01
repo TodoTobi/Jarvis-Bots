@@ -343,9 +343,14 @@ No markdown, no explanation. Only JSON.`;
         }
     }
 
-    async generateText(prompt) {
-        const systemPrompt = `Sos Jarvis, asistente IA local de Tobías. Respondé SIEMPRE en español rioplatense. Sé directo y conciso.
-IMPORTANTE: El usuario a veces escribe con errores de tipeo por escribir rápido. Intentá siempre entender lo que quiso decir aunque esté mal escrito. No comentes sobre los errores.`;
+    async generateText(prompt, opts = {}) {
+        const baseInstructions = `Sos Jarvis, asistente IA local de Tobías. Respondé SIEMPRE en español rioplatense. Sé directo y conciso.
+IMPORTANTE: El usuario a veces escribe con errores de tipeo por escribir rápido. Intentá siempre entender lo que quiso decir aunque esté mal escrito. No comentes sobre los errores.
+NUNCA empieces tu respuesta con saludos como "Hola", "¡Hola!", "Buenas", "¿En qué puedo ayudarte?", "Claro" o similares. Respondé directamente al pedido sin preámbulos ni cortesías.`;
+
+        const systemPrompt = opts.extraInstructions
+            ? baseInstructions + "\n" + opts.extraInstructions
+            : baseInstructions;
 
         try {
             const response = await axios.post(

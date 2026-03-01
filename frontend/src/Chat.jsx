@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { sendMessageToBot } from "./api";
+import WakeWord from "./WakeWord";
 
 const API = "http://localhost:3001";
 
@@ -643,6 +644,9 @@ function guessBot(msg) {
 function Chat({ propConvId = null }) {
     const [conversationId, setConversationId] = useState(propConvId);
     const [messages, setMessages] = useState([WELCOME]);
+    const [wakeWordEnabled, setWakeWordEnabled] = useState(
+        () => localStorage.getItem("jarvis_wakeword") !== "false"
+    );
     const [historyLoaded, setHistoryLoaded] = useState(false);
     const [newMsgIdx, setNewMsgIdx] = useState(-1);
     const [input, setInput] = useState("");
@@ -810,20 +814,46 @@ function Chat({ propConvId = null }) {
                     <div className="input-form">
                         <UploadButton onUpload={handleUpload} disabled={loading} />
                         <AudioRecorder onTranscribed={t => { if (t.trim()) sendMessage(t, { isAudio: true }); }} disabled={loading} />
+                        {/* Wake word toggle button */}
+                        <button
+                            onClick={() => {
+                                const next = !wakeWordEnabled;
+                                setWakeWordEnabled(next);
+                                localStorage.setItem("jarvis_wakeword", String(next));
+                            }}
+                            title={wakeWordEnabled ? "Wake word activo — click para desactivar" : "Wake word inactivo — click para activar"}
+                            style={{
+                                width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+                                border: wakeWordEnabled ? "1px solid rgba(16,163,127,0.4)" : "1px solid rgba(255,255,255,0.1)",
+                                background: wakeWordEnabled ? "rgba(16,163,127,0.1)" : "transparent",
+                                color: wakeWordEnabled ? "var(--accent)" : "var(--text-muted)",
+                                cursor: "pointer",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                fontSize: 15, transition: "all 0.2s",
+                            }}
+                        >
+                            {wakeWordEnabled ? "👂" : "🔕"}
+                        </button>
                         <textarea
                             ref={textareaRef}
                             value={input}
                             onChange={handleInputChange}
                             onKeyDown={handleKeyDown}
-                            placeholder="Escribí un mensaje... o manteé 🎤 para hablar"
+                            placeholder="Escribí un mensaje... o decí 👂 Sistema [comando]"
                             disabled={loading}
                             rows={1}
                             autoFocus
                         />
                         <button className="send-btn" onClick={() => sendMessage()} disabled={loading || !input.trim()} title="Enviar (Enter)">↑</button>
                     </div>
+                    {/* Wake word component — invisible, always listening */}
+                    <WakeWord
+                        active={wakeWordEnabled && !loading}
+                        disabled={loading}
+                        onCommand={cmd => sendMessage(cmd, { isAudio: true })}
+                    />
                     <div className="input-hint">
-                        Enter para enviar · Shift+Enter nueva línea · 📎 imagen/PDF · 🎤 mantener para hablar
+                        Enter para enviar · Shift+Enter nueva línea · 📎 imagen/PDF · 🎤 mantener · 👂 decí "Sistema [comando]"
                     </div>
                 </div>
             </div>

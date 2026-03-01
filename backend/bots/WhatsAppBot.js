@@ -229,7 +229,26 @@ class WhatsAppBot extends Bot {
 
                 if (!isSelfChat) return;
 
-                const text = msg.body?.trim();
+                // Soporte de audio (PTT) en self-chat
+                let text = "";
+                if (msg.hasMedia && (msg.type === "ptt" || msg.type === "audio")) {
+                    logger.info("WhatsAppBot: self-chat voice note received, transcribing...");
+                    try {
+                        const media = await msg.downloadMedia();
+                        text = await this._transcribeAudio(media.data, media.mimetype);
+                        if (!text) {
+                            await msg.reply("❌ No pude transcribir el audio.");
+                            return;
+                        }
+                        logger.info(`WhatsAppBot self-chat STT: "${text}"`);
+                    } catch (e) {
+                        logger.warn(`WhatsAppBot self-chat audio error: ${e.message}`);
+                        return;
+                    }
+                } else {
+                    text = msg.body?.trim();
+                }
+
                 if (!text) return;
 
                 logger.info(`WhatsAppBot: self-chat command: "${text.substring(0, 80)}"`);
@@ -254,30 +273,25 @@ class WhatsAppBot extends Bot {
             if (SILENCE_TRIGGERS.some(r => r.test(text))) {
                 this.silenced = true;
                 logger.info("WhatsAppBot: silence mode ON (self-chat)");
-                await msg.reply("🔇 Modo silencio activado.");
+                await msg.reply("🔇 Silencio activado.");
                 return;
             }
-
             if (RESUME_TRIGGERS.some(r => r.test(text))) {
                 this.silenced = false;
                 logger.info("WhatsAppBot: silence mode OFF (self-chat)");
-                await msg.reply("🔊 De vuelta. ¿En qué puedo ayudarte?");
+                await msg.reply("🔊 Activo.");
                 return;
             }
-
             if (this.silenced) return;
 
             logger.info(`WhatsAppBot self-chat → orchestrator: "${text.substring(0, 80)}"`);
-
             const result = await this.orchestrator(text);
-            const reply = result?.reply || "Sin respuesta del sistema.";
-
-            // Responder en el mismo chat (self-chat)
+            const reply = this._cleanReply(result?.reply || "Sin respuesta.");
             await msg.reply(reply);
 
         } catch (err) {
             logger.error(`WhatsAppBot _handleSelfMessage error: ${err.message}`);
-            try { await msg.reply("❌ Error interno del sistema."); } catch { }
+            try { await msg.reply("❌ Error interno."); } catch { }
         }
     }
 
@@ -351,7 +365,7 @@ class WhatsAppBot extends Bot {
             if (RESUME_TRIGGERS.some(r => r.test(text))) {
                 this.silenced = false;
                 logger.info("WhatsAppBot: silence mode OFF");
-                await msg.reply("🔊 De vuelta. ¿En qué puedo ayudarte?");
+                await msg.reply("🔊 Activo.");
                 return;
             }
 
@@ -363,17 +377,48 @@ class WhatsAppBot extends Bot {
             logger.info(`WhatsAppBot → orchestrator: "${text.substring(0, 80)}"`);
 
             const result = await this.orchestrator(text);
-            const reply = result?.reply || "Sin respuesta del sistema.";
+            const reply = this._cleanReply(result?.reply || "Sin respuesta del sistema.");
 
             await msg.reply(reply);
 
         } catch (err) {
             logger.error(`WhatsAppBot handler error: ${err.message}`);
-            try { await msg.reply("❌ Error interno del sistema."); } catch { }
+            try { await msg.reply("❌ Error interno."); } catch { }
         }
     }
 
     /* ── STT — Whisper ──────────────────────────────── */
+
+    // Limpia respuestas del LLM para WhatsApp:
+    // elimina saludos repetitivos y cortesías innecesarias
+    _cleanReply(text) {
+        if (!text) return text;
+        // Eliminar líneas que sean solo saludos/cortesías al inicio
+        const greetingPatterns = [
+            /^(hola[,!.]?\s*){1,3}/i,
+            /^(buenas?\s*(tardes?|noches?|días?)[,!.]?\s*)/i,
+            /^(¿en qué (puedo )?ayudarte[,?.]?\s*)/i,
+            /^(¿cómo (puedo )?ayudarte[,?.]?\s*)/i,
+            /^(¿en qué te puedo ayudar[,?.]?\s*)/i,
+            /^(¿qué (necesitás|necesitas)[,?.]?\s*)/i,
+            /^(jarvis aquí[,!.]?\s*)/i,
+            /^(claro[,!.]?\s*)/i,
+        ];
+
+        let cleaned = text.trim();
+        let changed = true;
+        while (changed) {
+            changed = false;
+            for (const p of greetingPatterns) {
+                const newText = cleaned.replace(p, "").trim();
+                if (newText !== cleaned && newText.length > 0) {
+                    cleaned = newText;
+                    changed = true;
+                }
+            }
+        }
+        return cleaned || text; // fallback al original si queda vacío
+    }
 
     async _transcribeAudio(base64Data, mimetype) {
         const tmpDir = path.resolve(__dirname, "../../tmp");
