@@ -1,111 +1,102 @@
 /**
- * whatsappRoutes.js — Fixed version
+ * whatsappRoutes.js — v2 con getState()
  *
- * KEY FIX: The /qr endpoint now also returns status and phone so the
- * frontend can detect "already connected" without needing a separate
- * /status endpoint.
- *
- * WhatsAppBot calls these setters when its state changes:
- *   whatsappRoutes.setQR(base64)
- *   whatsappRoutes.setConnected(phoneNumber)
- *   whatsappRoutes.setDisconnected()
+ * CAMBIOS:
+ *  - Exporta getState() para que BotManager pueda leer el estado sin depender de .state
+ *  - Al pedir /api/whatsapp/qr, si el bot no está activo lo activa automáticamente
+ *  - BotManager.getBot() es público y funciona correctamente en esta versión
  */
 
 const express = require("express");
 const router = express.Router();
-const BotManager = require("../bots/BotManager");
 const logger = require("../logs/logger");
 
-// ── Shared state (set by WhatsAppBot) ──
-let _qrData = null;   // base64 PNG string
-let _phone = null;   // phone number when connected
+// ── Estado interno ────────────────────────────────────
+let _qrData = null;   // base64 PNG
+let _phone = null;
 let _connected = false;
+let _qrTimestamp = 0;
 
-/* Called by WhatsAppBot when a QR is generated */
+/* Llamados por WhatsAppBot cuando cambia el estado */
 function setQR(base64) {
     _qrData = base64;
     _connected = false;
     _phone = null;
-    logger.info("WhatsApp: QR ready for frontend");
+    _qrTimestamp = Date.now();
+    logger.info("WhatsApp: QR listo para frontend");
 }
 
-/* Called by WhatsAppBot when authenticated & ready */
 function setConnected(phone) {
     _qrData = null;
     _connected = true;
     _phone = phone || null;
-    logger.info(`WhatsApp: connected as ${phone}`);
+    logger.info(`WhatsApp: conectado como ${phone}`);
 }
 
-/* Called by WhatsAppBot when disconnected */
 function setDisconnected() {
     _qrData = null;
     _connected = false;
     _phone = null;
-    logger.info("WhatsApp: disconnected");
+    logger.info("WhatsApp: desconectado");
 }
 
-/* ── GET /api/whatsapp/qr ──
-   Returns QR if available, or current connection status.
-   Also activates the bot if it's not yet running.
-*/
+/** Lectura del estado — usado por BotManager._handleWhatsAppQR() */
+function getState() {
+    return {
+        connected: _connected,
+        qr: _qrData,
+        phone: _phone,
+        qrTimestamp: _qrTimestamp
+    };
+}
+
+/* ── GET /api/whatsapp/qr ── */
 router.get("/qr", async (req, res) => {
-    // If already connected, return connected state immediately
+    // Ya conectado
     if (_connected) {
-        return res.json({
-            available: false,
-            status: "connected",
-            phone: _phone,
-        });
+        return res.json({ available: false, status: "connected", phone: _phone });
     }
 
-    // If QR is ready, return it
+    // QR disponible
     if (_qrData) {
-        const src = _qrData.startsWith("data:") ? _qrData : `data:image/png;base64,${_qrData}`;
-        return res.json({
-            available: true,
-            qr: src,
-            status: "qr_ready",
-            expiresIn: 60,
-        });
+        // Verificar que no expiró (QR dura ~60s)
+        const age = Date.now() - _qrTimestamp;
+        if (age > 65000) {
+            _qrData = null; // expirado
+        } else {
+            const src = _qrData.startsWith("data:") ? _qrData : `data:image/png;base64,${_qrData}`;
+            return res.json({ available: true, qr: src, status: "qr_ready", expiresIn: Math.round((65000 - age) / 1000) });
+        }
     }
 
-    // Not connected and no QR yet — activate the bot to start generating
+    // Auto-activar el bot para generar QR
     try {
-        const bot = BotManager.getBot("WhatsAppBot");
-        if (bot && !bot.active) {
-            logger.info("WhatsApp: activating bot to generate QR...");
-            await BotManager.activateBot("WhatsAppBot");
+        const BotManager = require("../bots/BotManager");
+        if (!BotManager.isBotActive("WhatsAppBot")) {
+            logger.info("WhatsApp: activando bot para generar QR...");
+            BotManager.activateBot("WhatsAppBot");
         }
     } catch (err) {
         logger.error(`WhatsApp activate error: ${err.message}`);
         return res.json({ available: false, status: "error", error: err.message });
     }
 
-    // Bot is initializing
-    return res.json({
-        available: false,
-        status: "connecting",
-    });
+    return res.json({ available: false, status: "connecting" });
 });
 
-/* ── GET /api/whatsapp/status — same data, explicit endpoint ── */
+/* ── GET /api/whatsapp/status ── */
 router.get("/status", (req, res) => {
-    if (_connected) {
-        return res.json({ status: "connected", phone: _phone, qrAvailable: false });
-    }
-    if (_qrData) {
-        return res.json({ status: "qr_ready", qrAvailable: true, phone: null });
-    }
+    if (_connected) return res.json({ status: "connected", phone: _phone, qrAvailable: false });
+    if (_qrData) return res.json({ status: "qr_ready", qrAvailable: true, phone: null });
     return res.json({ status: "disconnected", qrAvailable: false, phone: null });
 });
 
 /* ── POST /api/whatsapp/disconnect ── */
 router.post("/disconnect", async (req, res) => {
     try {
-        const bot = BotManager.getBot("WhatsAppBot");
-        if (bot && bot.active) {
-            await BotManager.deactivateBot("WhatsAppBot");
+        const BotManager = require("../bots/BotManager");
+        if (BotManager.isBotActive("WhatsAppBot")) {
+            BotManager.deactivateBot("WhatsAppBot");
         }
         setDisconnected();
         res.json({ success: true });
@@ -114,4 +105,4 @@ router.post("/disconnect", async (req, res) => {
     }
 });
 
-module.exports = { router, setQR, setConnected, setDisconnected };
+module.exports = { router, setQR, setConnected, setDisconnected, getState };

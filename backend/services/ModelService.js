@@ -1,72 +1,256 @@
 /**
- * ModelService.js — v5.0
+ * ModelService.js — v6.0
  *
- * FIX CRÍTICO: El LLM no devuelve JSON consistentemente.
- * Solución: _quickClassify() intercepta comandos ANTES del LLM.
- * El LLM solo se usa para conversación libre o si no hay match.
+ * CAMBIOS vs v5.0:
+ *  - Volumen exacto: "pon el volumen al 70" → intent "volume" con parameters.level = 70
+ *    El sistema lee el nivel actual y determina si subir o bajar (via volume_set.bat + nircmd setsysvolume)
+ *  - YouTube con búsqueda: "poneme el video Sorry de Justin Bieber" → media_youtube con query
+ *  - Búsqueda web + resultados: "busca top 10 jugadores" → search_web con query
+ *  - Búsqueda en Google/web específica: "buscá en google X" → search_web
+ *  - Navegador predeterminado por defecto, específico si se menciona (chrome, firefox, brave)
+ *  - Tolerancia a typos: patrones usan fuzzy matching (variantes comunes de errores)
+ *  - ChatGPT en navegador: "abre chatgpt y preguntale X" → app_chatgpt con query
+ *  - Antigravity: "abre antigravity con la carpeta X" → app_antigravity con args
+ *  - Nuevas apps de dev: cursor, postman, terminal, powershell
  */
 
 const axios = require("axios");
 const logger = require("../logs/logger");
 
 // ════════════════════════════════════════════════════════
-//  CLASIFICADOR POR KEYWORDS (sin LLM, 100% confiable)
+//  QUICK_RULES — clasificador por keywords (sin LLM)
+//  IMPORTANTE: patrones con variantes para cubrir typos comunes
 // ════════════════════════════════════════════════════════
 const QUICK_RULES = [
-    // WhatsApp QR
-    { patterns: [/qr.*whatsapp|whatsapp.*qr|vincular.*whatsapp|whatsapp.*vincular|mostr[aá].*qr|mand[aá].*qr/], result: () => ({ intent: "whatsapp_qr", parameters: {}, priority: "normal" }) },
 
-    // YouTube
-    { patterns: [/abr[ií].*youtube|abre.*youtube|\byoutube\b|pone.*youtube|ejecut[aá].*youtube/], result: (m) => { const q = m.match(/(?:busca[r]?|busca)\s+(.+)/i)?.[1] || ""; return { intent: "bat_exec", parameters: { script: "media_youtube", args: q ? [q] : [] }, priority: "normal" }; } },
+    // ── WhatsApp QR ──────────────────────────────────────────────────────────
+    {
+        patterns: [/qr.*whatsapp|whatsapp.*qr|vincular.*whatsapp|whatsapp.*vincular|mostr[aá].*qr|mand[aá].*qr|pas[aá].*qr/i],
+        result: () => ({ intent: "whatsapp_qr", parameters: {} })
+    },
 
-    // Spotify
-    { patterns: [/abr[ií].*spotify|\bspotify\b|pon[ée].*spotify|m[uú]sica.*spotify/], result: () => ({ intent: "bat_exec", parameters: { script: "media_spotify", args: [] }, priority: "normal" }) },
+    // ── Volumen EXACTO: "pon el volumen al 70", "ponelo al 50", "volumen 80" ─
+    // Typos: "bolumen", "volumne", "vlumen"
+    {
+        patterns: [/(?:pon[eé]?|seteá?|set[eé]a?|subí?|baj[aá]?)?\s*(?:vol[uú]?m[eé]?n?|bol[uú]m[eé]n?|vol)\s*(?:al?|en|a)?\s*(\d+)/i],
+        result: (m) => {
+            const match = m.match(/(\d+)/);
+            const level = match ? parseInt(match[1]) : null;
+            if (level !== null && level >= 0 && level <= 100) {
+                return { intent: "volume", parameters: { action: "set_volume", level } };
+            }
+            return null;
+        }
+    },
 
-    // VLC
-    { patterns: [/abr[ií].*vlc|\bvlc\b/], result: () => ({ intent: "bat_exec", parameters: { script: "media_vlc", args: [] }, priority: "normal" }) },
+    // ── Volumen subir/bajar sin número ───────────────────────────────────────
+    {
+        patterns: [/sub[ií].*(?:vol[uú]?m[eé]?n?|bol[uú]m[eé]n?)|m[aá]s.*(?:vol|soni[dq]o)|(?:vol[uú]?m[eé]?n?|soni[dq]o).*arriba|aument[aá].*vol/i],
+        result: () => ({ intent: "bat_exec", parameters: { script: "volume_up", args: [] } })
+    },
+    {
+        patterns: [/baj[aá].*(?:vol[uú]?m[eé]?n?|bol[uú]m[eé]n?)|men[uo]s.*(?:vol|soni[dq]o)|(?:vol[uú]?m[eé]?n?|soni[dq]o).*abajo/i],
+        result: () => ({ intent: "bat_exec", parameters: { script: "volume_down", args: [] } })
+    },
+    {
+        patterns: [/silenci[aá]r?|mut[eé][ao]?|sin\s+soni[dq]o|apag[aá].*soni[dq]o/i],
+        result: () => ({ intent: "bat_exec", parameters: { script: "volume_mute", args: [] } })
+    },
 
-    // Pausa
-    { patterns: [/paus[aá]|detener m[uú]sica|para la m[uú]sica|stop m[uú]sica/], result: () => ({ intent: "bat_exec", parameters: { script: "media_pause", args: [] }, priority: "normal" }) },
+    // ── YouTube con búsqueda específica ──────────────────────────────────────
+    // Typos: "yuotube", "youtbe", "yotube", "jutibe", "jusitn"
+    {
+        patterns: [/(?:pon[eé]?m[eé]?|busca[r]?|pone[r]?|reproduce[r]?|play|abr[ií][r]?).*?(?:en\s+)?(?:y[ouo][ut][ut][ub][be]e?|you\s*tube)\s+(?:el?\s+)?(?:video\s+)?(?:de\s+|llamado?\s+|titulado?\s+)?(.+)/i],
+        result: (m) => {
+            const match = m.match(/(?:y[ouo][ut][ut][ub][be]e?|you\s*tube)\s+(?:el?\s+)?(?:video\s+)?(?:de\s+|llamado?\s+|titulado?\s+)?(.+)/i);
+            const query = match ? match[1].trim() : "";
+            return { intent: "bat_exec", parameters: { script: "media_youtube", args: query ? [query.replace(/\s+/g, "+")] : [] } };
+        }
+    },
+    // YouTube sin query (solo abrir)
+    {
+        patterns: [/abr[ií][r]?\s+(?:y[ouo][ut][ut][ub][be]e?|you\s*tube)|(?:y[ouo][ut][ut][ub][be]e?)\s*$/i],
+        result: () => ({ intent: "bat_exec", parameters: { script: "media_youtube", args: [] } })
+    },
 
-    // Siguiente / anterior
-    { patterns: [/siguiente canci[oó]n|next track|siguiente tema|skip/], result: () => ({ intent: "bat_exec", parameters: { script: "media_next", args: [] }, priority: "normal" }) },
-    { patterns: [/anterior canci[oó]n|prev track|volver canci[oó]n/], result: () => ({ intent: "bat_exec", parameters: { script: "media_prev", args: [] }, priority: "normal" }) },
+    // ── Búsqueda web con resultados ──────────────────────────────────────────
+    // "busca X en google", "buscame X", "googleá X", "qué es X", "quién es X"
+    {
+        patterns: [/buscá?(?:me|nos)?\s+(?:en\s+(?:google|web|internet|bing|duckduckgo)\s+)?(.+)|search[ea]?\s+(.+)|gogle[aá]?\s+(.+)|googlea[r]?\s+(.+)/i],
+        result: (m) => {
+            const match = m.match(/buscá?(?:me|nos)?\s+(?:en\s+(?:google|web|internet|bing|duckduckgo)\s+)?(.+)/i)
+                || m.match(/search[ea]?\s+(.+)/i)
+                || m.match(/googl[eé][aá]?\s+(.+)/i);
+            const query = match ? match[1].trim() : m.trim();
+            // Excluir si es "busca youtube X" (eso lo maneja la regla de YouTube)
+            if (/y[ouo][ut][ut][ub][be]e?/.test(query)) return null;
+            return { intent: "search_web", parameters: { query } };
+        }
+    },
 
-    // Volumen
-    { patterns: [/sub[ií].*volumen|m[aá]s.*volumen|volumen.*arriba|aumenta.*volumen/], result: () => ({ intent: "bat_exec", parameters: { script: "volume_up", args: [] }, priority: "normal" }) },
-    { patterns: [/baj[aá].*volumen|menos.*volumen|volumen.*abajo/], result: () => ({ intent: "bat_exec", parameters: { script: "volume_down", args: [] }, priority: "normal" }) },
-    { patterns: [/silencia[r]?|mut[eé][ao]?|sin.*sonido/,], result: () => ({ intent: "bat_exec", parameters: { script: "volume_mute", args: [] }, priority: "normal" }) },
+    // ── ChatGPT en navegador ─────────────────────────────────────────────────
+    // "abre chatgpt y preguntale quién es mejor Argentina o Brasil"
+    {
+        patterns: [/(?:abr[ií][r]?|abre|entr[aá][r]?|abrir)\s+(?:chat\s*gpt|chatgpt)\s*(?:y\s+(?:preguntal[eé]|pregunt[aá]|decil[eé]|consultá)\s+)?(.*)$/i],
+        result: (m) => {
+            const match = m.match(/chatgpt\s*(?:y\s+(?:preguntal[eé]|pregunt[aá]|decil[eé]|consultá)\s+)?(.+)/i);
+            const query = match ? match[1].trim() : "";
+            return {
+                intent: "bat_exec",
+                parameters: { script: "app_chatgpt", args: query ? [encodeURIComponent(query)] : [] }
+            };
+        }
+    },
 
-    // Apps
-    { patterns: [/abr[ií].*discord|\bdiscord\b/], result: () => ({ intent: "bat_exec", parameters: { script: "app_discord", args: [] }, priority: "normal" }) },
-    { patterns: [/abr[ií].*vscode|abr[ií].*code|\bvscode\b|visual studio/], result: () => ({ intent: "bat_exec", parameters: { script: "app_vscode", args: [] }, priority: "normal" }) },
-    { patterns: [/abr[ií].*navegador|\bchrome\b|\bfirefox\b|\bbrowser\b|abr[ií].*internet/], result: () => ({ intent: "bat_exec", parameters: { script: "app_browser", args: [] }, priority: "normal" }) },
-    { patterns: [/abr[ií].*fortnite|\bfortnite\b/], result: () => ({ intent: "bat_exec", parameters: { script: "app_fortnite", args: [] }, priority: "normal" }) },
+    // ── Antigravity ──────────────────────────────────────────────────────────
+    {
+        patterns: [/(?:abr[ií][r]?|abre)\s+anti\s*gravity(?:\s+(?:con|y|la\s+carpeta|folder)\s+(.+))?/i],
+        result: (m) => {
+            const match = m.match(/anti\s*gravity(?:\s+(?:con|y|la\s+carpeta|folder)\s+(.+))?/i);
+            const folder = match ? (match[1] || "").trim() : "";
+            return {
+                intent: "bat_exec",
+                parameters: { script: "app_antigravity", args: folder ? [folder] : [] }
+            };
+        }
+    },
 
-    // Sistema
-    { patterns: [/bloque[aá].*(?:pc|pantalla|compu)|lock pc/], result: () => ({ intent: "bat_exec", parameters: { script: "system_lock", args: [] }, priority: "normal" }) },
-    { patterns: [/(?:sac[aá]|tom[aá]|hac[eé]).*captura|captura.*pantalla|\bscreenshot\b|print screen/], result: () => ({ intent: "bat_exec", parameters: { script: "system_screenshot", args: [] }, priority: "normal" }) },
-    { patterns: [/modo nocturno|modo.*noche|night mode|dark mode|luz.*baja/], result: () => ({ intent: "bat_exec", parameters: { script: "system_night_mode", args: [] }, priority: "normal" }) },
-    { patterns: [/dormir.*(?:pc|compu)|suspensi[oó]n|sleep.*pc/], result: () => ({ intent: "bat_exec", parameters: { script: "system_sleep", args: [] }, priority: "normal" }) },
+    // ── Navegadores específicos ───────────────────────────────────────────────
+    {
+        patterns: [/abr[ií][r]?\s+chrome|chrome\s+(?:con|en)/i],
+        result: () => ({ intent: "bat_exec", parameters: { script: "app_chrome", args: [] } })
+    },
+    {
+        patterns: [/abr[ií][r]?\s+firefox|firefox\s+(?:con|en)/i],
+        result: () => ({ intent: "bat_exec", parameters: { script: "app_firefox", args: [] } })
+    },
+    {
+        patterns: [/abr[ií][r]?\s+brave|brave\s+browser/i],
+        result: () => ({ intent: "bat_exec", parameters: { script: "app_brave", args: [] } })
+    },
 
-    // Control PC
-    { patterns: [/tom[aá].*control.*pc|control.*pc|automatiz[aá]|mover.*mouse|abr[ií].*carpeta/], result: (m) => ({ intent: "computer_control", parameters: { task: m }, priority: "normal" }) },
+    // ── Spotify ─────────────────────────────────────────────────────────────
+    {
+        patterns: [/abr[ií][r]?\s+spoti(?:fy)?|poneme?\s+spoti|m[uú]sica.*spotify|\bspotify\b/i],
+        result: () => ({ intent: "bat_exec", parameters: { script: "media_spotify", args: [] } })
+    },
 
-    // ADB Android
-    { patterns: [/youtube.*celu|celu.*youtube/], result: () => ({ intent: "net_adb_youtube", parameters: { device: "phone_tobias", query: "" }, priority: "normal" }) },
-    { patterns: [/captura.*celu|screenshot.*celu|celu.*captura/], result: () => ({ intent: "net_adb_screenshot", parameters: { device: "phone_tobias" }, priority: "normal" }) },
+    // ── VLC ──────────────────────────────────────────────────────────────────
+    {
+        patterns: [/abr[ií][r]?\s+vlc|\bvlc\b/i],
+        result: () => ({ intent: "bat_exec", parameters: { script: "media_vlc", args: [] } })
+    },
 
-    // .bat genérico
-    { patterns: [/\.bat\b/], result: (m) => { const s = m.match(/([a-z_]+)\.bat/i); return { intent: "bat_exec", parameters: { script: (s?.[1] || "media_youtube").toLowerCase(), args: [] }, priority: "normal" }; } },
+    // ── Media controls ───────────────────────────────────────────────────────
+    {
+        patterns: [/paus[aá][r]?|detener?\s+m[uú]sica|para[r]?\s+(?:la\s+)?m[uú]sica|stop\s+m[uú]sica/i],
+        result: () => ({ intent: "bat_exec", parameters: { script: "media_pause", args: [] } })
+    },
+    {
+        patterns: [/siguiente\s+canci[oó]n|next\s+track|siguiente\s+tema|skip|saltar/i],
+        result: () => ({ intent: "bat_exec", parameters: { script: "media_next", args: [] } })
+    },
+    {
+        patterns: [/anterior\s+canci[oó]n|prev\s+track|volver\s+canci[oó]n|atras\s+canci/i],
+        result: () => ({ intent: "bat_exec", parameters: { script: "media_prev", args: [] } })
+    },
+
+    // ── Apps de desarrollo ───────────────────────────────────────────────────
+    {
+        patterns: [/abr[ií][r]?\s+(?:vs\s*code|vscode|visual\s+studio\s+code|\bcode\b)(?:\s+(.+))?/i],
+        result: (m) => {
+            const match = m.match(/(?:vscode|vs\s*code|code)\s+(.+)/i);
+            const path = match ? match[1].trim() : "";
+            return { intent: "bat_exec", parameters: { script: "app_vscode", args: path ? [path] : [] } };
+        }
+    },
+    {
+        patterns: [/abr[ií][r]?\s+cursor|\bcursor\s+(?:ide|editor)\b/i],
+        result: () => ({ intent: "bat_exec", parameters: { script: "app_cursor", args: [] } })
+    },
+    {
+        patterns: [/abr[ií][r]?\s+postman|\bpostman\b/i],
+        result: () => ({ intent: "bat_exec", parameters: { script: "app_postman", args: [] } })
+    },
+    {
+        patterns: [/abr[ií][r]?\s+(?:terminal|cmd|consola|command\s+prompt)|abr[ií][r]?\s+(?:la\s+)?terminal/i],
+        result: () => ({ intent: "bat_exec", parameters: { script: "app_terminal", args: [] } })
+    },
+    {
+        patterns: [/abr[ií][r]?\s+powershell|\bpowershell\b/i],
+        result: () => ({ intent: "bat_exec", parameters: { script: "app_powershell", args: [] } })
+    },
+    {
+        patterns: [/abr[ií][r]?\s+github\s+desktop|github\s+desktop/i],
+        result: () => ({ intent: "bat_exec", parameters: { script: "app_github_desktop", args: [] } })
+    },
+
+    // ── Apps generales ───────────────────────────────────────────────────────
+    {
+        patterns: [/abr[ií][r]?\s+discord|\bdiscord\b/i],
+        result: () => ({ intent: "bat_exec", parameters: { script: "app_discord", args: [] } })
+    },
+    {
+        patterns: [/abr[ií][r]?\s+fortnite|\bfortnite\b/i],
+        result: () => ({ intent: "bat_exec", parameters: { script: "app_fortnite", args: [] } })
+    },
+    {
+        patterns: [/abr[ií][r]?\s+(?:el\s+)?(?:navegador|browser)|abr[ií][r]?\s+(?:internet|web)/i],
+        result: () => ({ intent: "bat_exec", parameters: { script: "app_browser", args: [] } })
+    },
+
+    // ── Sistema ──────────────────────────────────────────────────────────────
+    {
+        patterns: [/bloque[aá][r]?\s+(?:pc|pantalla|compu)|lock\s+pc/i],
+        result: () => ({ intent: "bat_exec", parameters: { script: "system_lock", args: [] } })
+    },
+    {
+        patterns: [/(?:sac[aá]|tom[aá]|hac[eé]).*captura|captura.*pantalla|\bscreenshot\b|print\s+screen/i],
+        result: () => ({ intent: "bat_exec", parameters: { script: "system_screenshot", args: [] } })
+    },
+    {
+        patterns: [/modo\s+nocturno|modo.*noche|night\s+mode|dark\s+mode|luz.*baja/i],
+        result: () => ({ intent: "bat_exec", parameters: { script: "system_night_mode", args: [] } })
+    },
+    {
+        patterns: [/dormir.*(?:pc|compu)|suspensi[oó]n|sleep.*pc/i],
+        result: () => ({ intent: "bat_exec", parameters: { script: "system_sleep", args: [] } })
+    },
+
+    // ── Control PC ───────────────────────────────────────────────────────────
+    {
+        patterns: [/tom[aá].*control.*pc|automatiz[aá]|mover.*mouse/i],
+        result: (m) => ({ intent: "computer_control", parameters: { task: m } })
+    },
+
+    // ── ADB Android ──────────────────────────────────────────────────────────
+    {
+        patterns: [/youtube.*celu|celu.*youtube/i],
+        result: () => ({ intent: "net_adb_youtube", parameters: { device: "phone_tobias", query: "" } })
+    },
+    {
+        patterns: [/captura.*celu|screenshot.*celu|celu.*captura/i],
+        result: () => ({ intent: "net_adb_screenshot", parameters: { device: "phone_tobias" } })
+    },
+
+    // ── .bat genérico ─────────────────────────────────────────────────────────
+    {
+        patterns: [/\.bat\b/i],
+        result: (m) => {
+            const s = m.match(/([a-z_]+)\.bat/i);
+            return { intent: "bat_exec", parameters: { script: (s?.[1] || "media_youtube").toLowerCase(), args: [] } };
+        }
+    },
 ];
 
 function quickClassify(text) {
-    const t = text.toLowerCase().trim();
+    const t = text.trim();
     for (const rule of QUICK_RULES) {
         for (const pattern of rule.patterns) {
             if (pattern.test(t)) {
                 const r = rule.result(t);
-                logger.info(`QuickClassify: "${t.substring(0, 50)}" → ${r.intent}:${JSON.stringify(r.parameters)}`);
+                if (r === null) continue; // regla devuelve null = no aplica
+                logger.info(`QuickClassify: "${t.substring(0, 60)}" → ${r.intent}:${JSON.stringify(r.parameters).substring(0, 80)}`);
                 return r;
             }
         }
@@ -83,7 +267,10 @@ class ModelService {
         this.model = process.env.LM_MODEL || "";
         if (!this.baseURL) throw new Error("LM_API_URL not defined in .env");
         this._axiosConfig = {
-            headers: { "Content-Type": "application/json", ...(this.apiKey ? { Authorization: `Bearer ${this.apiKey}` } : {}) },
+            headers: {
+                "Content-Type": "application/json",
+                ...(this.apiKey ? { Authorization: `Bearer ${this.apiKey}` } : {})
+            },
             timeout: 90000
         };
         this._checkConnection().catch(() => { });
@@ -106,17 +293,17 @@ class ModelService {
     }
 
     async generateIntent(fullContext) {
-        // Extraer mensaje del usuario
         const userMsgMatch = fullContext.match(/\[MENSAJE DEL USUARIO\]\s*([\s\S]+?)(?:\[|$)/);
         const userMsg = (userMsgMatch ? userMsgMatch[1].trim() : fullContext.trim()).substring(0, 1000);
 
-        // 1. Clasificador rápido (keywords) — no usa el LLM
+        // 1. Clasificador rápido por keywords
         const quick = quickClassify(userMsg);
         if (quick) return this._validateIntent(quick);
 
-        // 2. Fallback LLM para conversación libre
+        // 2. Fallback LLM
         logger.info(`ModelService: no quick match, querying LLM: "${userMsg.substring(0, 60)}"`);
-        const systemPrompt = `You are a JSON-only intent classifier. Output ONLY valid JSON.
+        const systemPrompt = `You are a JSON-only intent classifier for a voice assistant. Output ONLY valid JSON.
+The user may make typos — infer the closest real intent.
 Format: {"intent":"chat_response","parameters":{"query":"text"},"priority":"normal"}
 No markdown, no explanation. Only JSON.`;
 
@@ -124,7 +311,10 @@ No markdown, no explanation. Only JSON.`;
             const response = await axios.post(
                 `${this.baseURL}/chat/completions`,
                 this._buildBody(
-                    [{ role: "system", content: systemPrompt }, { role: "user", content: userMsg.substring(0, 200) }],
+                    [
+                        { role: "system", content: systemPrompt },
+                        { role: "user", content: userMsg.substring(0, 200) }
+                    ],
                     { temperature: 0.0, max_tokens: 80 }
                 ),
                 this._axiosConfig
@@ -139,12 +329,17 @@ No markdown, no explanation. Only JSON.`;
     }
 
     async generateText(prompt) {
-        const systemPrompt = "Sos Jarvis, asistente IA local de Tobías. Respondé SIEMPRE en español rioplatense. Sé directo y conciso.";
+        const systemPrompt = `Sos Jarvis, asistente IA local de Tobías. Respondé SIEMPRE en español rioplatense. Sé directo y conciso.
+IMPORTANTE: El usuario a veces escribe con errores de tipeo por escribir rápido. Intentá siempre entender lo que quiso decir aunque esté mal escrito. No comentes sobre los errores.`;
+
         try {
             const response = await axios.post(
                 `${this.baseURL}/chat/completions`,
                 this._buildBody(
-                    [{ role: "system", content: systemPrompt }, { role: "user", content: prompt.replace(/```/g, "").trim().substring(0, 3000) }],
+                    [
+                        { role: "system", content: systemPrompt },
+                        { role: "user", content: prompt.replace(/```/g, "").trim().substring(0, 3000) }
+                    ],
                     { temperature: 0.5, max_tokens: 1024 }
                 ),
                 this._axiosConfig
@@ -169,7 +364,11 @@ No markdown, no explanation. Only JSON.`;
     _validateIntent(obj) {
         if (!obj || typeof obj !== "object") return { intent: "chat_response", parameters: {}, priority: "normal" };
         const intent = typeof obj.intent === "string" ? obj.intent.trim().toLowerCase() : "chat_response";
-        return { intent, parameters: (obj.parameters && typeof obj.parameters === "object") ? obj.parameters : {}, priority: ["low", "normal", "high"].includes(obj.priority) ? obj.priority : "normal" };
+        return {
+            intent,
+            parameters: (obj.parameters && typeof obj.parameters === "object") ? obj.parameters : {},
+            priority: ["low", "normal", "high"].includes(obj.priority) ? obj.priority : "normal"
+        };
     }
 }
 

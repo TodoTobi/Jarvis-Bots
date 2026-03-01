@@ -117,3 +117,4 @@ Require stack:
 [2026-03-01T14:34:19.138Z] [ERROR] [POST /api/chat] Invalid intent structure from model
 [2026-03-01T14:35:54.965Z] [ERROR] WhatsApp QR handler: Cannot read properties of undefined (reading 'status')
 [2026-03-01T14:36:23.220Z] [ERROR] WhatsApp QR handler: Cannot read properties of undefined (reading 'status')
+[2026-03-01T15:05:47.017Z] [ERROR] WhatsApp QR handler: Cannot read properties of undefined (reading 'status')

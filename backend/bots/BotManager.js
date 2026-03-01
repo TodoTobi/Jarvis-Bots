@@ -1,12 +1,14 @@
 /**
- * BotManager.js — v2.3
+ * BotManager.js — v2.5
  *
- * FIXES vs v2.2:
- *  - WebBot: si parameters no tiene query/message/text, se inyecta desde
- *    normalized.parameters.query o desde el intent name como fallback.
- *    Esto evita "WebBot requires a text query parameter" cuando el LLM
- *    devuelve intents custom como "greetings", "default", "farewell", etc.
- *    sin incluir el mensaje original en parameters.
+ * CAMBIOS vs v2.4:
+ *  - WhatsApp QR: auto-activa WhatsAppBot cuando se pide el QR aunque no esté activo.
+ *    Lee estado con getState() si está disponible, sino lee directo del bot.
+ *    Ya NO depende de waModule.state (que no existe y causaba el error).
+ *  - Volumen exacto: intent "volume" con parameters.level → volume_set.bat con args [nivel]
+ *  - SearchBot: nuevo bot integrado, intent "search_web" / "web_search" → SearchBot
+ *  - Nuevas aliases: chrome, firefox, brave, chatgpt, antigravity, cursor
+ *  - getBot() público para que whatsappRoutes lo use
  */
 
 const WebBot = require("./WebBot");
@@ -17,9 +19,9 @@ const NetBot = require("./NetBot");
 const WhatsAppBot = require("./WhatsAppBot");
 const ComputerBot = require("./ComputerBot");
 const VisionBot = require("./VisionBot");
+const SearchBot = require("./SearchBot");
 const logger = require("../logs/logger");
 
-// ── Intent prefix → Bot name ──────────────────────────────────────────────────
 const INTENT_MAP = {
     "computer_": "ComputerBot",
     "vision_": "VisionBot",
@@ -33,27 +35,20 @@ const INTENT_MAP = {
     "whatsapp_": "WhatsAppBot",
     "chat_": "WebBot",
     "web_": "WebBot",
-    "search_": "WebBot",
+    "search_": "SearchBot",
+    "buscar_": "SearchBot",
     "talk_": "WebBot"
 };
 
-// ── net_ intent suffix → NetBot action ───────────────────────────────────────
 const NET_ACTION_MAP = {
-    "adb_youtube": "adb_youtube",
-    "adb_volume": "adb_volume",
-    "adb_screenshot": "adb_screenshot",
-    "adb_home": "adb_home",
-    "adb_back": "adb_back",
-    "adb_wakeup": "adb_wakeup",
-    "adb_open_app": "adb_open_app",
-    "adb_input_text": "adb_input_text",
-    "adb_connect": "adb_connect",
-    "screenshot": "adb_screenshot",
-    "wol": "wol",
-    "ping": "ping",
+    "adb_youtube": "adb_youtube", "adb_volume": "adb_volume",
+    "adb_screenshot": "adb_screenshot", "adb_home": "adb_home",
+    "adb_back": "adb_back", "adb_wakeup": "adb_wakeup",
+    "adb_open_app": "adb_open_app", "adb_input_text": "adb_input_text",
+    "adb_connect": "adb_connect", "screenshot": "adb_screenshot",
+    "wol": "wol", "ping": "ping",
 };
 
-// ── media_ intent → MediaBot intent key ──────────────────────────────────────
 const MEDIA_INTENT_MAP = {
     "net_music_player": "media_play_spotify",
     "media_youtube": "media_play_youtube",
@@ -67,56 +62,35 @@ const MEDIA_INTENT_MAP = {
     "media_mute": "media_mute",
 };
 
-// ── BatBot script key normalization ──────────────────────────────────────────
 const BAT_SCRIPT_ALIASES = {
-    "volume_set": "volume_up",
-    "volume_increase": "volume_up",
-    "set_volume": "volume_up",
-    "volume_decrease": "volume_down",
-    "mute": "volume_mute",
-    "toggle_mute": "volume_mute",
-    "unmute": "volume_mute",
-    "youtube": "media_youtube",
-    "open_youtube": "media_youtube",
-    "play_youtube": "media_youtube",
-    "abrir_youtube": "media_youtube",
-    "spotify": "media_spotify",
-    "open_spotify": "media_spotify",
-    "play_spotify": "media_spotify",
-    "vlc": "media_vlc",
-    "open_vlc": "media_vlc",
-    "pause": "media_pause",
-    "play_pause": "media_pause",
-    "play": "media_pause",
-    "next_track": "media_next",
-    "next": "media_next",
-    "previous": "media_prev",
-    "prev_track": "media_prev",
-    "prev": "media_prev",
-    "discord": "app_discord",
-    "open_discord": "app_discord",
-    "abrir_discord": "app_discord",
-    "vscode": "app_vscode",
-    "code": "app_vscode",
-    "open_vscode": "app_vscode",
-    "open_code": "app_vscode",
-    "fortnite": "app_fortnite",
-    "open_fortnite": "app_fortnite",
-    "browser": "app_browser",
-    "open_browser": "app_browser",
-    "chrome": "app_browser",
-    "firefox": "app_browser",
-    "screenshot": "system_screenshot",
-    "captura": "system_screenshot",
-    "lock": "system_lock",
-    "lock_pc": "system_lock",
-    "bloquear": "system_lock",
-    "sleep": "system_sleep",
-    "suspend": "system_sleep",
-    "dormir": "system_sleep",
-    "night_mode": "system_night_mode",
-    "dark_mode": "system_night_mode",
-    "modo_noche": "system_night_mode",
+    "volume_set": "volume_set", "set_volume": "volume_set",
+    "volume_increase": "volume_up", "volume_decrease": "volume_down",
+    "mute": "volume_mute", "toggle_mute": "volume_mute", "unmute": "volume_mute",
+    "youtube": "media_youtube", "open_youtube": "media_youtube",
+    "play_youtube": "media_youtube", "abrir_youtube": "media_youtube",
+    "spotify": "media_spotify", "open_spotify": "media_spotify", "play_spotify": "media_spotify",
+    "vlc": "media_vlc", "open_vlc": "media_vlc",
+    "pause": "media_pause", "play_pause": "media_pause", "play": "media_pause",
+    "next_track": "media_next", "next": "media_next",
+    "previous": "media_prev", "prev_track": "media_prev", "prev": "media_prev",
+    "discord": "app_discord", "open_discord": "app_discord", "abrir_discord": "app_discord",
+    "vscode": "app_vscode", "code": "app_vscode", "open_vscode": "app_vscode",
+    "fortnite": "app_fortnite", "open_fortnite": "app_fortnite",
+    "browser": "app_browser", "open_browser": "app_browser", "default_browser": "app_browser",
+    "chrome": "app_chrome", "open_chrome": "app_chrome", "google_chrome": "app_chrome",
+    "firefox": "app_firefox", "open_firefox": "app_firefox",
+    "brave": "app_brave", "open_brave": "app_brave",
+    "chatgpt": "app_chatgpt", "open_chatgpt": "app_chatgpt", "chat_gpt": "app_chatgpt",
+    "antigravity": "app_antigravity", "open_antigravity": "app_antigravity",
+    "cursor": "app_cursor", "open_cursor": "app_cursor",
+    "terminal": "app_terminal", "cmd": "app_terminal",
+    "powershell": "app_powershell",
+    "postman": "app_postman",
+    "github": "app_github_desktop", "github_desktop": "app_github_desktop",
+    "screenshot": "system_screenshot", "captura": "system_screenshot",
+    "lock": "system_lock", "lock_pc": "system_lock", "bloquear": "system_lock",
+    "sleep": "system_sleep", "suspend": "system_sleep", "dormir": "system_sleep",
+    "night_mode": "system_night_mode", "dark_mode": "system_night_mode", "modo_noche": "system_night_mode",
 };
 
 class BotManager {
@@ -132,15 +106,13 @@ class BotManager {
             NetBot: new NetBot(),
             WhatsAppBot: null,
             ComputerBot: new ComputerBot(),
-            VisionBot: new VisionBot()
+            VisionBot: new VisionBot(),
+            SearchBot: new SearchBot()
         };
 
         this.states = {};
         for (const name of Object.keys(this.bots)) {
-            this.states[name] = {
-                active: false, status: "idle",
-                lastError: null, lastRun: null, runCount: 0
-            };
+            this.states[name] = { active: false, status: "idle", lastError: null, lastRun: null, runCount: 0 };
         }
 
         logger.info(`BotManager initialized with ${Object.keys(this.bots).length} bots`);
@@ -169,6 +141,10 @@ class BotManager {
     isBotActive(name) {
         this._assertExists(name);
         return this.states[name].active;
+    }
+
+    getBot(name) {
+        return this.bots[name] || null;
     }
 
     getAllStates() {
@@ -201,89 +177,78 @@ class BotManager {
 
         if (normalized.intent === "error") {
             logger.warn(`Model error intent: ${normalized.parameters.reason}`);
-            return this._response(
-                normalized.parameters.reason || "El modelo no pudo determinar una acción válida.",
-                true
-            );
+            return this._response(normalized.parameters.reason || "El modelo no pudo determinar una acción válida.", true);
         }
 
+        // ── WhatsApp QR ────────────────────────────────────────────────────
         if (normalized.intent === "whatsapp_qr") {
             return this._handleWhatsAppQR();
         }
 
+        // ── Volumen exacto ─────────────────────────────────────────────────
+        if (["volume", "set_volume", "volume_set"].includes(normalized.intent)) {
+            const level = normalized.parameters.level ?? normalized.parameters.value ?? null;
+            if (level !== null) {
+                if (!this.isBotActive("BatBot")) this.activateBot("BatBot");
+                return this._runSafe("BatBot", { script: "volume_set", args: [String(level)] });
+            } else {
+                const action = (normalized.parameters.action || "").toLowerCase();
+                const script = (action.includes("down") || action.includes("decrease") || action.includes("baj"))
+                    ? "volume_down" : "volume_up";
+                if (!this.isBotActive("BatBot")) this.activateBot("BatBot");
+                return this._runSafe("BatBot", { script, args: [] });
+            }
+        }
+
+        // ── Búsqueda web → SearchBot ───────────────────────────────────────
+        if (["search_web", "web_search", "buscar_web", "google_search"].includes(normalized.intent)) {
+            const q = normalized.parameters.query || normalized.parameters.search || "";
+            if (!this.isBotActive("SearchBot")) this.activateBot("SearchBot");
+            return this._runSafe("SearchBot", { query: q });
+        }
+
         const targetBot = this._mapIntent(normalized.intent);
 
-        // ── FIX: Auto-inject "action" for NetBot ─────────────────────────────
-        if (targetBot === "NetBot") {
-            if (!normalized.parameters.action) {
-                const suffix = normalized.intent.replace(/^net_/, "");
-                const mappedAction = NET_ACTION_MAP[suffix] || suffix;
-                normalized.parameters.action = mappedAction;
-                logger.info(`NetBot: injected action="${mappedAction}" from intent "${normalized.intent}"`);
-            }
+        if (targetBot === "NetBot" && !normalized.parameters.action) {
+            const suffix = normalized.intent.replace(/^net_/, "");
+            normalized.parameters.action = NET_ACTION_MAP[suffix] || suffix;
+            logger.info(`NetBot: injected action="${normalized.parameters.action}"`);
         }
 
-        // ── FIX: Auto-inject "intent" for MediaBot ───────────────────────────
-        if (targetBot === "MediaBot") {
-            if (!normalized.parameters.intent) {
-                const mappedIntent = MEDIA_INTENT_MAP[normalized.intent] || normalized.intent;
-                normalized.parameters.intent = mappedIntent;
-                logger.info(`MediaBot: injected intent="${mappedIntent}" from "${normalized.intent}"`);
-            }
+        if (targetBot === "MediaBot" && !normalized.parameters.intent) {
+            normalized.parameters.intent = MEDIA_INTENT_MAP[normalized.intent] || normalized.intent;
+            logger.info(`MediaBot: injected intent="${normalized.parameters.intent}"`);
         }
 
-        // ── FIX: Auto-inject "task" for ComputerBot ──────────────────────────
-        if (targetBot === "ComputerBot") {
-            if (!normalized.parameters.task) {
-                normalized.parameters.task =
-                    normalized.parameters.query ||
-                    normalized.parameters.command ||
-                    normalized.parameters.description ||
-                    "";
-                logger.info(`ComputerBot: injected task="${normalized.parameters.task}"`);
-            }
+        if (targetBot === "ComputerBot" && !normalized.parameters.task) {
+            normalized.parameters.task =
+                normalized.parameters.query || normalized.parameters.command || normalized.parameters.description || "";
         }
 
-        // ── FIX: Normalize BatBot script keys via aliases ─────────────────────
         if (targetBot === "BatBot" && normalized.parameters.script) {
             const raw = normalized.parameters.script;
             if (BAT_SCRIPT_ALIASES[raw]) {
-                logger.info(`BatBot: aliased script "${raw}" → "${BAT_SCRIPT_ALIASES[raw]}"`);
+                logger.info(`BatBot: aliased "${raw}" → "${BAT_SCRIPT_ALIASES[raw]}"`);
                 normalized.parameters.script = BAT_SCRIPT_ALIASES[raw];
             }
         }
 
-        // ── FIX v2.3: Ensure WebBot always has a query ───────────────────────
-        // The LLM sometimes returns intents like "greetings", "default", "farewell"
-        // (no known prefix) or "chat_response" (known prefix) WITHOUT including
-        // the original user message in parameters. WebBot then throws because it
-        // has no text to process.
-        // Solution: if the resolved bot is WebBot and there's no usable text
-        // parameter, fall back to the original message stored in parameters._originalMessage,
-        // or the intent name itself as a last resort.
+        // ── SearchBot directo para intents de búsqueda sin prefijo ────────
+        if (targetBot === "SearchBot") {
+            const q = normalized.parameters.query || normalized.parameters.search || "";
+            if (!this.isBotActive("SearchBot")) this.activateBot("SearchBot");
+            return this._runSafe("SearchBot", { query: q });
+        }
+
+        // ── WebBot: asegurar query ─────────────────────────────────────────
         const effectiveBot = targetBot || "WebBot";
         if (effectiveBot === "WebBot") {
-            const hasQuery =
-                normalized.parameters.query ||
-                normalized.parameters.message ||
-                normalized.parameters.prompt ||
-                normalized.parameters.text;
-
+            const hasQuery = normalized.parameters.query || normalized.parameters.message ||
+                normalized.parameters.prompt || normalized.parameters.text;
             if (!hasQuery) {
-                // Try to recover original message from controller (passed via _originalMessage)
-                const fallback =
-                    normalized.parameters._originalMessage ||
-                    normalized.parameters.input ||
-                    "";
-
-                normalized.parameters.query = fallback;
-
-                if (fallback) {
-                    logger.info(`WebBot: injected query from _originalMessage: "${fallback.substring(0, 60)}"`);
-                } else {
-                    logger.warn(`WebBot: no query found in parameters for intent "${normalized.intent}" — using intent name as fallback`);
-                    normalized.parameters.query = normalized.intent;
-                }
+                const fallback = normalized.parameters._originalMessage || normalized.parameters.input || "";
+                normalized.parameters.query = fallback || normalized.intent;
+                if (!fallback) logger.warn(`WebBot: no query found, using intent name as fallback`);
             }
         }
 
@@ -302,22 +267,32 @@ class BotManager {
 
     async _handleWhatsAppQR() {
         try {
-            if (!this.isBotActive("WhatsAppBot")) {
-                logger.info("WhatsAppBot: activating to generate QR...");
+            // Auto-activar si no está corriendo
+            if (!this.isBotActive("WhatsAppBot") || !this.bots.WhatsAppBot) {
+                logger.info("WhatsAppBot: auto-activating para generar QR...");
                 this.activateBot("WhatsAppBot");
-                await new Promise(r => setTimeout(r, 3000));
+                await new Promise(r => setTimeout(r, 4500));
             }
 
-            let waState;
+            // Leer estado del módulo whatsappRoutes
+            let state = { connected: false, qr: null, phone: null };
             try {
-                waState = require("../routes/whatsappRoutes");
-            } catch {
-                return this._response("❌ WhatsApp module no disponible.", true);
+                const waModule = require("../routes/whatsappRoutes");
+                if (typeof waModule.getState === "function") {
+                    state = waModule.getState();
+                }
+            } catch { }
+
+            // Si getState no está disponible, leer del bot directamente
+            if (!state.connected && !state.qr) {
+                const waBot = this.bots.WhatsAppBot;
+                if (waBot) {
+                    state.connected = waBot.ready === true;
+                    state.phone = waBot.client?.info?.wid?.user || null;
+                }
             }
 
-            const state = waState.state;
-
-            if (state.status === "connected" && state.phone) {
+            if (state.connected && state.phone) {
                 return this._response(
                     `✅ WhatsApp ya está vinculado al número +${state.phone}.\n[WHATSAPP_CONNECTED:${state.phone}]`,
                     false
@@ -325,23 +300,15 @@ class BotManager {
             }
 
             if (state.qr) {
-                const age = Date.now() - (state.qrTimestamp || 0);
-                if (age > 60000) {
-                    return this._response(
-                        "⏳ El QR expiró. Estoy generando uno nuevo, pedímelo en unos segundos.",
-                        false
-                    );
-                }
-                return this._response(
-                    `📱 Escaneá este QR con WhatsApp:\n[WHATSAPP_QR:${state.qr}]`,
-                    false
-                );
+                const qrSrc = state.qr.startsWith("data:") ? state.qr : `data:image/png;base64,${state.qr}`;
+                return this._response(`📱 Escaneá este QR con WhatsApp:\n[WHATSAPP_QR:${qrSrc}]`, false);
             }
 
             return this._response(
-                "⏳ Estoy iniciando WhatsApp... Esperá 10 segundos y volvé a pedirme el QR.",
+                "⏳ WhatsApp está iniciando... El QR se está generando. Abrí **Configuración → WhatsApp** o pedí el QR nuevamente en 15 segundos.",
                 false
             );
+
         } catch (err) {
             logger.error(`WhatsApp QR handler: ${err.message}`);
             return this._response(`Error al obtener QR de WhatsApp: ${err.message}`, true);
