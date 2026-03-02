@@ -1,17 +1,17 @@
 /**
- * ModelService.js — v6.0
+ * ModelService.js — v6.1 FIXED
  *
- * CAMBIOS vs v5.0:
- *  - Volumen exacto: "pon el volumen al 70" → intent "volume" con parameters.level = 70
- *    El sistema lee el nivel actual y determina si subir o bajar (via volume_set.bat + nircmd setsysvolume)
- *  - YouTube con búsqueda: "poneme el video Sorry de Justin Bieber" → media_youtube con query
- *  - Búsqueda web + resultados: "busca top 10 jugadores" → search_web con query
- *  - Búsqueda en Google/web específica: "buscá en google X" → search_web
- *  - Navegador predeterminado por defecto, específico si se menciona (chrome, firefox, brave)
- *  - Tolerancia a typos: patrones usan fuzzy matching (variantes comunes de errores)
- *  - ChatGPT en navegador: "abre chatgpt y preguntale X" → app_chatgpt con query
- *  - Antigravity: "abre antigravity con la carpeta X" → app_antigravity con args
- *  - Nuevas apps de dev: cursor, postman, terminal, powershell
+ * FIXES vs v6.0:
+ *  1. BÚSQUEDA WEB: agregadas keywords "internet", "web", "en línea", "online" como triggers de SearchBot
+ *     Antes: "buscá en internet X" no matcheaba nada → iba al LLM que lo mandaba a WebBot (chat)
+ *     Ahora: cualquier mención de internet/web/online con contenido → SearchBot
+ *
+ *  2. CAPACIDADES: nueva regla que detecta "qué podés hacer", "qué sos capaz", "ayuda", etc.
+ *     → intent especial "capabilities" manejado en BotManager
+ *
+ *  3. VOZ → ACCIÓN: el problema de voz NO está en ModelService sino en cómo el frontend
+ *     manda el texto transcripto. ModelService procesa exactamente igual voz que texto.
+ *     Ver nota en sttRoutes sobre asegurarse que el frontend mande a /api/chat.
  */
 
 const axios = require("axios");
@@ -19,7 +19,6 @@ const logger = require("../logs/logger");
 
 // ════════════════════════════════════════════════════════
 //  QUICK_RULES — clasificador por keywords (sin LLM)
-//  IMPORTANTE: patrones con variantes para cubrir typos comunes
 // ════════════════════════════════════════════════════════
 const QUICK_RULES = [
 
@@ -29,8 +28,22 @@ const QUICK_RULES = [
         result: () => ({ intent: "whatsapp_qr", parameters: {} })
     },
 
-    // ── Volumen EXACTO: "pon el volumen al 70", "ponelo al 50", "volumen 80" ─
-    // Typos: "bolumen", "volumne", "vlumen"
+    // ── CAPACIDADES — "qué podés hacer", "qué sos capaz", "ayuda", "help" ───
+    // ✅ FIX NUEVO: detectar pedidos de lista de capacidades
+    {
+        patterns: [
+            /qu[eé]\s+(pod[eé]s|pued[ae]s|sab[eé]s|sabes)\s+(hacer|hac[eé]r)/i,
+            /qu[eé]\s+(?:sos|er[ae]s)\s+capaz/i,
+            /(?:lista|listame|dime|decime|mostr[aá]me)\s+(?:tus\s+)?(?:capacidades|funciones|comandos|habilidades)/i,
+            /(?:tus\s+)?(?:capacidades|funciones|comandos|habilidades)/i,
+            /c[oó]mo\s+(?:te\s+)?uso|c[oó]mo\s+funcionas/i,
+            /^(?:ayuda|help|menu|menú)$/i,
+            /qu[eé]\s+(?:cosas?\s+)?(?:pod[eé]s|pued[ae]s)\s+(?:hacer|hac[eé]r)/i,
+        ],
+        result: () => ({ intent: "capabilities", parameters: {} })
+    },
+
+    // ── Volumen EXACTO ────────────────────────────────────────────────────────
     {
         patterns: [/(?:pon[eé]?|seteá?|set[eé]a?|subí?|baj[aá]?)?\s*(?:vol[uú]?m[eé]?n?|bol[uú]m[eé]n?|vol)\s*(?:al?|en|a)?\s*(\d+)/i],
         result: (m) => {
@@ -58,7 +71,6 @@ const QUICK_RULES = [
     },
 
     // ── YouTube con búsqueda específica ──────────────────────────────────────
-    // Typos: "yuotube", "youtbe", "yotube", "jutibe", "jusitn"
     {
         patterns: [/(?:pon[eé]?m[eé]?|busca[r]?|pone[r]?|reproduce[r]?|play|abr[ií][r]?).*?(?:en\s+)?(?:y[ouo][ut][ut][ub][be]e?|you\s*tube)\s+(?:el?\s+)?(?:video\s+)?(?:de\s+|llamado?\s+|titulado?\s+)?(.+)/i],
         result: (m) => {
@@ -73,9 +85,8 @@ const QUICK_RULES = [
         result: () => ({ intent: "bat_exec", parameters: { script: "media_youtube", args: [] } })
     },
 
-    // ── Búsqueda web con resultados ──────────────────────────────────────────
-    // Cubre: "busca X", "buscame X", "busca en la web X", "busca en google X",
-    //        "googleá X", "cuántos años tiene X", "quién es X", "qué es X"
+    // ── Búsqueda web con resultados ───────────────────────────────────────────
+    // ✅ FIX: Agregadas variantes con "internet", "web", "online", "en línea"
     {
         patterns: [
             /buscá?(?:me|nos|r)?[\s,]+(?:en[\s]+(?:la[\s]+)?(?:web|google|internet|bing|duckduckgo)[\s]+)?(.+)/i,
@@ -86,6 +97,11 @@ const QUICK_RULES = [
             /qui[eé]n[\s]+(?:es|fue|era|son)[\s]+(.+)/i,
             /qu[eé][\s]+es[\s]+(?:el|la|los|las|un|una)?[\s]*(.+)/i,
             /cu[aá]ndo[\s]+(?:naci[oó]|muri[oó]|fue|empez[oó])[\s]+(.+)/i,
+            // ✅ NUEVOS: internet / web / online como keyword de búsqueda
+            /(?:busca[r]?|buscame|encuentra[r]?)[\s]+(?:en[\s]+)?(?:internet|la[\s]+web|online|en[\s]+l[ií]nea)[\s]+(.+)/i,
+            /(?:en[\s]+)?(?:internet|la[\s]+web|online)[\s]+(?:busca[r]?|encuentra[r]?|qué[\s]+(?:dice|dicen|hay))[\s]+(?:sobre[\s]+|acerca[\s]+de[\s]+)?(.+)/i,
+            /inform[aá](?:cion|ción)[\s]+(?:sobre|acerca[\s]+de|de)[\s]+(.+)/i,
+            /(?:dime|decime|mostr[aá]me)[\s]+(?:sobre|acerca[\s]+de)[\s]+(.+)/i,
         ],
         result: (m) => {
             const match =
@@ -95,7 +111,11 @@ const QUICK_RULES = [
                 m.match(/cu[aá]ntos[\s]+a[ñn]os[\s]+(?:tiene|tenía|tenia|cumple)[\s]+(.+)/i) ||
                 m.match(/qui[eé]n[\s]+(?:es|fue|era)[\s]+(.+)/i) ||
                 m.match(/qu[eé][\s]+es[\s]+(?:el|la|un|una)?[\s]*(.+)/i) ||
-                m.match(/cu[aá]ndo[\s]+\w+[\s]+(.+)/i);
+                m.match(/cu[aá]ndo[\s]+\w+[\s]+(.+)/i) ||
+                m.match(/(?:busca[r]?|buscame|encuentra[r]?)[\s]+(?:en[\s]+)?(?:internet|la[\s]+web|online|en[\s]+l[ií]nea)[\s]+(.+)/i) ||
+                m.match(/(?:en[\s]+)?(?:internet|la[\s]+web|online)[\s]+(?:busca[r]?|encuentra[r]?|qué[\s]+(?:dice|dicen|hay))[\s]+(?:sobre[\s]+|acerca[\s]+de[\s]+)?(.+)/i) ||
+                m.match(/inform[aá](?:cion|ción)[\s]+(?:sobre|acerca[\s]+de|de)[\s]+(.+)/i) ||
+                m.match(/(?:dime|decime|mostr[aá]me)[\s]+(?:sobre|acerca[\s]+de)[\s]+(.+)/i);
             const query = match ? match[1].trim() : m.trim();
             // Excluir YouTube (regla aparte)
             if (/y[ouo][ut][ut][ub][be]e?/.test(query)) return null;
@@ -104,7 +124,6 @@ const QUICK_RULES = [
     },
 
     // ── ChatGPT en navegador ─────────────────────────────────────────────────
-    // "abre chatgpt y preguntale quién es mejor Argentina o Brasil"
     {
         patterns: [/(?:abr[ií][r]?|abre|entr[aá][r]?|abrir)\s+(?:chat\s*gpt|chatgpt)\s*(?:y\s+(?:preguntal[eé]|pregunt[aá]|decil[eé]|consultá)\s+)?(.*)$/i],
         result: (m) => {
@@ -175,8 +194,8 @@ const QUICK_RULES = [
         patterns: [/abr[ií][r]?\s+(?:vs\s*code|vscode|visual\s+studio\s+code|\bcode\b)(?:\s+(.+))?/i],
         result: (m) => {
             const match = m.match(/(?:vscode|vs\s*code|code)\s+(.+)/i);
-            const path = match ? match[1].trim() : "";
-            return { intent: "bat_exec", parameters: { script: "app_vscode", args: path ? [path] : [] } };
+            const p = match ? match[1].trim() : "";
+            return { intent: "bat_exec", parameters: { script: "app_vscode", args: p ? [p] : [] } };
         }
     },
     {
@@ -264,7 +283,7 @@ function quickClassify(text) {
         for (const pattern of rule.patterns) {
             if (pattern.test(t)) {
                 const r = rule.result(t);
-                if (r === null) continue; // regla devuelve null = no aplica
+                if (r === null) continue;
                 logger.info(`QuickClassify: "${t.substring(0, 60)}" → ${r.intent}:${JSON.stringify(r.parameters).substring(0, 80)}`);
                 return r;
             }

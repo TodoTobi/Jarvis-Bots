@@ -1,64 +1,48 @@
 /**
  * WakeWord.jsx — Detector de palabra clave "sistema"
  *
- * Escucha constantemente con la Web Speech API (bajo consumo de recursos).
- * Cuando detecta "sistema" en el audio, activa la grabación de audio completa
- * y procesa el comando igual que el botón de micrófono manual.
- *
- * Estados:
- *  idle      → escuchando en background (casi sin recursos)
- *  listening → detectó "sistema", grabando el comando
- *  processing → transcribiendo con Whisper
- *
- * Props:
- *  onCommand(text)  — callback cuando se detecta un comando completo
- *  disabled         — deshabilita todo
- *  active           — si el modo wake word está habilitado
+ * FIXES:
+ * - Agrega prop onStateChange(state) para notificar al Chat del estado
+ * - El estado se propaga al Chat para animar el input
+ * - onCommand envía directamente a sendMessage (ya va a /api/chat)
  */
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 
 const API = "http://localhost:3001";
 
-// Palabras clave que activan el modo escucha
 const WAKE_WORDS = ["sistema", "systema", "system", "sistema!", "sistema,"];
 
-// Tiempo máximo de grabación del comando (ms)
 const MAX_RECORDING_MS = 10000;
-
-// Tiempo de silencio antes de procesar (ms) 
 const SILENCE_TIMEOUT_MS = 1800;
 
-export default function WakeWord({ onCommand, disabled = false, active = true }) {
-    const [state, setState] = useState("idle"); // idle | listening | processing
+export default function WakeWord({ onCommand, disabled = false, active = true, onStateChange }) {
+    const [state, setState] = useState("idle");
     const [lastWakeWord, setLastWakeWord] = useState(null);
-    const [transcript, setTranscript] = useState("");
     const [error, setError] = useState(null);
-    const [pulseColor, setPulseColor] = useState("#10a37f");
 
-    // Speech recognition (para wake word detection — muy bajo consumo)
     const recognitionRef = useRef(null);
     const isRecognitionRunning = useRef(false);
-
-    // MediaRecorder (para grabar el comando completo con calidad)
     const mediaRecorderRef = useRef(null);
     const chunksRef = useRef([]);
     const silenceTimerRef = useRef(null);
     const maxTimerRef = useRef(null);
     const stateRef = useRef("idle");
 
-    // Sync stateRef with state
-    useEffect(() => { stateRef.current = state; }, [state]);
+    // Sync stateRef + notificar al padre
+    const updateState = useCallback((newState) => {
+        stateRef.current = newState;
+        setState(newState);
+        onStateChange?.(newState);
+    }, [onStateChange]);
 
-    /* ── Check browser support ── */
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const isSupported = !!SpeechRecognition;
 
     /* ── Start MediaRecorder for command ── */
     const startCommandRecording = useCallback(async () => {
         if (stateRef.current !== "idle") return;
-        setState("listening");
-        setPulseColor("#ef4444");
+        updateState("listening");
 
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -76,14 +60,12 @@ export default function WakeWord({ onCommand, disabled = false, active = true })
                 clearTimeout(silenceTimerRef.current);
                 clearTimeout(maxTimerRef.current);
 
-                setState("processing");
-                setPulseColor("#f59e0b");
+                updateState("processing");
 
                 try {
                     const blob = new Blob(chunksRef.current, { type: mimeType });
                     if (blob.size < 800) {
-                        setState("idle");
-                        setPulseColor("#10a37f");
+                        updateState("idle");
                         return;
                     }
 
@@ -96,23 +78,20 @@ export default function WakeWord({ onCommand, disabled = false, active = true })
 
                     if (data.success && data.text?.trim()) {
                         const cmdText = data.text.trim();
-                        setTranscript(cmdText);
+                        // CRÍTICO: enviar al chat como si fuera mensaje normal → va a /api/chat
                         onCommand(cmdText);
                     }
                 } catch (e) {
                     console.error("WakeWord STT error:", e);
                 } finally {
-                    setState("idle");
-                    setPulseColor("#10a37f");
-                    setTranscript("");
-                    // Restart wake word detection after brief pause
+                    updateState("idle");
                     setTimeout(() => restartRecognition(), 800);
                 }
             };
 
             mr.start(100);
 
-            // Silence detection: stop after SILENCE_TIMEOUT_MS with no new chunks
+            // Silence detection
             const resetSilenceTimer = () => {
                 clearTimeout(silenceTimerRef.current);
                 silenceTimerRef.current = setTimeout(() => {
@@ -134,12 +113,11 @@ export default function WakeWord({ onCommand, disabled = false, active = true })
 
         } catch (e) {
             console.error("WakeWord: mic error:", e);
-            setState("idle");
-            setPulseColor("#10a37f");
+            updateState("idle");
         }
-    }, [onCommand]);
+    }, [onCommand, updateState]);
 
-    /* ── Setup Speech Recognition for wake word ── */
+    /* ── Setup Speech Recognition ── */
     const setupRecognition = useCallback(() => {
         if (!SpeechRecognition || !active) return;
 
@@ -157,17 +135,14 @@ export default function WakeWord({ onCommand, disabled = false, active = true })
 
                 for (const alt of alternatives) {
                     const transcript = alt.transcript.toLowerCase().trim();
-
                     const detected = WAKE_WORDS.some(w => transcript.includes(w));
                     if (detected) {
-                        console.log("WakeWord: DETECTED in:", transcript);
+                        console.log("WakeWord DETECTADO:", transcript);
                         setLastWakeWord(new Date().toLocaleTimeString());
 
-                        // Stop recognition temporarily
                         try { rec.stop(); } catch { }
                         isRecognitionRunning.current = false;
 
-                        // Start command recording
                         startCommandRecording();
                         return;
                     }
@@ -180,7 +155,6 @@ export default function WakeWord({ onCommand, disabled = false, active = true })
                 setError("Micrófono no permitido");
                 return;
             }
-            // Ignorar errores transitorios y reiniciar
             isRecognitionRunning.current = false;
             if (active && stateRef.current === "idle") {
                 setTimeout(() => restartRecognition(), 1000);
@@ -189,7 +163,6 @@ export default function WakeWord({ onCommand, disabled = false, active = true })
 
         rec.onend = () => {
             isRecognitionRunning.current = false;
-            // Auto-restart if still in idle mode and wake word is active
             if (active && stateRef.current === "idle") {
                 setTimeout(() => restartRecognition(), 300);
             }
@@ -228,122 +201,8 @@ export default function WakeWord({ onCommand, disabled = false, active = true })
         };
     }, [active, disabled, isSupported, setupRecognition, restartRecognition]);
 
-    if (!isSupported) return null;
-    if (!active) return null;
+    // Componente invisible — la UI se maneja en Chat.jsx
+    if (!isSupported || !active) return null;
 
-    /* ── UI ── */
-    const stateConfig = {
-        idle: { label: "Wake word activo", icon: "🎙️", color: "#10a37f", opacity: 0.7 },
-        listening: { label: "Escuchando comando...", icon: "🔴", color: "#ef4444", opacity: 1 },
-        processing: { label: "Procesando...", icon: "⟳", color: "#f59e0b", opacity: 1 },
-    };
-
-    const cfg = stateConfig[state];
-
-    return (
-        <div style={{ position: "relative" }} title={`Wake word: di "Sistema" para activar`}>
-            {/* Ripple animation cuando está activo */}
-            {state === "idle" && (
-                <div style={{
-                    position: "absolute",
-                    inset: -6,
-                    borderRadius: "50%",
-                    border: `1.5px solid rgba(16,163,127,0.3)`,
-                    animation: "wakeRipple 2.5s ease-out infinite",
-                    pointerEvents: "none",
-                }} />
-            )}
-
-            {state === "listening" && (
-                <>
-                    <div style={{ position: "absolute", inset: -4, borderRadius: "50%", border: "2px solid rgba(239,68,68,0.5)", animation: "ringPulse 1s ease-in-out infinite", pointerEvents: "none" }} />
-                    <div style={{ position: "absolute", inset: -8, borderRadius: "50%", border: "1px solid rgba(239,68,68,0.2)", animation: "ringPulse 1s ease-in-out 0.3s infinite", pointerEvents: "none" }} />
-                </>
-            )}
-
-            <button
-                disabled={disabled}
-                title={`"Sistema" para activar | Estado: ${state}`}
-                style={{
-                    width: 32, height: 32, borderRadius: "50%",
-                    border: `1.5px solid ${cfg.color}40`,
-                    background: state === "idle" ? "transparent" : `${cfg.color}20`,
-                    color: cfg.color,
-                    cursor: "default",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: state === "processing" ? 14 : 15,
-                    opacity: cfg.opacity,
-                    transition: "all 0.3s ease",
-                    animation: state === "processing" ? "spin 1s linear infinite" : "none",
-                    flexShrink: 0,
-                    userSelect: "none",
-                }}
-            >
-                {state === "processing"
-                    ? <span style={{ animation: "spin 1s linear infinite", display: "inline-block" }}>⟳</span>
-                    : cfg.icon
-                }
-            </button>
-
-            {/* Tooltip con estado + último trigger */}
-            {(state !== "idle" || lastWakeWord) && (
-                <div style={{
-                    position: "absolute",
-                    bottom: "calc(100% + 8px)",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    background: "rgba(0,0,0,0.85)",
-                    backdropFilter: "blur(8px)",
-                    color: "#fff",
-                    fontSize: 11,
-                    padding: "4px 10px",
-                    borderRadius: 6,
-                    whiteSpace: "nowrap",
-                    zIndex: 200,
-                    pointerEvents: "none",
-                    border: `1px solid ${cfg.color}30`,
-                }}>
-                    {state === "listening" && "🔴 Grabando... (silencio para enviar)"}
-                    {state === "processing" && "⟳ Procesando audio..."}
-                    {state === "idle" && lastWakeWord && `✓ Último: ${lastWakeWord}`}
-                </div>
-            )}
-
-            {/* Transcript en tiempo real */}
-            {transcript && state === "idle" && (
-                <div style={{
-                    position: "absolute",
-                    bottom: "calc(100% + 8px)",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    background: "rgba(16,163,127,0.15)",
-                    border: "1px solid rgba(16,163,127,0.3)",
-                    color: "#19c37d",
-                    fontSize: 11,
-                    padding: "4px 10px",
-                    borderRadius: 6,
-                    whiteSpace: "nowrap",
-                    zIndex: 200,
-                    pointerEvents: "none",
-                    maxWidth: 200,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                }}>
-                    "{transcript}"
-                </div>
-            )}
-
-            <style>{`
-                @keyframes wakeRipple {
-                    0% { opacity: 0.6; transform: scale(1); }
-                    100% { opacity: 0; transform: scale(2.2); }
-                }
-                @keyframes ringPulse {
-                    0%,100% { opacity: 0.8; transform: scale(1); }
-                    50% { opacity: 0.3; transform: scale(1.15); }
-                }
-                @keyframes spin { to { transform: rotate(360deg); } }
-            `}</style>
-        </div>
-    );
+    return null;
 }

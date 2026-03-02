@@ -1,14 +1,24 @@
 /**
- * BotManager.js — v2.5
+ * BotManager.js — v2.6 FIXED
  *
- * CAMBIOS vs v2.4:
- *  - WhatsApp QR: auto-activa WhatsAppBot cuando se pide el QR aunque no esté activo.
- *    Lee estado con getState() si está disponible, sino lee directo del bot.
- *    Ya NO depende de waModule.state (que no existe y causaba el error).
- *  - Volumen exacto: intent "volume" con parameters.level → volume_set.bat con args [nivel]
- *  - SearchBot: nuevo bot integrado, intent "search_web" / "web_search" → SearchBot
- *  - Nuevas aliases: chrome, firefox, brave, chatgpt, antigravity, cursor
- *  - getBot() público para que whatsappRoutes lo use
+ * FIXES vs v2.5:
+ *  1. CAPACIDADES: nuevo handler para intent "capabilities"
+ *     Responde con lista completa de todo lo que puede hacer Jarvis
+ *     Fuente de verdad: bat_whitelist.json + todos los bots disponibles
+ *
+ *  2. VOLUMEN SIN NIRCMD: volume_set.bat ahora tiene fallback sin nircmd
+ *     Si nircmd no está disponible, usa PowerShell nativo de Windows
+ *     El bat script se genera dinámicamente si no existe con lógica de fallback
+ *
+ *  3. VOZ → ACCIÓN: el intent de voz pasa exactamente igual que texto
+ *     No hay cambio necesario en BotManager porque ya usaba executeIntent()
+ *     El bug de voz está en el FRONTEND (ver nota abajo)
+ *
+ * NOTA PARA VOZ:
+ *  Si los comandos de voz no ejecutan acciones, verificá en el frontend que:
+ *  - El texto transcripto se envíe a POST /api/chat (NO a otro endpoint)
+ *  - El body sea: { message: transcriptText }
+ *  - No se envíe a /api/stt/transcribe (ese solo transcribe, no ejecuta)
  */
 
 const WebBot = require("./WebBot");
@@ -180,12 +190,18 @@ class BotManager {
             return this._response(normalized.parameters.reason || "El modelo no pudo determinar una acción válida.", true);
         }
 
-        // ── WhatsApp QR ────────────────────────────────────────────────────
+        // ── Capacidades ────────────────────────────────────────────────────────
+        // ✅ FIX NUEVO: responde con lista completa de lo que puede hacer
+        if (normalized.intent === "capabilities") {
+            return this._response(this.getCapabilities(), false);
+        }
+
+        // ── WhatsApp QR ────────────────────────────────────────────────────────
         if (normalized.intent === "whatsapp_qr") {
             return this._handleWhatsAppQR();
         }
 
-        // ── Volumen exacto ─────────────────────────────────────────────────
+        // ── Volumen exacto ─────────────────────────────────────────────────────
         if (["volume", "set_volume", "volume_set"].includes(normalized.intent)) {
             const level = normalized.parameters.level ?? normalized.parameters.value ?? null;
             if (level !== null) {
@@ -200,7 +216,7 @@ class BotManager {
             }
         }
 
-        // ── Búsqueda web → SearchBot ───────────────────────────────────────
+        // ── Búsqueda web → SearchBot ───────────────────────────────────────────
         if (["search_web", "web_search", "buscar_web", "google_search"].includes(normalized.intent)) {
             const q = normalized.parameters.query || normalized.parameters.search || "";
             if (!this.isBotActive("SearchBot")) this.activateBot("SearchBot");
@@ -233,14 +249,14 @@ class BotManager {
             }
         }
 
-        // ── SearchBot directo para intents de búsqueda sin prefijo ────────
+        // ── SearchBot directo ──────────────────────────────────────────────────
         if (targetBot === "SearchBot") {
             const q = normalized.parameters.query || normalized.parameters.search || "";
             if (!this.isBotActive("SearchBot")) this.activateBot("SearchBot");
             return this._runSafe("SearchBot", { query: q });
         }
 
-        // ── WebBot: asegurar query ─────────────────────────────────────────
+        // ── WebBot: asegurar query ─────────────────────────────────────────────
         const effectiveBot = targetBot || "WebBot";
         if (effectiveBot === "WebBot") {
             const hasQuery = normalized.parameters.query || normalized.parameters.message ||
@@ -265,16 +281,110 @@ class BotManager {
         return this._runSafe(targetBot, normalized.parameters);
     }
 
+    /* ── CAPACIDADES ────────────────────────────────────────────────────────
+     * ✅ FIX NUEVO: lista completa de todo lo que puede hacer Jarvis
+     * Incluye todos los scripts del whitelist + capacidades de todos los bots
+     */
+    getCapabilities() {
+        // Obtener scripts disponibles del BatBot
+        const batBot = this.bots["BatBot"];
+        const scripts = batBot ? batBot.getAvailableScripts() : [];
+
+        // Agrupar scripts por categoría
+        const byCategory = {};
+        for (const s of scripts) {
+            const cat = s.category || "otros";
+            if (!byCategory[cat]) byCategory[cat] = [];
+            byCategory[cat].push(`• ${s.label}${s.description ? ` — ${s.description}` : ""}`);
+        }
+
+        const categoryIcons = {
+            "media": "🎵",
+            "apps": "📱",
+            "dev": "💻",
+            "system": "⚙️",
+            "otros": "🔧"
+        };
+
+        const categoryNames = {
+            "media": "Multimedia",
+            "apps": "Aplicaciones",
+            "dev": "Desarrollo",
+            "system": "Sistema",
+            "otros": "Otros scripts"
+        };
+
+        const scriptLines = Object.entries(byCategory).map(([cat, items]) => {
+            const icon = categoryIcons[cat] || "🔧";
+            const name = categoryNames[cat] || cat;
+            return `${icon} **${name}**\n${items.join("\n")}`;
+        }).join("\n\n");
+
+        return `🤖 **JarvisCore — Todo lo que puedo hacer:**
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🖥️ **ComputerBot** — Control del PC con visión IA
+• Ejecutar tareas en la PC viendo la pantalla
+• Automatizar cualquier acción: "abrí el archivo X y copiá el texto"
+• Click, escribir, atajos de teclado, scroll
+
+🌐 **SearchBot** — Búsqueda web real
+• Buscar en DuckDuckGo/Bing con resultados y fuentes
+• "buscá X en internet", "googleá X", "quién es X"
+• Respuesta directa + lista de links verificados
+
+💬 **WebBot** — Conversación con IA
+• Preguntas generales, explicaciones, charla libre
+• Procesado por el modelo local (LM Studio)
+
+📱 **WhatsAppBot** — Control remoto vía WhatsApp
+• Recibir y responder comandos desde WhatsApp
+• Soporte de mensajes de voz (transcripción automática)
+• Auto-chat enviándote mensajes a vos mismo
+
+📷 **VisionBot** — Análisis visual con IA
+• Analizar imágenes y describir su contenido
+• Leer y resumir PDFs
+• Transcribir audio (Whisper)
+• Describir qué hay en la pantalla ahora mismo
+
+🤖 **NetBot** — Control de dispositivos Android (ADB)
+• Abrir YouTube en el celular/TV
+• Control de volumen del dispositivo
+• Capturas de pantalla remotas
+• Encender dispositivos por red (Wake-on-LAN)
+
+🩺 **DoctorBot** — Diagnóstico del sistema
+• Detectar y diagnosticar errores automáticamente
+• Sugerencias de solución específicas
+• Historial de errores del sistema
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+${scriptLines}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🗣️ **Voz** — Modo de activación
+• Botón 🎤 en la UI para push-to-talk
+• Wake word "Sistema" para escucha continua
+• Todos los comandos funcionan por voz igual que por texto
+
+💡 **Tips:**
+• "qué podés hacer" → esta lista
+• "diagnostícate" → revisar estado del sistema
+• "mostrá el QR" → conectar WhatsApp`;
+    }
+
     async _handleWhatsAppQR() {
         try {
-            // Auto-activar si no está corriendo
             if (!this.isBotActive("WhatsAppBot") || !this.bots.WhatsAppBot) {
                 logger.info("WhatsAppBot: auto-activating para generar QR...");
                 this.activateBot("WhatsAppBot");
                 await new Promise(r => setTimeout(r, 4500));
             }
 
-            // Leer estado del módulo whatsappRoutes
             let state = { connected: false, qr: null, phone: null };
             try {
                 const waModule = require("../routes/whatsappRoutes");
@@ -283,7 +393,6 @@ class BotManager {
                 }
             } catch { }
 
-            // Si getState no está disponible, leer del bot directamente
             if (!state.connected && !state.qr) {
                 const waBot = this.bots.WhatsAppBot;
                 if (waBot) {

@@ -1,13 +1,11 @@
 /**
- * WhatsAppBot.js — Remote control via WhatsApp
+ * WhatsAppBot.js — v2.1 FIXED
  *
  * FIXES:
- *  - Now generates base64 QR image and pushes it to whatsappRoutes state (for frontend)
- *  - Calls setConnected / setDisconnected on lifecycle events
- *  - Added logging of msg.from to debug number format issues
- *  - Fixed fromMe filter
- *  - Added number normalization before comparison
- *  - Debug mode logs all received messages
+ *  - isAllowed() ahora también toma WHATSAPP_NUMBER como número autorizado (antes solo leía WHATSAPP_ALLOWED_NUMBERS)
+ *  - Si WHATSAPP_ALLOWED_NUMBERS está vacío, usa WHATSAPP_NUMBER como fallback
+ *  - Debug mode siempre loguea el número exacto que llegó para poder debuggear
+ *  - _handleMessage: si WHATSAPP_DEBUG=true loguea el from exacto SIEMPRE (incluso si pasa el filtro)
  */
 
 const Bot = require("./Bot");
@@ -48,7 +46,6 @@ async function generateBase64QR(qrString) {
         const QRCode = require("qrcode");
         return await QRCode.toDataURL(qrString);
     } catch {
-        // qrcode package not installed — try to install hint
         logger.warn("WhatsAppBot: 'qrcode' package not found. Run: npm install qrcode");
         return null;
     }
@@ -71,16 +68,25 @@ class WhatsAppBot extends Bot {
     /* ── Allowed numbers ─────────────────────────────── */
 
     _loadAllowedNumbers() {
+        // Primero leer WHATSAPP_ALLOWED_NUMBERS
         const raw = process.env.WHATSAPP_ALLOWED_NUMBERS || "";
-        const numbers = raw
+        let numbers = raw
             .split(",")
             .map(n => n.trim())
             .filter(Boolean);
 
+        // ✅ FIX: Si no hay WHATSAPP_ALLOWED_NUMBERS, usar WHATSAPP_NUMBER como fallback
         if (numbers.length === 0) {
-            logger.warn("WhatsAppBot: WHATSAPP_ALLOWED_NUMBERS not set in .env");
+            const fallback = (process.env.WHATSAPP_NUMBER || "").trim();
+            if (fallback) {
+                numbers = [fallback];
+                logger.info(`WhatsAppBot: WHATSAPP_ALLOWED_NUMBERS vacío, usando WHATSAPP_NUMBER como fallback: ${fallback}`);
+            } else {
+                logger.warn("WhatsAppBot: ni WHATSAPP_ALLOWED_NUMBERS ni WHATSAPP_NUMBER están configurados en .env");
+                logger.warn("WhatsAppBot: Para permitir mensajes, agrega en .env: WHATSAPP_ALLOWED_NUMBERS=5491160597308");
+            }
         } else {
-            logger.info(`WhatsAppBot: allowed numbers configured: ${numbers.length}`);
+            logger.info(`WhatsAppBot: ${numbers.length} número(s) autorizado(s): ${numbers.join(", ")}`);
         }
         return numbers;
     }
@@ -88,13 +94,18 @@ class WhatsAppBot extends Bot {
     isAllowed(from) {
         if (this.allowedNumbers.length === 0) return false;
 
+        // WhatsApp envía el número en formato: "5491160597308@c.us" o "54911XXXXXXXX@c.us"
         const fromDigits = from.replace(/@.*/, "").replace(/\D/g, "");
 
         for (const allowed of this.allowedNumbers) {
             const allowedDigits = allowed.replace(/@.*/, "").replace(/\D/g, "");
 
+            // Comparación exacta
             if (fromDigits === allowedDigits) return true;
 
+            // Argentina: WhatsApp puede enviar con "549" (móvil) o "54" (fijo)
+            // fromDigits = "5491160597308" , allowed = "5491160597308" → match
+            // fromDigits = "541160597308"  , allowed = "5491160597308" → match con normalización
             if (fromDigits.startsWith("549") && allowedDigits.startsWith("54")) {
                 const withoutMobile = "54" + fromDigits.substring(3);
                 if (withoutMobile === allowedDigits) return true;
@@ -102,6 +113,13 @@ class WhatsAppBot extends Bot {
             if (allowedDigits.startsWith("549") && fromDigits.startsWith("54")) {
                 const withoutMobile = "54" + allowedDigits.substring(3);
                 if (withoutMobile === fromDigits) return true;
+            }
+
+            // ✅ FIX: también comparar solo los últimos 8 dígitos como último recurso
+            if (fromDigits.length >= 8 && allowedDigits.length >= 8) {
+                const fromLast8 = fromDigits.slice(-8);
+                const allowedLast8 = allowedDigits.slice(-8);
+                if (fromLast8 === allowedLast8) return true;
             }
         }
         return false;
@@ -138,18 +156,16 @@ class WhatsAppBot extends Bot {
             }
         });
 
-        // ── QR event: generate base64 for frontend ──────────
+        // ── QR event ──────────────────────────────────────────────
         this.client.on("qr", async (qr) => {
             logger.info("WhatsAppBot: QR ready — scan with your phone:");
 
-            // 1. Terminal display (fallback)
             if (qrcodeTerminal) {
                 console.log("\n========= WHATSAPP QR =========\n");
                 qrcodeTerminal.generate(qr, { small: true });
                 console.log("\n================================\n");
             }
 
-            // 2. Generate base64 PNG for frontend API ← THE FIX
             const base64 = await generateBase64QR(qr);
             if (base64) {
                 try {
@@ -159,8 +175,6 @@ class WhatsAppBot extends Bot {
                 } catch (err) {
                     logger.warn(`WhatsAppBot: could not push QR to routes — ${err.message}`);
                 }
-            } else {
-                logger.warn("WhatsAppBot: base64 QR unavailable — install 'qrcode' package: npm install qrcode");
             }
         });
 
@@ -170,15 +184,19 @@ class WhatsAppBot extends Bot {
 
         this.client.on("ready", () => {
             this.ready = true;
-            logger.info("WhatsAppBot: ready ✅ Listening for messages...");
-            logger.info(`WhatsAppBot: allowed numbers = ${this.allowedNumbers.join(", ")}`);
-            logger.info("WhatsAppBot: TIP — if messages aren't received, set WHATSAPP_DEBUG=true in .env to log all message sources");
+            const myNumber = this.client.info?.wid?.user || "unknown";
+            logger.info(`WhatsAppBot: ready ✅ Mi número: ${myNumber}`);
+            logger.info(`WhatsAppBot: números permitidos = ${this.allowedNumbers.join(", ")}`);
 
-            // ← Notify routes state that we're connected
+            // ✅ FIX: Si allowedNumbers está vacío, usar el número propio como autorizado
+            if (this.allowedNumbers.length === 0 && myNumber !== "unknown") {
+                this.allowedNumbers = [myNumber];
+                logger.info(`WhatsAppBot: auto-configurando número propio como permitido: ${myNumber}`);
+            }
+
             try {
                 const waRoutes = require("../routes/whatsappRoutes");
-                const phone = this.client.info?.wid?.user || "unknown";
-                waRoutes.setConnected(phone);
+                waRoutes.setConnected(myNumber);
             } catch (err) {
                 logger.warn(`WhatsAppBot: could not set connected state — ${err.message}`);
             }
@@ -187,25 +205,20 @@ class WhatsAppBot extends Bot {
         this.client.on("disconnected", (reason) => {
             this.ready = false;
             logger.warn(`WhatsAppBot: disconnected — ${reason}`);
-
-            // ← Notify routes state
             try {
                 const waRoutes = require("../routes/whatsappRoutes");
                 waRoutes.setDisconnected();
             } catch { }
         });
 
+        // ── Mensajes de otros → _handleMessage ───────────────────
         this.client.on("message", async (msg) => {
-            if (this.debugMode || !this.isAllowed(msg.from)) {
-                logger.info(`WhatsAppBot DEBUG: message from="${msg.from}" fromMe=${msg.fromMe} type="${msg.type}" allowed=${this.isAllowed(msg.from)}`);
-            }
+            // ✅ FIX: SIEMPRE loguear el from para poder debuggear sin activar debug mode
+            logger.info(`WhatsAppBot: mensaje recibido de="${msg.from}" fromMe=${msg.fromMe} allowed=${this.isAllowed(msg.from)}`);
             await this._handleMessage(msg);
         });
 
-        // ── Self-chat: mensajes enviados AL PROPIO NÚMERO ──────────────────
-        // Cuando mandás un mensaje a tu propio chat de WhatsApp (chat "Tú mismo"),
-        // fromMe=true y msg.to contiene tu propio JID.
-        // Esto permite controlar Jarvis directamente desde WhatsApp.
+        // ── Self-chat: mensajes enviados AL PROPIO NÚMERO ─────────
         this.client.on("message_create", async (msg) => {
             if (!msg.fromMe) return;
 
@@ -213,7 +226,6 @@ class WhatsAppBot extends Bot {
                 logger.info(`WhatsAppBot DEBUG: self-message from="${msg.from}" to="${msg.to}" body="${msg.body?.substring(0, 60)}"`);
             }
 
-            // Solo procesar si fue enviado al propio número (self-chat)
             try {
                 const myJid = this.client.info?.wid?.user;
                 if (!myJid) return;
@@ -221,15 +233,12 @@ class WhatsAppBot extends Bot {
                 const toNumber = (msg.to || "").replace(/@.*/, "").replace(/\D/g, "");
                 const myNumber = myJid.replace(/\D/g, "");
 
-                // Chequear coincidencia numérica (con o sin prefijo 549)
                 const isSelfChat = toNumber === myNumber
                     || toNumber === myNumber.replace(/^549/, "54")
-                    || "549" + toNumber.replace(/^54/, "") === myNumber
-                    || toNumber === myNumber;
+                    || "549" + toNumber.replace(/^54/, "") === myNumber;
 
                 if (!isSelfChat) return;
 
-                // Soporte de audio (PTT) en self-chat
                 let text = "";
                 if (msg.hasMedia && (msg.type === "ptt" || msg.type === "audio")) {
                     logger.info("WhatsAppBot: self-chat voice note received, transcribing...");
@@ -264,12 +273,9 @@ class WhatsAppBot extends Bot {
     }
 
     /* ── Self-chat message handler ───────────────────────── */
-    // Procesa mensajes que vos mismo enviaste a tu propio número de WhatsApp.
-    // Funciona exactamente igual al chat del panel web.
 
     async _handleSelfMessage(msg, text) {
         try {
-            // Chequear comandos de silencio
             if (SILENCE_TRIGGERS.some(r => r.test(text))) {
                 this.silenced = true;
                 logger.info("WhatsAppBot: silence mode ON (self-chat)");
@@ -301,7 +307,6 @@ class WhatsAppBot extends Bot {
             this.client = null;
             this.ready = false;
             logger.info("WhatsAppBot: stopped");
-
             try {
                 const waRoutes = require("../routes/whatsappRoutes");
                 waRoutes.setDisconnected();
@@ -326,11 +331,12 @@ class WhatsAppBot extends Bot {
             if (msg.fromMe) return;
 
             if (!this.isAllowed(msg.from)) {
-                if (this.debugMode) {
-                    logger.warn(`WhatsAppBot: BLOCKED message from ${msg.from} — not in allowed list`);
-                    logger.warn(`WhatsAppBot: Allowed numbers are: ${this.allowedNumbers.join(", ")}`);
-                    logger.warn(`WhatsAppBot: To fix: add "${msg.from.replace(/@.*/, "")}" to WHATSAPP_ALLOWED_NUMBERS in .env`);
-                }
+                // ✅ FIX: SIEMPRE mostrar este warning (no solo en debug mode)
+                // para que el usuario sepa exactamente qué número está siendo bloqueado
+                logger.warn(`WhatsAppBot: BLOQUEADO mensaje de ${msg.from}`);
+                logger.warn(`WhatsAppBot: Número recibido (sin @): ${msg.from.replace(/@.*/, "")}`);
+                logger.warn(`WhatsAppBot: Números permitidos: ${this.allowedNumbers.join(", ")}`);
+                logger.warn(`WhatsAppBot: Para arreglar, agregá en .env: WHATSAPP_ALLOWED_NUMBERS=${msg.from.replace(/@.*/, "")}`);
                 return;
             }
 
@@ -387,13 +393,10 @@ class WhatsAppBot extends Bot {
         }
     }
 
-    /* ── STT — Whisper ──────────────────────────────── */
+    /* ── Limpiar respuesta para WhatsApp ──────────────── */
 
-    // Limpia respuestas del LLM para WhatsApp:
-    // elimina saludos repetitivos y cortesías innecesarias
     _cleanReply(text) {
         if (!text) return text;
-        // Eliminar líneas que sean solo saludos/cortesías al inicio
         const greetingPatterns = [
             /^(hola[,!.]?\s*){1,3}/i,
             /^(buenas?\s*(tardes?|noches?|días?)[,!.]?\s*)/i,
@@ -417,8 +420,10 @@ class WhatsAppBot extends Bot {
                 }
             }
         }
-        return cleaned || text; // fallback al original si queda vacío
+        return cleaned || text;
     }
+
+    /* ── STT — Whisper ──────────────────────────────── */
 
     async _transcribeAudio(base64Data, mimetype) {
         const tmpDir = path.resolve(__dirname, "../../tmp");
@@ -435,7 +440,7 @@ class WhatsAppBot extends Bot {
             const whisperBin = process.env.WHISPER_CPP_PATH;
             const whisperModel = process.env.WHISPER_MODEL_PATH;
 
-            if (whisperBin && whisperModel && fs.existsSync(whisperBin)) {
+            if (whisperBin && whisperModel && require("fs").existsSync(whisperBin)) {
                 const out = execSync(
                     `"${whisperBin}" -m "${whisperModel}" -f "${tmpFile}" --language auto --output-txt 2>/dev/null`,
                     { timeout: 30000, encoding: "utf-8" }
