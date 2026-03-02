@@ -72,15 +72,15 @@ class WhatsAppBot extends Bot {
         const raw = process.env.WHATSAPP_ALLOWED_NUMBERS || "";
         let numbers = raw.split(",").map(n => n.trim()).filter(Boolean);
 
+        // Siempre incluir WHATSAPP_NUMBER como permitido
+        const selfNumber = (process.env.WHATSAPP_NUMBER || "").replace(/\D/g, "").replace(/^0+/, "");
+        if (selfNumber && !numbers.includes(selfNumber)) {
+            numbers.push(selfNumber);
+            logger.info(`WhatsAppBot: WHATSAPP_NUMBER incluido como permitido: ${selfNumber}`);
+        }
+
         if (numbers.length === 0) {
-            const fallback = (process.env.WHATSAPP_NUMBER || "").trim();
-            if (fallback) {
-                numbers = [fallback];
-                logger.info(`WhatsAppBot: usando WHATSAPP_NUMBER como fallback: ${fallback}`);
-            } else {
-                logger.warn("WhatsAppBot: ⚠ WHATSAPP_NUMBER y WHATSAPP_ALLOWED_NUMBERS vacíos");
-                logger.warn("WhatsAppBot: Agregá en .env: WHATSAPP_ALLOWED_NUMBERS=5491160597308");
-            }
+            logger.warn("WhatsAppBot: ⚠ Sin números configurados en WHATSAPP_ALLOWED_NUMBERS ni WHATSAPP_NUMBER");
         }
         return numbers;
     }
