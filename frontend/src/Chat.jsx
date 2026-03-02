@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { sendMessageToBot } from "./api";
+import { sendMessageToBot, saveMemory } from "./api";
 import WakeWord from "./WakeWord";
 
 const API = "http://localhost:3001";
@@ -428,6 +428,10 @@ function Chat({ propConvId = null }) {
         const wantsQR = shouldShowQR(trimmed);
         const { botName, action } = guessBot(trimmed);
 
+        // Detectar si el usuario quiere guardar algo en memoria permanente
+        const memoryPattern = /\b(memorizá|memoriza|guardá en memoria|guarda en memoria|recordá esto|recuerda esto|guardá esto|guarda esto|memorizate)\b/i;
+        const isMemoryRequest = memoryPattern.test(trimmed);
+
         addMessage("user", raw, extra);
         setInput("");
         if (textareaRef.current) textareaRef.current.style.height = "auto";
@@ -436,7 +440,25 @@ function Chat({ propConvId = null }) {
         setThinkingAction(action);
 
         try {
-            const data = await sendMessageToBot(trimmed, conversationId);
+            // Si pide guardar en memoria permanente, hacerlo además de responder
+            if (isMemoryRequest) {
+                try {
+                    // Extraer el contenido a memorizar (lo que dijo antes del comando)
+                    const contentToMemorize = trimmed
+                        .replace(memoryPattern, "")
+                        .replace(/^[,:\s]+|[,:\s]+$/g, "")
+                        .trim() || trimmed;
+                    await saveMemory(contentToMemorize, "usuario");
+                    console.log("Memoria guardada:", contentToMemorize);
+                } catch (e) {
+                    console.warn("No se pudo guardar memoria permanente:", e.message);
+                }
+            }
+
+            // Pasar el historial actual para memoria en conversación (excluir el mensaje que acabamos de agregar)
+            const historyForContext = messages.filter(m => m.role !== "thinking");
+
+            const data = await sendMessageToBot(trimmed, conversationId, historyForContext);
             if (data.conversation_id && !conversationId) setConversationId(data.conversation_id);
             addMessage(data.success === false ? "error" : "assistant", data.reply || "Sin respuesta.", {
                 intent: data.intent, bot: data.bot,
@@ -449,7 +471,7 @@ function Chat({ propConvId = null }) {
 
         setLoading(false); setThinkingBot(null); setThinkingAction(null);
         setTimeout(() => textareaRef.current?.focus(), 50);
-    }, [input, loading, conversationId]);
+    }, [input, loading, conversationId, messages]);
 
     const handleUpload = async (file) => {
         setUploadLabel(`📎 ${file.name}`); setLoading(true);

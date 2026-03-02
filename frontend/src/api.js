@@ -3,16 +3,20 @@ const API_URL = "http://localhost:3001";
 /* =========================
    CHAT
 ========================= */
-
-/**
- * Send a message to the bot.
- * @param {string} message        - The user's message
- * @param {string|null} conversationId - Existing conversation ID (null = create new)
- * Returns: { reply, intent, bot, conversation_id, success }
- */
-export async function sendMessageToBot(message, conversationId = null) {
+export async function sendMessageToBot(message, conversationId = null, history = []) {
     const body = { message };
     if (conversationId) body.conversation_id = conversationId;
+
+    // Enviar las últimas 20 mensajes como contexto para que el modelo recuerde la conversación
+    if (history.length > 0) {
+        const recentHistory = history.slice(-20)
+            .map(m => ({
+                role: m.role === "user" ? "user" : "assistant",
+                content: m.content || "",
+            }))
+            .filter(m => m.content && m.role !== "error");
+        body.history = recentHistory;
+    }
 
     const response = await fetch(`${API_URL}/api/chat`, {
         method: "POST",
@@ -29,9 +33,33 @@ export async function sendMessageToBot(message, conversationId = null) {
 }
 
 /* =========================
+   MEMORY PERMANENTE
+========================= */
+export async function saveMemory(content, tag = "general") {
+    const response = await fetch(`${API_URL}/api/memory`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content, tag }),
+    });
+    if (!response.ok) throw new Error("Failed to save memory");
+    return response.json();
+}
+
+export async function getMemories() {
+    const response = await fetch(`${API_URL}/api/memory`);
+    if (!response.ok) throw new Error("Failed to fetch memories");
+    return response.json();
+}
+
+export async function deleteMemory(id) {
+    const response = await fetch(`${API_URL}/api/memory/${id}`, { method: "DELETE" });
+    if (!response.ok) throw new Error("Failed to delete memory");
+    return response.json();
+}
+
+/* =========================
    BOTS
 ========================= */
-
 export async function getBots() {
     const response = await fetch(`${API_URL}/api/bots`);
     if (!response.ok) throw new Error("Failed to fetch bots");
@@ -69,7 +97,6 @@ export async function runScript(script, args = []) {
 /* =========================
    DEVICES
 ========================= */
-
 export async function getDevices() {
     const response = await fetch(`${API_URL}/api/devices`);
     if (!response.ok) throw new Error("Failed to fetch devices");

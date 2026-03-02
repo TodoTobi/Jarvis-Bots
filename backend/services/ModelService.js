@@ -302,6 +302,26 @@ const QUICK_RULES = [
         result: () => ({ intent: "close_vlc", parameters: {} })
     },
 
+    // ── GOOGLE DOCS — Crear nuevo documento ──────────────────────────────────
+    {
+        patterns: [
+            /cre[aá][r]?\s+(?:un[ao]?\s+)?(?:nuevo\s+)?(?:documento|doc)\s+(?:en\s+)?(?:google\s+)?(?:docs?|drive)?/i,
+            /(?:nuevo|new)\s+(?:documento|doc)\s+(?:en\s+)?(?:google\s+)?(?:docs?)?/i,
+            /cre[aá][r]?\s+(?:un[ao]?\s+)?(?:tesis|ensayo|informe|reporte|resumen)\s+(?:en\s+(?:el\s+)?(?:docs|google\s+docs|drive))?/i,
+        ],
+        result: (m) => {
+            const titleMatch =
+                m.match(/(?:llamado?|titulado?|con\s+(?:el\s+)?t[íi]tulo)\s+(.+)/i) ||
+                m.match(/(?:tesis|ensayo|informe|reporte|resumen)\s+(?:\S+\s+)?(?:sobre|de|acerca\s+de)\s+(.+)/i) ||
+                m.match(/(?:sobre|de)\s+(.+)/i);
+            const title = titleMatch ? titleMatch[1].trim() : "Nuevo documento";
+            return {
+                intent: "google_docs_create",
+                parameters: { action: "create_doc", title }
+            };
+        }
+    },
+
     // ── GOOGLE DOCS — Duplicar ─────────────────────────────────────────────
     {
         patterns: [
@@ -475,6 +495,11 @@ No markdown, no explanation. Only JSON.`;
             return this._validateIntent(this._safeParse(raw, userMsg));
         } catch (err) {
             logger.error(`ModelService LLM error: ${err.message}`);
+            // Fallback inteligente: si el mensaje menciona docs, forzar Google Docs
+            if (/(?:docs|google\s+docs|documento|crea[r]?\s+\w+\s+en)/i.test(userMsg)) {
+                const titleM = userMsg.match(/(?:sobre|de|acerca\s+de)\s+(.+)/i);
+                return { intent: "google_docs_create", parameters: { action: "create_doc", title: titleM ? titleM[1].trim() : "Nuevo documento" }, priority: "normal" };
+            }
             return { intent: "chat_response", parameters: { query: userMsg }, priority: "normal" };
         }
     }

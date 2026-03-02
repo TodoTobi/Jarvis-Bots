@@ -1,20 +1,10 @@
-/**
- * WakeWord.jsx — Detector de palabra clave "sistema"
- *
- * FIXES:
- * - Agrega prop onStateChange(state) para notificar al Chat del estado
- * - El estado se propaga al Chat para animar el input
- * - onCommand envía directamente a sendMessage (ya va a /api/chat)
- */
-
 import React, { useState, useRef, useEffect, useCallback } from "react";
 
 const API = "http://localhost:3001";
-
 const WAKE_WORDS = ["sistema", "systema", "system", "sistema!", "sistema,"];
-
-const MAX_RECORDING_MS = 10000;
-const SILENCE_TIMEOUT_MS = 1800;
+const STOP_WORDS = ["enviar", "envíar", "envía", "envia", "listo", "ok enviar"];
+const MAX_RECORDING_MS = 30000; // 30s máximo para acumular el comando
+const SILENCE_TIMEOUT_MS = 2500; // pausa más larga porque acumula
 
 export default function WakeWord({ onCommand, disabled = false, active = true, onStateChange }) {
     const [state, setState] = useState("idle");
@@ -29,7 +19,6 @@ export default function WakeWord({ onCommand, disabled = false, active = true, o
     const maxTimerRef = useRef(null);
     const stateRef = useRef("idle");
 
-    // Sync stateRef + notificar al padre
     const updateState = useCallback((newState) => {
         stateRef.current = newState;
         setState(newState);
@@ -39,7 +28,7 @@ export default function WakeWord({ onCommand, disabled = false, active = true, o
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const isSupported = !!SpeechRecognition;
 
-    /* ── Start MediaRecorder for command ── */
+    /* ── Grabar el comando completo hasta "enviar" ── */
     const startCommandRecording = useCallback(async () => {
         if (stateRef.current !== "idle") return;
         updateState("listening");
@@ -64,10 +53,7 @@ export default function WakeWord({ onCommand, disabled = false, active = true, o
 
                 try {
                     const blob = new Blob(chunksRef.current, { type: mimeType });
-                    if (blob.size < 800) {
-                        updateState("idle");
-                        return;
-                    }
+                    if (blob.size < 800) { updateState("idle"); return; }
 
                     const fd = new FormData();
                     const ext = mimeType.includes("mp4") ? "mp4" : mimeType.includes("ogg") ? "ogg" : "webm";
@@ -77,9 +63,12 @@ export default function WakeWord({ onCommand, disabled = false, active = true, o
                     const data = await res.json();
 
                     if (data.success && data.text?.trim()) {
-                        const cmdText = data.text.trim();
-                        // CRÍTICO: enviar al chat como si fuera mensaje normal → va a /api/chat
-                        onCommand(cmdText);
+                        // Quitar la palabra "enviar" del final del texto transcripto
+                        let cmdText = data.text.trim();
+                        const stopPattern = /\b(enviar|envíar|envía|envia|listo|ok enviar)\b\s*$/i;
+                        cmdText = cmdText.replace(stopPattern, "").trim();
+
+                        if (cmdText) onCommand(cmdText);
                     }
                 } catch (e) {
                     console.error("WakeWord STT error:", e);
@@ -91,7 +80,7 @@ export default function WakeWord({ onCommand, disabled = false, active = true, o
 
             mr.start(100);
 
-            // Silence detection
+            // Silence timer — se resetea con cada chunk de audio
             const resetSilenceTimer = () => {
                 clearTimeout(silenceTimerRef.current);
                 silenceTimerRef.current = setTimeout(() => {
@@ -104,7 +93,7 @@ export default function WakeWord({ onCommand, disabled = false, active = true, o
             mr.addEventListener("dataavailable", resetSilenceTimer);
             resetSilenceTimer();
 
-            // Max recording time
+            // Max tiempo
             maxTimerRef.current = setTimeout(() => {
                 if (mediaRecorderRef.current?.state === "recording") {
                     mediaRecorderRef.current.stop();
@@ -117,7 +106,16 @@ export default function WakeWord({ onCommand, disabled = false, active = true, o
         }
     }, [onCommand, updateState]);
 
-    /* ── Setup Speech Recognition ── */
+    /* ── Parar grabación manualmente cuando se detecta "enviar" vía SpeechRecognition interim ── */
+    const stopRecordingNow = useCallback(() => {
+        if (mediaRecorderRef.current?.state === "recording") {
+            clearTimeout(silenceTimerRef.current);
+            clearTimeout(maxTimerRef.current);
+            mediaRecorderRef.current.stop();
+        }
+    }, []);
+
+    /* ── Recognition para wake word Y para detectar "enviar" mientras graba ── */
     const setupRecognition = useCallback(() => {
         if (!SpeechRecognition || !active) return;
 
@@ -128,33 +126,43 @@ export default function WakeWord({ onCommand, disabled = false, active = true, o
         rec.maxAlternatives = 3;
 
         rec.onresult = (event) => {
-            if (stateRef.current !== "idle") return;
-
             for (let i = event.resultIndex; i < event.results.length; i++) {
-                const alternatives = Array.from({ length: event.results[i].length }, (_, j) => event.results[i][j]);
+                const alternatives = Array.from(
+                    { length: event.results[i].length }, (_, j) => event.results[i][j]
+                );
 
                 for (const alt of alternatives) {
                     const transcript = alt.transcript.toLowerCase().trim();
-                    const detected = WAKE_WORDS.some(w => transcript.includes(w));
-                    if (detected) {
-                        console.log("WakeWord DETECTADO:", transcript);
-                        setLastWakeWord(new Date().toLocaleTimeString());
 
-                        try { rec.stop(); } catch { }
-                        isRecognitionRunning.current = false;
+                    // Si está grabando, detectar "enviar" para detener
+                    if (stateRef.current === "listening") {
+                        const hasStopWord = STOP_WORDS.some(w => transcript.includes(w));
+                        if (hasStopWord) {
+                            console.log("WakeWord: STOP WORD detectado:", transcript);
+                            stopRecordingNow();
+                            return;
+                        }
+                        continue; // no buscar wake word mientras graba
+                    }
 
-                        startCommandRecording();
-                        return;
+                    // Estado idle: buscar wake word
+                    if (stateRef.current === "idle") {
+                        const detected = WAKE_WORDS.some(w => transcript.includes(w));
+                        if (detected) {
+                            console.log("WakeWord DETECTADO:", transcript);
+                            setLastWakeWord(new Date().toLocaleTimeString());
+                            try { rec.stop(); } catch { }
+                            isRecognitionRunning.current = false;
+                            startCommandRecording();
+                            return;
+                        }
                     }
                 }
             }
         };
 
         rec.onerror = (e) => {
-            if (e.error === "not-allowed") {
-                setError("Micrófono no permitido");
-                return;
-            }
+            if (e.error === "not-allowed") { setError("Micrófono no permitido"); return; }
             isRecognitionRunning.current = false;
             if (active && stateRef.current === "idle") {
                 setTimeout(() => restartRecognition(), 1000);
@@ -169,12 +177,11 @@ export default function WakeWord({ onCommand, disabled = false, active = true, o
         };
 
         recognitionRef.current = rec;
-    }, [SpeechRecognition, active, startCommandRecording]);
+    }, [SpeechRecognition, active, startCommandRecording, stopRecordingNow]);
 
     const restartRecognition = useCallback(() => {
         if (!active || stateRef.current !== "idle") return;
         if (isRecognitionRunning.current) return;
-
         try {
             if (!recognitionRef.current) setupRecognition();
             recognitionRef.current?.start();
@@ -185,13 +192,10 @@ export default function WakeWord({ onCommand, disabled = false, active = true, o
         }
     }, [active, setupRecognition]);
 
-    /* ── Lifecycle ── */
     useEffect(() => {
         if (!active || disabled || !isSupported) return;
-
         setupRecognition();
         const timer = setTimeout(() => restartRecognition(), 500);
-
         return () => {
             clearTimeout(timer);
             clearTimeout(silenceTimerRef.current);
@@ -201,8 +205,6 @@ export default function WakeWord({ onCommand, disabled = false, active = true, o
         };
     }, [active, disabled, isSupported, setupRecognition, restartRecognition]);
 
-    // Componente invisible — la UI se maneja en Chat.jsx
     if (!isSupported || !active) return null;
-
     return null;
 }
