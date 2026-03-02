@@ -1,200 +1,266 @@
 {
-    "scripts": {
-        "media_youtube": {
-            "path": "pc/media/play_youtube.bat",
-            "label": "Abrir YouTube",
-            "category": "media",
-            "description": "Abre YouTube en el navegador con una búsqueda opcional",
-            "timeout": 10000
-        },
-        "media_spotify": {
-            "path": "pc/media/play_spotify.bat",
-            "label": "Abrir Spotify",
-            "category": "media",
-            "description": "Abre la aplicación de Spotify",
-            "timeout": 10000
-        },
-        "media_vlc": {
-            "path": "pc/media/play_vlc.bat",
-            "label": "Reproducir en VLC",
-            "category": "media",
-            "description": "Abre VLC con un archivo o URL",
-            "timeout": 10000
-        },
-        "media_pause": {
-            "path": "pc/media/media_pause.bat",
-            "label": "Pausar/Reproducir",
-            "category": "media",
-            "description": "Envía tecla Play/Pause al sistema",
-            "timeout": 5000
-        },
-        "media_next": {
-            "path": "pc/media/media_next.bat",
-            "label": "Siguiente pista",
-            "category": "media",
-            "description": "Envía tecla siguiente pista",
-            "timeout": 5000
-        },
-        "media_prev": {
-            "path": "pc/media/media_prev.bat",
-            "label": "Pista anterior",
-            "category": "media",
-            "description": "Envía tecla pista anterior",
-            "timeout": 5000
-        },
-        "volume_up": {
-            "path": "pc/media/volume_up.bat",
-            "label": "Subir volumen",
-            "category": "media",
-            "description": "Sube el volumen del sistema en 10%",
-            "timeout": 5000
-        },
-        "volume_down": {
-            "path": "pc/media/volume_down.bat",
-            "label": "Bajar volumen",
-            "category": "media",
-            "description": "Baja el volumen del sistema en 10%",
-            "timeout": 5000
-        },
-        "volume_mute": {
-            "path": "pc/media/mute_toggle.bat",
-            "label": "Silenciar/activar audio",
-            "category": "media",
-            "description": "Alterna silencio del sistema",
-            "timeout": 5000
-        },
-        "volume_set": {
-            "path": "pc/media/volume_set.bat",
-            "label": "Poner volumen exacto",
-            "category": "media",
-            "description": "Pone el volumen a un porcentaje exacto (0-100). Requiere nircmd.",
-            "timeout": 5000
-        },
-        "system_lock": {
-            "path": "pc/system/lock_screen.bat",
-            "label": "Bloquear pantalla",
-            "category": "system",
-            "description": "Bloquea la pantalla del PC",
-            "timeout": 5000
-        },
-        "system_screenshot": {
-            "path": "pc/system/screenshot.bat",
-            "label": "Captura de pantalla",
-            "category": "system",
-            "description": "Toma una captura de pantalla y la guarda",
-            "timeout": 8000
-        },
-        "system_night_mode": {
-            "path": "pc/system/night_mode.bat",
-            "label": "Modo nocturno",
-            "category": "system",
-            "description": "Activa/desactiva el modo nocturno de Windows",
-            "timeout": 5000
-        },
-        "system_sleep": {
-            "path": "pc/system/sleep.bat",
-            "label": "Suspender PC",
-            "category": "system",
-            "description": "Pone el PC en modo suspensión",
-            "timeout": 5000
-        },
-        "app_discord": {
-            "path": "pc/apps/open_discord.bat",
-            "label": "Abrir Discord",
-            "category": "apps",
-            "description": "Abre Discord",
-            "timeout": 10000
-        },
-        "app_vscode": {
-            "path": "pc/apps/open_vscode.bat",
-            "label": "Abrir VS Code",
-            "category": "apps",
-            "description": "Abre Visual Studio Code (opcionalmente con una carpeta)",
-            "timeout": 10000
-        },
-        "app_fortnite": {
-            "path": "pc/apps/open_fortnite.bat",
-            "label": "Abrir Fortnite",
-            "category": "apps",
-            "description": "Lanza Fortnite vía Epic Games",
-            "timeout": 15000
-        },
-        "app_browser": {
-            "path": "pc/apps/app_browser.bat",
-            "label": "Abrir navegador predeterminado",
-            "category": "apps",
-            "description": "Abre el navegador predeterminado del sistema",
-            "timeout": 10000
-        },
-        "app_chrome": {
-            "path": "pc/apps/app_chrome.bat",
-            "label": "Abrir Chrome",
-            "category": "apps",
-            "description": "Abre Google Chrome (opcionalmente con URL)",
-            "timeout": 10000
-        },
-        "app_firefox": {
-            "path": "pc/apps/app_firefox.bat",
-            "label": "Abrir Firefox",
-            "category": "apps",
-            "description": "Abre Mozilla Firefox (opcionalmente con URL)",
-            "timeout": 10000
-        },
-        "app_brave": {
-            "path": "pc/apps/app_brave.bat",
-            "label": "Abrir Brave",
-            "category": "apps",
-            "description": "Abre Brave Browser",
-            "timeout": 10000
-        },
-        "app_chatgpt": {
-            "path": "pc/apps/app_chatgpt.bat",
-            "label": "Abrir ChatGPT",
-            "category": "apps",
-            "description": "Abre ChatGPT en el navegador predeterminado. Con query, copia la pregunta al clipboard.",
-            "timeout": 10000
-        },
-        "app_antigravity": {
-            "path": "pc/apps/app_antigravity.bat",
-            "label": "Abrir Antigravity",
-            "category": "dev",
-            "description": "Abre Antigravity AI coding assistant. Opcionalmente abre una carpeta.",
-            "timeout": 15000
-        },
-        "app_cursor": {
-            "path": "pc/apps/app_cursor.bat",
-            "label": "Abrir Cursor",
-            "category": "dev",
-            "description": "Abre Cursor AI IDE",
-            "timeout": 10000
-        },
-        "app_terminal": {
-            "path": "pc/apps/app_terminal.bat",
-            "label": "Abrir Terminal",
-            "category": "dev",
-            "description": "Abre Windows Terminal o CMD",
-            "timeout": 8000
-        },
-        "app_powershell": {
-            "path": "pc/apps/app_powershell.bat",
-            "label": "Abrir PowerShell",
-            "category": "dev",
-            "description": "Abre PowerShell",
-            "timeout": 8000
-        },
-        "app_postman": {
-            "path": "pc/apps/app_postman.bat",
-            "label": "Abrir Postman",
-            "category": "dev",
-            "description": "Abre Postman para testing de APIs",
-            "timeout": 10000
-        },
-        "app_github_desktop": {
-            "path": "pc/apps/app_github_desktop.bat",
-            "label": "Abrir GitHub Desktop",
-            "category": "dev",
-            "description": "Abre GitHub Desktop",
-            "timeout": 10000
-        }
+    "_info": "JarvisCore — bat_whitelist.json completo v3.0",
+    "_instrucciones": "Este archivo reemplaza completamente tu bat_whitelist.json existente en backend/config/",
+    "media_youtube": {
+        "path": "pc/media/open_youtube.bat",
+        "label": "Abrir YouTube",
+        "category": "media",
+        "description": "Abre YouTube en el navegador predeterminado",
+        "timeout": 5000
+    },
+    "close_youtube": {
+        "path": "pc/media/close_youtube.bat",
+        "label": "Cerrar YouTube",
+        "category": "media",
+        "description": "Cierra las ventanas de YouTube en Chrome o Edge",
+        "timeout": 8000
+    },
+    "media_spotify": {
+        "path": "pc/media/open_spotify.bat",
+        "label": "Abrir Spotify",
+        "category": "media",
+        "description": "Abre Spotify",
+        "timeout": 5000
+    },
+    "close_spotify": {
+        "path": "pc/media/close_spotify.bat",
+        "label": "Cerrar Spotify",
+        "category": "media",
+        "description": "Cierra Spotify completamente",
+        "timeout": 5000
+    },
+    "media_vlc": {
+        "path": "pc/media/open_vlc.bat",
+        "label": "Abrir VLC",
+        "category": "media",
+        "description": "Abre VLC Media Player",
+        "timeout": 5000
+    },
+    "close_vlc": {
+        "path": "pc/media/close_vlc.bat",
+        "label": "Cerrar VLC",
+        "category": "media",
+        "description": "Cierra VLC completamente",
+        "timeout": 5000
+    },
+    "media_pause": {
+        "path": "pc/media/media_pause.bat",
+        "label": "Pausar / Reproducir",
+        "category": "media",
+        "description": "Pausa o reanuda la reproducción multimedia",
+        "timeout": 3000
+    },
+    "media_next": {
+        "path": "pc/media/media_next.bat",
+        "label": "Siguiente canción",
+        "category": "media",
+        "description": "Salta a la siguiente pista",
+        "timeout": 3000
+    },
+    "media_prev": {
+        "path": "pc/media/media_prev.bat",
+        "label": "Canción anterior",
+        "category": "media",
+        "description": "Vuelve a la pista anterior",
+        "timeout": 3000
+    },
+    "volume_up": {
+        "path": "pc/media/volume_up.bat",
+        "label": "Subir volumen",
+        "category": "media",
+        "description": "Aumenta el volumen del sistema",
+        "timeout": 3000
+    },
+    "volume_down": {
+        "path": "pc/media/volume_down.bat",
+        "label": "Bajar volumen",
+        "category": "media",
+        "description": "Disminuye el volumen del sistema",
+        "timeout": 3000
+    },
+    "volume_mute": {
+        "path": "pc/media/volume_mute.bat",
+        "label": "Silenciar / Activar sonido",
+        "category": "media",
+        "description": "Silencia o activa el audio del sistema",
+        "timeout": 3000
+    },
+    "volume_set": {
+        "path": "pc/media/volume_set.bat",
+        "label": "Establecer volumen",
+        "category": "media",
+        "description": "Establece el volumen del sistema a un nivel exacto entre 0 y 100",
+        "timeout": 10000,
+        "args": [
+            "level"
+        ]
+    },
+    "app_chrome": {
+        "path": "pc/apps/open_chrome.bat",
+        "label": "Abrir Chrome",
+        "category": "apps",
+        "description": "Abre Google Chrome",
+        "timeout": 5000
+    },
+    "close_chrome": {
+        "path": "pc/apps/close_chrome.bat",
+        "label": "Cerrar Chrome",
+        "category": "apps",
+        "description": "Cierra Google Chrome completamente",
+        "timeout": 5000
+    },
+    "app_firefox": {
+        "path": "pc/apps/open_firefox.bat",
+        "label": "Abrir Firefox",
+        "category": "apps",
+        "description": "Abre Mozilla Firefox",
+        "timeout": 5000
+    },
+    "close_firefox": {
+        "path": "pc/apps/close_firefox.bat",
+        "label": "Cerrar Firefox",
+        "category": "apps",
+        "description": "Cierra Mozilla Firefox completamente",
+        "timeout": 5000
+    },
+    "app_brave": {
+        "path": "pc/apps/open_brave.bat",
+        "label": "Abrir Brave",
+        "category": "apps",
+        "description": "Abre el navegador Brave",
+        "timeout": 5000
+    },
+    "app_browser": {
+        "path": "pc/apps/open_browser.bat",
+        "label": "Abrir navegador",
+        "category": "apps",
+        "description": "Abre el navegador predeterminado del sistema",
+        "timeout": 5000
+    },
+    "app_discord": {
+        "path": "pc/apps/open_discord.bat",
+        "label": "Abrir Discord",
+        "category": "apps",
+        "description": "Abre Discord",
+        "timeout": 5000
+    },
+    "close_discord": {
+        "path": "pc/apps/close_discord.bat",
+        "label": "Cerrar Discord",
+        "category": "apps",
+        "description": "Cierra Discord completamente",
+        "timeout": 5000
+    },
+    "app_chatgpt": {
+        "path": "pc/apps/open_chatgpt.bat",
+        "label": "Abrir ChatGPT",
+        "category": "apps",
+        "description": "Abre ChatGPT en el navegador",
+        "timeout": 5000
+    },
+    "open_antigravity": {
+        "path": "pc/apps/open_antigravity.bat",
+        "label": "Abrir Antigravity",
+        "category": "apps",
+        "description": "Abre Antigravity AI en el navegador",
+        "timeout": 5000
+    },
+    "app_fortnite": {
+        "path": "pc/apps/open_fortnite.bat",
+        "label": "Abrir Fortnite",
+        "category": "apps",
+        "description": "Abre el launcher de Fortnite",
+        "timeout": 10000
+    },
+    "app_postman": {
+        "path": "pc/apps/open_postman.bat",
+        "label": "Abrir Postman",
+        "category": "apps",
+        "description": "Abre Postman",
+        "timeout": 5000
+    },
+    "app_github_desktop": {
+        "path": "pc/apps/open_github_desktop.bat",
+        "label": "Abrir GitHub Desktop",
+        "category": "apps",
+        "description": "Abre GitHub Desktop",
+        "timeout": 5000
+    },
+    "app_vscode": {
+        "path": "pc/dev/open_vscode.bat",
+        "label": "Abrir VS Code",
+        "category": "dev",
+        "description": "Abre Visual Studio Code",
+        "timeout": 5000
+    },
+    "close_vscode": {
+        "path": "pc/dev/close_vscode.bat",
+        "label": "Cerrar VS Code",
+        "category": "dev",
+        "description": "Cierra Visual Studio Code",
+        "timeout": 5000
+    },
+    "app_cursor": {
+        "path": "pc/dev/open_cursor.bat",
+        "label": "Abrir Cursor",
+        "category": "dev",
+        "description": "Abre el editor Cursor",
+        "timeout": 5000
+    },
+    "app_terminal": {
+        "path": "pc/dev/open_terminal.bat",
+        "label": "Abrir Terminal",
+        "category": "dev",
+        "description": "Abre la terminal del sistema (cmd o Windows Terminal)",
+        "timeout": 4000
+    },
+    "app_powershell": {
+        "path": "pc/dev/open_powershell.bat",
+        "label": "Abrir PowerShell",
+        "category": "dev",
+        "description": "Abre PowerShell",
+        "timeout": 4000
+    },
+    "system_screenshot": {
+        "path": "pc/system/screenshot.bat",
+        "label": "Captura de pantalla",
+        "category": "system",
+        "description": "Toma una captura de pantalla y la guarda en el escritorio",
+        "timeout": 5000
+    },
+    "system_lock": {
+        "path": "pc/system/lock.bat",
+        "label": "Bloquear PC",
+        "category": "system",
+        "description": "Bloquea la pantalla del PC",
+        "timeout": 3000
+    },
+    "system_sleep": {
+        "path": "pc/system/sleep.bat",
+        "label": "Suspender PC",
+        "category": "system",
+        "description": "Pone el PC en modo suspensión",
+        "timeout": 3000
+    },
+    "system_night_mode": {
+        "path": "pc/system/night_mode.bat",
+        "label": "Modo nocturno",
+        "category": "system",
+        "description": "Activa o desactiva el modo nocturno del sistema",
+        "timeout": 3000
+    },
+    "system_restart": {
+        "path": "pc/system/restart.bat",
+        "label": "Reiniciar PC",
+        "category": "system",
+        "description": "Reinicia el PC (con confirmación)",
+        "timeout": 5000
+    },
+    "system_shutdown": {
+        "path": "pc/system/shutdown.bat",
+        "label": "Apagar PC",
+        "category": "system",
+        "description": "Apaga el PC (con confirmación)",
+        "timeout": 5000
     }
 }

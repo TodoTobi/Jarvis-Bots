@@ -1,60 +1,60 @@
 # Memory
 
-47.017Z — WhatsApp QR handler: Cannot read properties of undefined (reading 'status')
-- [POST /api/chat] Invalid intent structure from model: 2026-03-01T14:34:19.138Z — [POST /api/chat] Invalid intent structure from model
+ model: 2026-03-01T14:34:19.138Z — [POST /api/chat] Invalid intent structure from model
 - WebBot failed: WebBot requires a text query parameter: 2026-03-01T13:40:45.963Z — WebBot failed: WebBot requires a text query parameter
-- ModelService: Cannot reach LM Studio — : 2026-03-01T13:34:30.542Z — ModelService: Cannot reach LM Studio — 
-- STT error: Audio file is too short. Minimum audio length is 0.01 seconds.: 2026-02-27T19:44:56.768Z — STT error: Audio file is too short. Minimum audio length is 0.01 seconds.
-- NetBot failed: NetBot requires parameter: "action": 2026-02-27T19:21:06.016Z — NetBot failed: NetBot requires parameter: "action"
 
 
-## 2026-03-02T02:09:18.831Z
-## DoctorBot Scan [2026-03-02T02:09:18.831Z]
+## 2026-03-02T03:09:53.749Z
+User: duplica el documento llamado proyecto integrador de docs y haz una tesis sobre los monos dentro de ella
+Intent: google_docs_duplicate
+Result: ❌ GoogleDocsBot no está configurado.
+
+**Setup rápido:**
+1. Descargá el JSON de la Service Account de Google Cloud
+2. Guardalo como `backend/config/google_service_account.json`
+3. En `.env`: `GOOGLE_SE
+
+
+## 2026-03-02T03:10:10.420Z
+## DoctorBot Scan [2026-03-02T03:10:10.420Z]
+- BatBot: failed to load whitelist — Cannot convert undefined or null to object: 2026-03-02T03:09:30.852Z — BatBot: failed to load whitelist — Cannot convert undefined or null to object
+- [Error] GoogleDocsBot: run() must be implemented in GoogleDocsBot: 2026-03-02T03:03:45.313Z — [Error] GoogleDocsBot: run() must be implemented in GoogleDocsBot
 - WhatsApp QR handler: Cannot read properties of undefined (reading 'status'): 2026-03-01T15:05:47.017Z — WhatsApp QR handler: Cannot read properties of undefined (reading 'status')
 - [POST /api/chat] Invalid intent structure from model: 2026-03-01T14:34:19.138Z — [POST /api/chat] Invalid intent structure from model
 - WebBot failed: WebBot requires a text query parameter: 2026-03-01T13:40:45.963Z — WebBot failed: WebBot requires a text query parameter
-- ModelService: Cannot reach LM Studio — : 2026-03-01T13:34:30.542Z — ModelService: Cannot reach LM Studio — 
-- STT error: Audio file is too short. Minimum audio length is 0.01 seconds.: 2026-02-27T19:44:56.768Z — STT error: Audio file is too short. Minimum audio length is 0.01 seconds.
-- NetBot failed: NetBot requires parameter: "action": 2026-02-27T19:21:06.016Z — NetBot failed: NetBot requires parameter: "action"
 
 
-## 2026-03-02T02:09:23.541Z
-User: Manda un mensaje a WhatsApp diciendo hola.
-Intent: greetings/hello
-Result: ¡Hola! ¿En qué puedo ayudarte hoy? ¿Tienes alguna pregunta o tarea específica que necesites ayuda con? Estoy aquí para escuchar y responder de manera efectiva. ¡Ponte cómodo y dime cómo puedo ayudarte
-
-
-## 2026-03-02T02:09:48.839Z
-## DoctorBot Scan [2026-03-02T02:09:48.839Z]
+## 2026-03-02T03:10:40.419Z
+## DoctorBot Scan [2026-03-02T03:10:40.419Z]
+- BatBot: failed to load whitelist — Cannot convert undefined or null to object: 2026-03-02T03:09:30.852Z — BatBot: failed to load whitelist — Cannot convert undefined or null to object
+- [Error] GoogleDocsBot: run() must be implemented in GoogleDocsBot: 2026-03-02T03:03:45.313Z — [Error] GoogleDocsBot: run() must be implemented in GoogleDocsBot
 - WhatsApp QR handler: Cannot read properties of undefined (reading 'status'): 2026-03-01T15:05:47.017Z — WhatsApp QR handler: Cannot read properties of undefined (reading 'status')
 - [POST /api/chat] Invalid intent structure from model: 2026-03-01T14:34:19.138Z — [POST /api/chat] Invalid intent structure from model
 - WebBot failed: WebBot requires a text query parameter: 2026-03-01T13:40:45.963Z — WebBot failed: WebBot requires a text query parameter
-- ModelService: Cannot reach LM Studio — : 2026-03-01T13:34:30.542Z — ModelService: Cannot reach LM Studio — 
-- STT error: Audio file is too short. Minimum audio length is 0.01 seconds.: 2026-02-27T19:44:56.768Z — STT error: Audio file is too short. Minimum audio length is 0.01 seconds.
-- NetBot failed: NetBot requires parameter: "action": 2026-02-27T19:21:06.016Z — NetBot failed: NetBot requires parameter: "action"
 
 
-## 2026-03-02T02:09:52.387Z
-## DoctorBot Scan [2026-03-02T02:09:52.387Z]
+## 2026-03-02T03:10:52.449Z
+## DoctorBot Scan [2026-03-02T03:10:52.449Z]
+- BatBot: failed to load whitelist — Cannot convert undefined or null to object: 2026-03-02T03:09:30.852Z — BatBot: failed to load whitelist — Cannot convert undefined or null to object
+- [Error] GoogleDocsBot: run() must be implemented in GoogleDocsBot: 2026-03-02T03:03:45.313Z — [Error] GoogleDocsBot: run() must be implemented in GoogleDocsBot
 - WhatsApp QR handler: Cannot read properties of undefined (reading 'status'): 2026-03-01T15:05:47.017Z — WhatsApp QR handler: Cannot read properties of undefined (reading 'status')
 - [POST /api/chat] Invalid intent structure from model: 2026-03-01T14:34:19.138Z — [POST /api/chat] Invalid intent structure from model
 - WebBot failed: WebBot requires a text query parameter: 2026-03-01T13:40:45.963Z — WebBot failed: WebBot requires a text query parameter
-- ModelService: Cannot reach LM Studio — : 2026-03-01T13:34:30.542Z — ModelService: Cannot reach LM Studio — 
-- STT error: Audio file is too short. Minimum audio length is 0.01 seconds.: 2026-02-27T19:44:56.768Z — STT error: Audio file is too short. Minimum audio length is 0.01 seconds.
-- NetBot failed: NetBot requires parameter: "action": 2026-02-27T19:21:06.016Z — NetBot failed: NetBot requires parameter: "action"
 
 
-## 2026-03-02T02:10:15.657Z
-User: আবে GitHub Desktop
-Intent: bat_exec
-Result: GitHub Desktop launched
-
-
-## 2026-03-02T02:10:19.377Z
-## DoctorBot Scan [2026-03-02T02:10:19.377Z]
+## 2026-03-02T03:11:10.413Z
+## DoctorBot Scan [2026-03-02T03:11:10.413Z]
+- BatBot: failed to load whitelist — Cannot convert undefined or null to object: 2026-03-02T03:09:30.852Z — BatBot: failed to load whitelist — Cannot convert undefined or null to object
+- [Error] GoogleDocsBot: run() must be implemented in GoogleDocsBot: 2026-03-02T03:03:45.313Z — [Error] GoogleDocsBot: run() must be implemented in GoogleDocsBot
 - WhatsApp QR handler: Cannot read properties of undefined (reading 'status'): 2026-03-01T15:05:47.017Z — WhatsApp QR handler: Cannot read properties of undefined (reading 'status')
 - [POST /api/chat] Invalid intent structure from model: 2026-03-01T14:34:19.138Z — [POST /api/chat] Invalid intent structure from model
 - WebBot failed: WebBot requires a text query parameter: 2026-03-01T13:40:45.963Z — WebBot failed: WebBot requires a text query parameter
-- ModelService: Cannot reach LM Studio — : 2026-03-01T13:34:30.542Z — ModelService: Cannot reach LM Studio — 
-- STT error: Audio file is too short. Minimum audio length is 0.01 seconds.: 2026-02-27T19:44:56.768Z — STT error: Audio file is too short. Minimum audio length is 0.01 seconds.
-- NetBot failed: NetBot requires parameter: "action": 2026-02-27T19:21:06.016Z — NetBot failed: NetBot requires parameter: "action"
+
+
+## 2026-03-02T03:11:40.426Z
+## DoctorBot Scan [2026-03-02T03:11:40.426Z]
+- BatBot: failed to load whitelist — Cannot convert undefined or null to object: 2026-03-02T03:09:30.852Z — BatBot: failed to load whitelist — Cannot convert undefined or null to object
+- [Error] GoogleDocsBot: run() must be implemented in GoogleDocsBot: 2026-03-02T03:03:45.313Z — [Error] GoogleDocsBot: run() must be implemented in GoogleDocsBot
+- WhatsApp QR handler: Cannot read properties of undefined (reading 'status'): 2026-03-01T15:05:47.017Z — WhatsApp QR handler: Cannot read properties of undefined (reading 'status')
+- [POST /api/chat] Invalid intent structure from model: 2026-03-01T14:34:19.138Z — [POST /api/chat] Invalid intent structure from model
+- WebBot failed: WebBot requires a text query parameter: 2026-03-01T13:40:45.963Z — WebBot failed: WebBot requires a text query parameter

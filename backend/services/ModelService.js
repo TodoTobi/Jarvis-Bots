@@ -275,6 +275,123 @@ const QUICK_RULES = [
             return { intent: "bat_exec", parameters: { script: (s?.[1] || "media_youtube").toLowerCase(), args: [] } };
         }
     },
+
+    // ── CERRAR apps ─────────────────────────────────────────────────────────
+    {
+        patterns: [/cerr[aá][r]?\s+(?:el\s+)?youtube|clos[eo]?\s+youtube/i],
+        result: () => ({ intent: "close_youtube", parameters: {} })
+    },
+    {
+        patterns: [/cerr[aá][r]?\s+(?:el\s+)?spotify|clos[eo]?\s+spotify/i],
+        result: () => ({ intent: "close_spotify", parameters: {} })
+    },
+    {
+        patterns: [/cerr[aá][r]?\s+(?:el\s+)?discord|clos[eo]?\s+discord/i],
+        result: () => ({ intent: "close_discord", parameters: {} })
+    },
+    {
+        patterns: [/cerr[aá][r]?\s+(?:el\s+)?(?:chrome|google\s+chrome)|clos[eo]?\s+chrome/i],
+        result: () => ({ intent: "close_chrome", parameters: {} })
+    },
+    {
+        patterns: [/cerr[aá][r]?\s+(?:vs\s*code|vscode|visual\s+studio)|clos[eo]?\s+(?:vs\s*code|vscode)/i],
+        result: () => ({ intent: "close_vscode", parameters: {} })
+    },
+    {
+        patterns: [/cerr[aá][r]?\s+(?:el\s+)?vlc|clos[eo]?\s+vlc/i],
+        result: () => ({ intent: "close_vlc", parameters: {} })
+    },
+
+    // ── GOOGLE DOCS — Duplicar ─────────────────────────────────────────────
+    {
+        patterns: [
+            /duplic[aá][r]?\s+(?:el\s+)?(?:documento|doc|archivo)\s+(.+)/i,
+            /hac[eé][r]?\s+(?:una?\s+)?copia\s+(?:del?\s+)?(?:documento|doc)\s+(.+)/i,
+            /cop[ií][aá][r]?\s+(?:el\s+)?(?:documento|doc)\s+(.+)/i,
+        ],
+        result: (m) => {
+            const match = m.match(/(?:duplic[aá][r]?|copi[aá][r]?|copia)\s+(?:el\s+)?(?:documento|doc|archivo)?\s+(.+)/i);
+            const docName = match?.[1]?.trim() || null;
+            return { intent: "google_docs_duplicate", parameters: { action: "duplicate_doc", docName } };
+        }
+    },
+
+    // ── GOOGLE DOCS — Escribir/Editar ───────────────────────────────────────
+    {
+        patterns: [
+            /(?:escrib[ií][r]?|edit[aá][r]?|agregá?[r]?|pon[eé][r]?)\s+(?:en\s+(?:el\s+)?(?:documento|doc)\s+)(.+)/i,
+            /(?:en\s+(?:el\s+)?(?:documento|doc)\s+\S+)\s+(?:escrib[ií][r]?|pon[eé][r]?|agreg[aá][r]?)\s+(.+)/i,
+            /(?:al?\s+documento|al?\s+doc)\s+(.+?)\s+(?:escrib[ií][r]?|agreg[aá][r]?|pon[eé][r]?)\s+(.+)/i,
+        ],
+        result: (m) => {
+            // Intentar separar nombre de doc y contenido
+            const match1 = m.match(/(?:escrib[ií]|edit[aá]|agreg[aá]|pon[eé])\s+(.+?)\s+en\s+(?:el\s+)?(?:documento|doc)\s+(.+)/i);
+            const match2 = m.match(/en\s+(?:el\s+)?(?:documento|doc)\s+(.+?)\s+(?:escrib[ií]|pon[eé]|agreg[aá])\s+(.+)/i);
+            let docName = null, content = null;
+            if (match2) { docName = match2[1]?.trim(); content = match2[2]?.trim(); }
+            else if (match1) { content = match1[1]?.trim(); docName = match1[2]?.trim(); }
+            else { content = m.replace(/(?:escrib[ií]|edit[aá]|agreg[aá]|pon[eé])\s+/i, "").trim(); }
+            return { intent: "google_docs_write", parameters: { action: "write_doc", docName, content } };
+        }
+    },
+
+    // ── GOOGLE DOCS — Duplicar Y escribir (workflow combinado) ─────────────
+    {
+        patterns: [
+            /duplic[aá][r]?\s+.+\s+y\s+(?:escrib[ií]|pon[eé]|edit[aá]|agreg[aá])\s+.+/i,
+            /(?:crea?\s+una?\s+copia|hac[eé]\s+una?\s+copia)\s+.+\s+y\s+(?:escrib[ií]|pon[eé])\s+.+/i,
+        ],
+        result: (m) => {
+            const dupMatch = m.match(/duplic[aá][r]?\s+(?:el\s+)?(?:documento\s+)?(.+?)\s+y\s+/i);
+            const writeMatch = m.match(/y\s+(?:escrib[ií]|pon[eé]|edit[aá])\s+(.+)/i);
+            return {
+                intent: "google_docs_duplicate_and_write",
+                parameters: {
+                    action: "duplicate_and_write",
+                    docName: dupMatch?.[1]?.trim() || null,
+                    content: writeMatch?.[1]?.trim() || null,
+                }
+            };
+        }
+    },
+
+    // ── GOOGLE DOCS — Listar ───────────────────────────────────────────────
+    {
+        patterns: [
+            /(?:mostr[aá]|list[aá]|ver|dame)\s+(?:mis\s+)?(?:documentos|docs)\s+(?:de\s+)?(?:google|drive)?/i,
+            /(?:qu[eé]\s+)?(?:documentos|docs)\s+(?:tengo|hay)\s+(?:en\s+)?(?:google|drive|docs)?/i,
+        ],
+        result: () => ({ intent: "google_docs_list", parameters: { action: "list_docs" } })
+    },
+
+    // ── GOOGLE DOCS — Leer ────────────────────────────────────────────────
+    {
+        patterns: [
+            /(?:le[eé][r]?|mostr[aá][r]?|abr[ií][r]?)\s+(?:el\s+contenido\s+(?:del?\s+)?)?(?:documento|doc)\s+(.+)/i,
+            /qu[eé]\s+(?:dice|contiene|hay)\s+(?:en\s+)?(?:el\s+)?(?:documento|doc)\s+(.+)/i,
+        ],
+        result: (m) => {
+            const match = m.match(/(?:documento|doc)\s+(.+)/i);
+            return { intent: "google_docs_read", parameters: { action: "read_doc", docName: match?.[1]?.trim() || null } };
+        }
+    },
+
+    // ── ANTIGRAVITY con tarea para el agente ───────────────────────────────
+    {
+        patterns: [
+            /abr[ií][r]?\s+anti\s*gravity\s+y\s+(?:dile?|pide?|preguntale?|que)\s+(.+)/i,
+            /anti\s*gravity.*(?:busca[r]?|detect[aá]|encuentr[ae]|rev[ií]s[aá]|analiz[aá])\s+(.+)/i,
+        ],
+        result: (m) => {
+            const match = m.match(/(?:dile?|pide?|preguntale?|que)\s+(.+)/i)
+                || m.match(/(?:busca[r]?|detect[aá]|encuentr[ae]|rev[ií]s[aá]|analiz[aá])\s+(.+)/i);
+            const task = match?.[1]?.trim() || m;
+            return {
+                intent: "antigravity_agent",
+                parameters: { task, message: task, _originalMessage: m }
+            };
+        }
+    },
 ];
 
 function quickClassify(text) {
