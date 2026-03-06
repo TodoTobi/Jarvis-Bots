@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { sendMessageToBot, saveMemory } from "./api";
-import WakeWord from "./WakeWord";
+// WakeWord ya NO se importa aquí — está en App.jsx a nivel global
 
 const API = "http://localhost:3001";
 
 const WELCOME = {
     role: "assistant",
-    content: "Sistema en línea ✓\n\nHola Tobías, soy **Jarvis**. ¿En qué puedo ayudarte?\n\nPuedo **buscar en la web** 🔍, controlar tu PC 💻, poner música 🎵, editar Google Docs 📄 y mucho más.",
+    content: "Sistema en línea ✓\n\nHola Tobías, soy **Jarvis**. ¿En qué puedo ayudarte?\n\nPuedo **buscar en la web** 🔍, controlar tu PC 💻, poner música 🎵, editar Google Docs 📄 y mucho más.\n\n💡 Decí **\"Jarvis [tu comando] enviar\"** desde cualquier parte de la app.",
     intent: null, bot: null,
 };
 
@@ -201,7 +201,7 @@ function UserMessage({ msg, isNew }) {
 }
 
 /* ════════════════════════════════════════════════════════
-   AUDIO RECORDER — CLICK TO TOGGLE (ya no mantener)
+   AUDIO RECORDER
 ═════════════════════════════════════════════════════════ */
 function AudioRecorder({ onTranscribed, disabled }) {
     const [recording, setRecording] = useState(false);
@@ -248,7 +248,7 @@ function AudioRecorder({ onTranscribed, disabled }) {
                     const data = await res.json();
                     if (!data.success) showError(data.error || "Error al transcribir");
                     else if (!data.text?.trim()) showError("No se detectó voz");
-                    else onTranscribed(data.text.trim()); // → envía a /api/chat como mensaje normal
+                    else onTranscribed(data.text.trim());
                 } catch { showError("Error de conexión con STT"); }
                 setProcessing(false);
             };
@@ -257,14 +257,10 @@ function AudioRecorder({ onTranscribed, disabled }) {
         } catch { showError("Micrófono no disponible"); }
     }, [processing, onTranscribed]);
 
-    // CLICK TOGGLE: click una vez → graba, click de nuevo → para y transcribe
     const handleClick = useCallback(() => {
         if (disabled || processing) return;
-        if (recording) {
-            stopAndProcess();
-        } else {
-            startRecording();
-        }
+        if (recording) stopAndProcess();
+        else startRecording();
     }, [disabled, processing, recording, stopAndProcess, startRecording]);
 
     return (
@@ -288,14 +284,11 @@ function AudioRecorder({ onTranscribed, disabled }) {
                     ? <span style={{ animation: "spin 1s linear infinite", display: "inline-block", fontSize: 14 }}>⟳</span>
                     : recording ? "⏹" : "🎤"}
             </button>
-
-            {/* Label de estado */}
             {recording && (
                 <div style={{ position: "absolute", bottom: "calc(100% + 6px)", left: "50%", transform: "translateX(-50%)", background: "rgba(239,68,68,0.9)", color: "#fff", fontSize: 10, padding: "3px 8px", borderRadius: 6, whiteSpace: "nowrap", pointerEvents: "none", fontWeight: 600 }}>
                     🔴 Grabando — click para enviar
                 </div>
             )}
-
             {floatError && (
                 <div style={{ position: "absolute", bottom: "calc(100% + 10px)", left: "50%", transform: "translateX(-50%)", background: "rgba(239,68,68,0.95)", color: "#fff", fontSize: 12, padding: "6px 12px", borderRadius: 8, whiteSpace: "nowrap", zIndex: 100, pointerEvents: "none" }}>
                     ⚠ {floatError}
@@ -326,9 +319,7 @@ function shouldShowQR(msg) {
     const l = msg.toLowerCase();
     return (l.includes("whatsapp") || l.includes("wsp")) && (l.includes("qr") || l.includes("conectar") || l.includes("vincular"));
 }
-
 function dbRoleToDisplay(r) { if (r === "user") return "user"; if (r === "error") return "error"; return "assistant"; }
-
 function guessBot(msg) {
     const l = msg.toLowerCase();
     if (l.includes("buscá") || l.includes("busca") || l.includes("google") || l.includes("web") || l.includes("quién") || l.includes("qué es")) return { botName: "SearchBot", action: "🔍 Buscando en la web..." };
@@ -336,10 +327,9 @@ function guessBot(msg) {
     if (l.includes("whatsapp") || l.includes("wsp")) return { botName: "WhatsAppBot", action: "📱 Procesando WhatsApp..." };
     if (l.includes("docs") || l.includes("documento") || l.includes("google")) return { botName: "ComputerBot", action: "📄 Trabajando en Google Docs..." };
     if (l.includes("screenshot") || l.includes("captura") || l.includes("volumen")) return { botName: "BatBot", action: "🖥️ Ejecutando en el sistema..." };
+    if (l.includes("drive") || l.includes("subir") || l.includes("archivo")) return { botName: "DriveBot", action: "📁 Subiendo a Google Drive..." };
     return { botName: null, action: null };
 }
-
-/* Corrección inteligente de prompts */
 function correctPrompt(text) {
     const fixes = [
         [/\bwasap\b/gi, "whatsapp"], [/\bwhsatapp\b/gi, "whatsapp"], [/\bwhatasapp\b/gi, "whatsapp"],
@@ -349,7 +339,6 @@ function correctPrompt(text) {
         [/\bponle\b/gi, "poné"], [/\bpone\b/gi, "poné"],
         [/\babre\b/gi, "abrí"], [/\bcierra\b/gi, "cerrá"],
         [/\bpause\b/gi, "pausá"], [/\bsube\b/gi, "subí"], [/\bbaja\b/gi, "bajá"],
-        [/\bantigraviti\b/gi, "antigravity"], [/\bantrigravity\b/gi, "antigravity"],
     ];
     let result = text;
     fixes.forEach(([re, rep]) => { result = result.replace(re, rep); });
@@ -357,7 +346,7 @@ function correctPrompt(text) {
 }
 
 /* ════════════════════════════════════════════════════════
-   LISTENING OVERLAY — animación en el input
+   LISTENING OVERLAY
 ═════════════════════════════════════════════════════════ */
 function ListeningOverlay({ state }) {
     if (state === "idle") return null;
@@ -368,7 +357,7 @@ function ListeningOverlay({ state }) {
             <div style={{ position: "absolute", inset: -1, borderRadius: "inherit", background: `linear-gradient(90deg, transparent, rgba(${color},0.8), transparent, rgba(${color},0.8), transparent)`, backgroundSize: "200% 100%", animation: "listeningBorderMove 1.5s linear infinite", padding: 1, WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)", WebkitMaskComposite: "xor", maskComposite: "exclude" }} />
             <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
                 <span style={{ fontSize: 24, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: `rgba(${color},0.07)`, userSelect: "none", animation: "listeningTextPulse 2s ease-in-out infinite", fontFamily: "'DM Sans',sans-serif" }}>
-                    {isListening ? "🎙 escuchando" : "⟳ procesando"}
+                    {isListening ? "🎙 escuchando jarvis" : "⟳ procesando"}
                 </span>
             </div>
         </div>
@@ -378,11 +367,16 @@ function ListeningOverlay({ state }) {
 /* ════════════════════════════════════════════════════════
    MAIN CHAT
 ═════════════════════════════════════════════════════════ */
-function Chat({ propConvId = null }) {
+function Chat({
+    propConvId = null,
+    onReady,                // (sendFn) → App.jsx guarda ref para WakeWord global
+    globalWakeWordState,    // viene de App.jsx
+    globalWakeWordEnabled,  // viene de App.jsx
+    onToggleWakeWord,       // viene de App.jsx
+}) {
     const [conversationId, setConversationId] = useState(propConvId);
     const [messages, setMessages] = useState([WELCOME]);
-    const [wakeWordEnabled, setWakeWordEnabled] = useState(() => localStorage.getItem("jarvis_wakeword") !== "false");
-    const [wakeWordState, setWakeWordState] = useState("idle");
+    const [wakeWordState, setWakeWordState] = useState(globalWakeWordState || "idle");
     const [historyLoaded, setHistoryLoaded] = useState(false);
     const [newMsgIdx, setNewMsgIdx] = useState(-1);
     const [input, setInput] = useState("");
@@ -392,6 +386,11 @@ function Chat({ propConvId = null }) {
     const [uploadLabel, setUploadLabel] = useState("");
     const bottomRef = useRef(null);
     const textareaRef = useRef(null);
+
+    // Sync wakeWordState desde App (global)
+    useEffect(() => {
+        if (globalWakeWordState !== undefined) setWakeWordState(globalWakeWordState);
+    }, [globalWakeWordState]);
 
     useEffect(() => {
         setConversationId(propConvId); setHistoryLoaded(false);
@@ -419,6 +418,7 @@ function Chat({ propConvId = null }) {
         setMessages(prev => { const next = [...prev, { role, content, ...extra }]; setNewMsgIdx(next.length - 1); return next; });
     };
 
+    /* ── sendMessage — se expone al padre via onReady ── */
     const sendMessage = useCallback(async (text, extra = {}) => {
         const raw = (text || input).trim();
         if (!raw || loading) return;
@@ -428,7 +428,6 @@ function Chat({ propConvId = null }) {
         const wantsQR = shouldShowQR(trimmed);
         const { botName, action } = guessBot(trimmed);
 
-        // Detectar si el usuario quiere guardar algo en memoria permanente
         const memoryPattern = /\b(memorizá|memoriza|guardá en memoria|guarda en memoria|recordá esto|recuerda esto|guardá esto|guarda esto|memorizate)\b/i;
         const isMemoryRequest = memoryPattern.test(trimmed);
 
@@ -440,24 +439,14 @@ function Chat({ propConvId = null }) {
         setThinkingAction(action);
 
         try {
-            // Si pide guardar en memoria permanente, hacerlo además de responder
             if (isMemoryRequest) {
                 try {
-                    // Extraer el contenido a memorizar (lo que dijo antes del comando)
-                    const contentToMemorize = trimmed
-                        .replace(memoryPattern, "")
-                        .replace(/^[,:\s]+|[,:\s]+$/g, "")
-                        .trim() || trimmed;
+                    const contentToMemorize = trimmed.replace(memoryPattern, "").replace(/^[,:\s]+|[,:\s]+$/g, "").trim() || trimmed;
                     await saveMemory(contentToMemorize, "usuario");
-                    console.log("Memoria guardada:", contentToMemorize);
-                } catch (e) {
-                    console.warn("No se pudo guardar memoria permanente:", e.message);
-                }
+                } catch (e) { console.warn("No se pudo guardar memoria:", e.message); }
             }
 
-            // Pasar el historial actual para memoria en conversación (excluir el mensaje que acabamos de agregar)
             const historyForContext = messages.filter(m => m.role !== "thinking");
-
             const data = await sendMessageToBot(trimmed, conversationId, historyForContext);
             if (data.conversation_id && !conversationId) setConversationId(data.conversation_id);
             addMessage(data.success === false ? "error" : "assistant", data.reply || "Sin respuesta.", {
@@ -472,6 +461,11 @@ function Chat({ propConvId = null }) {
         setLoading(false); setThinkingBot(null); setThinkingAction(null);
         setTimeout(() => textareaRef.current?.focus(), 50);
     }, [input, loading, conversationId, messages]);
+
+    /* ── Exponer sendMessage al padre (App.jsx) ── */
+    useEffect(() => {
+        onReady?.(sendMessage);
+    }, [sendMessage, onReady]);
 
     const handleUpload = async (file) => {
         setUploadLabel(`📎 ${file.name}`); setLoading(true);
@@ -489,6 +483,7 @@ function Chat({ propConvId = null }) {
     const handleKeyDown = e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } };
 
     const isListeningMode = wakeWordState !== "idle";
+    const wakeWordEnabled = globalWakeWordEnabled ?? true;
 
     return (
         <div className="chat-area">
@@ -506,7 +501,10 @@ function Chat({ propConvId = null }) {
             `}</style>
 
             <div className="chat-header">
-                <div><div className="chat-header-title">Jarvis</div><div className="chat-header-subtitle">LLaMA · LM Studio · localhost:3001</div></div>
+                <div>
+                    <div className="chat-header-title">Jarvis</div>
+                    <div className="chat-header-subtitle">LLaMA · LM Studio · localhost:3001</div>
+                </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     {conversationId && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: "var(--text-muted)", opacity: 0.5 }}>#{conversationId.slice(-6)}</div>}
                     <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: "var(--text-muted)" }}>{messages.length - 1} msgs</div>
@@ -514,7 +512,11 @@ function Chat({ propConvId = null }) {
             </div>
 
             <div className="chat-box" style={{ paddingTop: 12 }}>
-                {propConvId && !historyLoaded && <div style={{ display: "flex", justifyContent: "center", padding: "40px 0", color: "var(--text-muted)", fontSize: 13 }}><span style={{ animation: "spin 1s linear infinite", display: "inline-block", marginRight: 8 }}>⟳</span>Cargando historial...</div>}
+                {propConvId && !historyLoaded && (
+                    <div style={{ display: "flex", justifyContent: "center", padding: "40px 0", color: "var(--text-muted)", fontSize: 13 }}>
+                        <span style={{ animation: "spin 1s linear infinite", display: "inline-block", marginRight: 8 }}>⟳</span>Cargando historial...
+                    </div>
+                )}
                 {(!propConvId || historyLoaded) && messages.map((msg, i) => {
                     const isNew = i === newMsgIdx;
                     if (msg.role === "user") return <UserMessage key={i} msg={msg} isNew={isNew} />;
@@ -526,14 +528,20 @@ function Chat({ propConvId = null }) {
 
             <div className="input-area">
                 <div style={{ width: "100%", maxWidth: 760 }}>
-                    {uploadLabel && <div style={{ padding: "6px 14px", marginBottom: 8, background: "var(--accent-light)", border: "1px solid var(--accent-border)", borderRadius: 8, fontSize: 12, color: "var(--accent)", fontFamily: "'DM Mono',monospace" }}>{uploadLabel}</div>}
+                    {uploadLabel && (
+                        <div style={{ padding: "6px 14px", marginBottom: 8, background: "var(--accent-light)", border: "1px solid var(--accent-border)", borderRadius: 8, fontSize: 12, color: "var(--accent)", fontFamily: "'DM Mono',monospace" }}>
+                            {uploadLabel}
+                        </div>
+                    )}
 
                     <div className="input-form" style={{
                         position: "relative",
                         transition: "border-color 0.3s, box-shadow 0.3s",
                         ...(isListeningMode ? {
                             borderColor: wakeWordState === "listening" ? "rgba(239,68,68,0.5)" : "rgba(245,158,11,0.5)",
-                            boxShadow: wakeWordState === "listening" ? "0 0 0 2px rgba(239,68,68,0.1), 0 0 20px rgba(239,68,68,0.08)" : "0 0 0 2px rgba(245,158,11,0.1)",
+                            boxShadow: wakeWordState === "listening"
+                                ? "0 0 0 2px rgba(239,68,68,0.1), 0 0 20px rgba(239,68,68,0.08)"
+                                : "0 0 0 2px rgba(245,158,11,0.1)",
                         } : {}),
                     }}>
                         <ListeningOverlay state={wakeWordState} />
@@ -542,9 +550,11 @@ function Chat({ propConvId = null }) {
                             onTranscribed={t => { if (t.trim()) sendMessage(t, { isAudio: true }); }}
                             disabled={loading}
                         />
+
+                        {/* Botón toggle wake word — controla el global en App.jsx */}
                         <button
-                            onClick={() => { const next = !wakeWordEnabled; setWakeWordEnabled(next); localStorage.setItem("jarvis_wakeword", String(next)); }}
-                            title={wakeWordEnabled ? "Wake word activo" : "Wake word inactivo"}
+                            onClick={() => onToggleWakeWord?.(!wakeWordEnabled)}
+                            title={wakeWordEnabled ? "Jarvis escuchando — click para desactivar" : "Wake word inactivo"}
                             style={{
                                 width: 32, height: 32, borderRadius: 8, flexShrink: 0,
                                 border: wakeWordEnabled ? "1px solid rgba(16,163,127,0.4)" : "1px solid rgba(255,255,255,0.1)",
@@ -558,32 +568,31 @@ function Chat({ propConvId = null }) {
                         >
                             {wakeWordState === "listening" ? "🔴" : wakeWordState === "processing" ? "⟳" : wakeWordEnabled ? "👂" : "🔕"}
                         </button>
+
                         <textarea
                             ref={textareaRef}
                             value={input}
                             onChange={handleInputChange}
                             onKeyDown={handleKeyDown}
                             placeholder={
-                                wakeWordState === "listening" ? "Escuchando..." :
-                                    wakeWordState === "processing" ? "Procesando audio..." :
-                                        "Escribí un mensaje... o decí 👂 Sistema [comando]"
+                                wakeWordState === "listening" ? "🔴 Escuchando... decí 'enviar' para terminar" :
+                                    wakeWordState === "processing" ? "⟳ Procesando audio..." :
+                                        'Escribí un mensaje... o decí 👂 "Jarvis [comando] enviar"'
                             }
                             disabled={loading || wakeWordState === "listening"}
                             rows={1}
                             autoFocus
                         />
-                        <button className="send-btn" onClick={() => sendMessage()} disabled={loading || !input.trim()} title="Enviar (Enter)">↑</button>
+                        <button
+                            className="send-btn"
+                            onClick={() => sendMessage()}
+                            disabled={loading || !input.trim()}
+                            title="Enviar (Enter)"
+                        >↑</button>
                     </div>
 
-                    <WakeWord
-                        active={wakeWordEnabled && !loading}
-                        disabled={loading}
-                        onCommand={cmd => sendMessage(cmd, { isAudio: true })}
-                        onStateChange={setWakeWordState}
-                    />
-
                     <div className="input-hint">
-                        Enter para enviar · 🎤 click para grabar/parar · 👂 "Sistema [comando]"
+                        Enter para enviar · 🎤 click para grabar · 👂 "Jarvis [comando] enviar"
                     </div>
                 </div>
             </div>
