@@ -178,13 +178,6 @@
             "description": "Abre Postman",
             "timeout": 5000
         },
-        "app_github_desktop": {
-            "path": "pc/apps/open_github_desktop.bat",
-            "label": "Abrir GitHub Desktop",
-            "category": "apps",
-            "description": "Abre GitHub Desktop",
-            "timeout": 5000
-        },
         "app_vscode": {
             "path": "pc/dev/open_vscode.bat",
             "label": "Abrir VS Code",

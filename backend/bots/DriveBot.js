@@ -106,15 +106,20 @@ class DriveBot extends Bot {
 
     /* ── MOVER A DRIVE ──────────────────────────────── */
 
-    async _moveToDrive({ source, filename, subfolder, skipShortcuts = true } = {}) {
+    async _moveToDrive({ source, filename, subfolder, location, skipShortcuts = true } = {}) {
         const driveOk = this._checkDriveFolder();
         if (driveOk !== true) return driveOk;
 
-        // Si no hay source, buscar por filename
+        // Buscar por filename con fuzzy matching y soporte de carpeta específica
         let sourcePath = source;
         if (!sourcePath && filename) {
-            const found = await this._findFile(filename);
-            if (!found) return `❌ No encontré ningún archivo llamado "${filename}" en la PC.`;
+            const { filename: parsedName, location: parsedLoc } = this._parseFilenameAndLocation(filename);
+            const resolvedLoc = location || parsedLoc;
+            const found = await this._findFile(parsedName, resolvedLoc);
+            if (!found) {
+                const locHint = resolvedLoc ? " en " + resolvedLoc + "" : " en la PC";
+                return "❌ No encontré ningún archivo parecido a " + parsedName + "" + locHint + ".\n\n💡 Indicá la carpeta: 'pasame 21.mp4 desde Desktop al drive'";
+            }
             sourcePath = found;
         }
         if (!sourcePath) return "❌ Indicá el archivo o su nombre. Ej: 'pasame tarea.pdf al drive'";
@@ -148,14 +153,19 @@ class DriveBot extends Bot {
 
     /* ── COPIAR A DRIVE ─────────────────────────────── */
 
-    async _copyToDrive({ source, filename, subfolder, skipShortcuts = true } = {}) {
+    async _copyToDrive({ source, filename, subfolder, location, skipShortcuts = true } = {}) {
         const driveOk = this._checkDriveFolder();
         if (driveOk !== true) return driveOk;
 
         let sourcePath = source;
         if (!sourcePath && filename) {
-            const found = await this._findFile(filename);
-            if (!found) return `❌ No encontré ningún archivo llamado "${filename}" en la PC.`;
+            const { filename: parsedName, location: parsedLoc } = this._parseFilenameAndLocation(filename);
+            const resolvedLoc = location || parsedLoc;
+            const found = await this._findFile(parsedName, resolvedLoc);
+            if (!found) {
+                const locHint = resolvedLoc ? " en " + resolvedLoc + "" : " en la PC";
+                return "❌ No encontré ningún archivo parecido a " + parsedName + "" + locHint + ".";
+            }
             sourcePath = found;
         }
         if (!sourcePath) return "❌ Indicá el archivo o su nombre.";
@@ -314,6 +324,9 @@ class DriveBot extends Bot {
             return `🔍 No encontré archivos con "${query}" en \`${searchRoot}\`.\n\nProbá con:\n• Otra ubicación: "buscá X en C:\\Users\\Tobias\\Downloads"\n• Otro nombre o parte del nombre`;
         }
 
+        // Ordenar por score de similitud descendente
+        results.sort((a, b) => (b.score || 0) - (a.score || 0));
+
         const lines = results.map((r, i) => {
             const icon = r.isDir ? "📁" : "📄";
             const size = r.isDir ? "" : ` (${(r.size / 1024 / 1024).toFixed(2)} MB)`;
@@ -416,6 +429,43 @@ class DriveBot extends Bot {
     }
 
     /** Buscar recursivamente, evitando carpetas del sistema */
+    /* ── Calcular similitud fuzzy entre dos strings (0-1) ─── */
+    _fuzzyScore(query, name) {
+        const q = query.toLowerCase().replace(/\s+/g, "");
+        const n = name.toLowerCase().replace(/\s+/g, "");
+        const nNoExt = n.replace(/\.[^.]+$/, "");
+
+        // Coincidencia exacta = máxima prioridad
+        if (n === q || nNoExt === q) return 1.0;
+
+        // El nombre contiene la query completa
+        if (n.includes(q) || nNoExt.includes(q)) return 0.85;
+
+        // La query contiene el nombre (sin extensión)
+        if (q.includes(nNoExt) && nNoExt.length > 1) return 0.75;
+
+        // Coincidencia por palabras individuales de la query
+        const qParts = q.split(/[\s\-_()[\]]+/).filter(p => p.length > 1);
+        const nParts = n.split(/[\s\-_()[\]]+/).filter(p => p.length > 1);
+        if (qParts.length > 0) {
+            const matchedParts = qParts.filter(qp =>
+                nParts.some(np => np.includes(qp) || qp.includes(np))
+            );
+            if (matchedParts.length > 0) {
+                return 0.5 * (matchedParts.length / qParts.length);
+            }
+        }
+
+        // Coincidencia por prefijo
+        if (n.startsWith(q) || nNoExt.startsWith(q)) return 0.6;
+        if (q.startsWith(nNoExt) && nNoExt.length > 1) return 0.55;
+
+        // Coincidencia parcial mínima
+        if (n.includes(q.substring(0, Math.max(2, Math.floor(q.length * 0.6))))) return 0.3;
+
+        return 0;
+    }
+
     _walkSearch(dir, queryLower, type, results, maxResults, depth) {
         if (results.length >= maxResults || depth > 8) return;
 
@@ -433,14 +483,14 @@ class DriveBot extends Bot {
             if (results.length >= maxResults) break;
 
             const entryPath = path.join(dir, entry.name);
-            const nameLower = entry.name.toLowerCase().replace(/\s+/g, "");
+            const nameLower = entry.name.toLowerCase();
 
             // Saltar accesos directos en búsqueda
             if (this._isShortcut(entryPath)) continue;
 
-            // Verificar coincidencia
-            const matches = nameLower.includes(queryLower) ||
-                queryLower.includes(nameLower.replace(/\.[^.]+$/, ""));
+            // Calcular score fuzzy
+            const score = this._fuzzyScore(queryLower, nameLower);
+            const matches = score > 0;
 
             if (matches) {
                 // Filtrar por tipo si se especificó
@@ -468,6 +518,7 @@ class DriveBot extends Bot {
                     isDir,
                     size,
                     ext,
+                    score,
                 });
             }
 
@@ -478,24 +529,84 @@ class DriveBot extends Bot {
         }
     }
 
-    /** Buscar UN archivo — devuelve la primera coincidencia */
-    async _findFile(filename) {
+    /**
+     * Buscar UN archivo con fuzzy matching.
+     * Si se pasa `location`, busca sólo dentro de esa carpeta (Desktop, Downloads, etc).
+     * Devuelve el path del archivo con mayor score de similitud.
+     */
+    async _findFile(filename, location = null) {
+        const userProfile = process.env.USERPROFILE || "C:\\Users\\Tobias";
+
+        // Mapear nombres comunes de carpetas a rutas reales
+        const FOLDER_MAP = {
+            "desktop":    path.join(userProfile, "Desktop"),
+            "escritorio": path.join(userProfile, "Desktop"),
+            "downloads":  path.join(userProfile, "Downloads"),
+            "descargas":  path.join(userProfile, "Downloads"),
+            "documents":  path.join(userProfile, "Documents"),
+            "documentos": path.join(userProfile, "Documents"),
+            "pictures":   path.join(userProfile, "Pictures"),
+            "imágenes":   path.join(userProfile, "Pictures"),
+            "imagenes":   path.join(userProfile, "Pictures"),
+            "videos":     path.join(userProfile, "Videos"),
+            "music":      path.join(userProfile, "Music"),
+            "música":     path.join(userProfile, "Music"),
+            "musica":     path.join(userProfile, "Music"),
+        };
+
+        // Determinar raíz de búsqueda
+        let searchRoot = userProfile;
+        if (location) {
+            const locKey = location.toLowerCase().trim();
+            if (FOLDER_MAP[locKey]) {
+                searchRoot = FOLDER_MAP[locKey];
+            } else if (fs.existsSync(location)) {
+                searchRoot = location;
+            } else {
+                // Probar como ruta relativa al perfil
+                const resolved = path.join(userProfile, location);
+                if (fs.existsSync(resolved)) searchRoot = resolved;
+            }
+        }
+
+        // Buscar con score fuzzy, trayendo hasta 20 resultados para elegir el mejor
         const results = [];
-        const queryLower = filename.toLowerCase().replace(/\s+/g, "");
-        const searchRoot = process.env.USERPROFILE || "C:\\Users\\Tobias";
-        this._walkSearch(searchRoot, queryLower, null, results, 5, 0);
+        const queryLower = filename.toLowerCase();
+        this._walkSearch(searchRoot, queryLower, null, results, 20, 0);
 
         if (results.length === 0) return null;
 
-        // Si hay varias coincidencias, preferir la que tenga extensión exacta
-        if (results.length > 1) {
-            const exact = results.find(r =>
-                r.name.toLowerCase() === filename.toLowerCase()
-            );
-            if (exact) return exact.path;
+        // Ordenar por score descendente — devolver el mejor
+        results.sort((a, b) => (b.score || 0) - (a.score || 0));
+        return results[0].path;
+    }
+
+    /**
+     * Resolver carpeta de búsqueda para _moveToDrive / _copyToDrive.
+     * Extrae "location" del nombre de archivo si el usuario escribe
+     * algo como "Desktop/21 (1).mp4" o "21 desde Desktop".
+     */
+    _parseFilenameAndLocation(raw) {
+        if (!raw) return { filename: raw, location: null };
+
+        // "archivo desde carpeta" o "archivo en carpeta"
+        const fromMatch = raw.match(/^(.+?)\s+(?:desde|en|from|en el|desde el)\s+(.+)$/i);
+        if (fromMatch) {
+            return { filename: fromMatch[1].trim(), location: fromMatch[2].trim() };
         }
 
-        return results[0].path;
+        // "carpeta/archivo"
+        if (raw.includes("/") || raw.includes("\\")) {
+            const parts = raw.replace(/\\/g, "/").split("/");
+            if (parts.length >= 2) {
+                return {
+                    filename: parts[parts.length - 1].trim(),
+                    location: parts.slice(0, -1).join("/").trim(),
+                };
+            }
+        }
+
+        return { filename: raw, location: null };
     }
 }
 

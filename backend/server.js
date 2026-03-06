@@ -25,6 +25,7 @@ const whatsappRoutes = require("./routes/whatsappRoutes");
 const geminiRoutes = require("./routes/geminiRoutes");
 const restartRoutes = require("./routes/restartRoutes");
 const logger = require("./logs/logger");
+const healthRoutes = require("./routes/healthRoutes");
 
 const app = express();
 
@@ -55,6 +56,7 @@ app.use("/api", sttRoutes);
 app.use("/api", whatsappRoutes.router);
 app.use("/api", geminiRoutes);
 app.use("/api", restartRoutes);
+app.use("/api", healthRoutes);
 
 /* ── Settings route ───────────────────────────────────── */
 const settingsPath = path.resolve(__dirname, "config/settings.json");

@@ -331,20 +331,73 @@ function guessBot(msg) {
     return { botName: null, action: null };
 }
 function correctPrompt(text) {
+    // ── Correcciones de tipografía e informalidades ──────────────────
+    // Orden importa: más específicos primero para evitar colisiones
     const fixes = [
-        [/\bwasap\b/gi, "whatsapp"], [/\bwhsatapp\b/gi, "whatsapp"], [/\bwhatasapp\b/gi, "whatsapp"],
-        [/\byoutuve\b/gi, "youtube"], [/\bspotifay\b/gi, "spotify"],
+        // WhatsApp variantes
+        [/\bwassap\b/gi, "whatsapp"], [/\bwasap\b/gi, "whatsapp"],
+        [/\bwsp\b/gi, "whatsapp"], [/\bwtsap\b/gi, "whatsapp"],
+        [/\bwhsatapp\b/gi, "whatsapp"], [/\bwhatasapp\b/gi, "whatsapp"],
+        [/\bwhastsapp\b/gi, "whatsapp"], [/\bwatsap\b/gi, "whatsapp"],
+
+        // YouTube variantes
+        [/\byoutuve\b/gi, "youtube"], [/\byutube\b/gi, "youtube"],
+        [/\byoutub\b/gi, "youtube"], [/\byuotube\b/gi, "youtube"],
+
+        // Spotify variantes
+        [/\bspotifay\b/gi, "spotify"], [/\bspotifi\b/gi, "spotify"],
+        [/\bspotfiy\b/gi, "spotify"],
+
+        // Volumen variantes
         [/\bvoluem\b/gi, "volumen"], [/\bvolumne\b/gi, "volumen"],
+        [/\bvolumen\b/gi, "volumen"], // ya correcto pero sin tilde
+
+        // Chrome / navegador
+        [/\bcrhome\b/gi, "chrome"], [/\bchorme\b/gi, "chrome"],
+
+        // Drive
+        [/\bgoogle driev\b/gi, "drive"], [/\bdirve\b/gi, "drive"],
+
+        // Discord
+        [/\bdiscrdo\b/gi, "discord"], [/\bdiscrod\b/gi, "discord"],
+
+        // Información (errores comunes)
+        [/\bifromacion\b/gi, "información"], [/\binfomacion\b/gi, "información"],
+        [/\binformacion\b/gi, "información"], [/\binfromacion\b/gi, "información"],
+        [/\binforamcion\b/gi, "información"],
+
+        // Cuando (errores comunes)
+        [/\bciando\b/gi, "cuando"], [/\bcuandp\b/gi, "cuando"],
+        [/\bcuaando\b/gi, "cuando"],
+
+        // Música
         [/\bmusica\b/gi, "música"], [/\bcancion\b/gi, "canción"],
-        [/\bponle\b/gi, "poné"], [/\bpone\b/gi, "poné"],
-        [/\babre\b/gi, "abrí"], [/\bcierra\b/gi, "cerrá"],
-        [/\bpause\b/gi, "pausá"], [/\bsube\b/gi, "subí"], [/\bbaja\b/gi, "bajá"],
+        [/\bmusic\b/gi, "música"],
+
+        // Verbos informales en rioplatense (sin acento)
+        [/\bponele\b/gi, "poné"], [/\bponle\b/gi, "poné"],
+        [/\bpone\b(?!\s*(?:rs|rse|mos|n\b))/gi, "poné"],
+        [/\babre\b/gi, "abrí"], [/\babrir\b/gi, "abrí"],
+        [/\bcierra\b/gi, "cerrá"], [/\bcerrar\b/gi, "cerrá"],
+        [/\bpause\b/gi, "pausá"], [/\bpausar\b/gi, "pausá"],
+        [/\bsube\b/gi, "subí"], [/\bsubir\b/gi, "subí"],
+        [/\bbaja\b/gi, "bajá"], [/\bbajar\b/gi, "bajá"],
+        [/\bmute\b/gi, "muteá"], [/\bsilencia\b/gi, "silenciá"],
+        [/\bmueve\b/gi, "mové"], [/\bmover\b/gi, "mová"],
+        [/\bbusca\b(?!\s*(?:r|rs|mos))/gi, "buscá"],
+        [/\bmanda\b/gi, "mandá"], [/\bmandar\b/gi, "mandá"],
+        [/\bpasa\b(?!\s*(?:r|rs|je))/gi, "pasá"],
+
+        // Desktop / Escritorio variantes
+        [/\bdesctop\b/gi, "desktop"], [/\bdesltop\b/gi, "desktop"],
+        [/\bescritoroi\b/gi, "escritorio"],
     ];
     let result = text;
-    fixes.forEach(([re, rep]) => { result = result.replace(re, rep); });
+    fixes.forEach(([re, rep]) => {
+        try { result = result.replace(re, rep); } catch { }
+    });
     return result;
 }
-
 /* ════════════════════════════════════════════════════════
    LISTENING OVERLAY
 ═════════════════════════════════════════════════════════ */

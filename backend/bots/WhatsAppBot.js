@@ -5,9 +5,12 @@
  * pero la clase no tiene método run(). Ahora expone run() correctamente
  * y el método activate() se llama internamente.
  *
- * Para acceso remoto de archivos: usá Google Drive Sync en tu PC.
- * Cualquier archivo que copies a la carpeta de Drive Sync queda disponible
- * automáticamente desde cualquier dispositivo con tu cuenta.
+ * Comandos:
+ *   - Cualquier mensaje de texto → responde con IA via /api/chat
+ *   - "archivos [carpeta]" / "listar [carpeta]" → lista carpeta local
+ *   - "buscar [nombre]" → busca archivo en la PC
+ *   - "drive [nombre]" → mueve archivo a Google Drive Sync
+ *   - "info [ruta]" → info de un archivo
  *
  * Configuración .env:
  *   WHATSAPP_NUMBER=5491160597308
@@ -55,6 +58,11 @@ class WhatsAppBot {
         this.lastRun = null;
         this.runCount = 0;
         this.allowedNumbers = this._loadAllowedNumbers();
+
+        // ── Anti-loop: deduplicación de mensajes procesados ──
+        this._processedMsgIds = new Set();
+        // ── Rate limiting: máx 1 respuesta por número cada 2s ──
+        this._lastReplyTime = new Map();
     }
 
     /* ─── run() — requerido por BotManager ─────────── */
@@ -173,10 +181,15 @@ class WhatsAppBot {
                 this.connectedPhone = null;
             });
 
-            // ── HANDLER PRINCIPAL ──
+            // ── HANDLER PRINCIPAL (solo mensajes entrantes) ──
             this.client.on("message", async (msg) => {
+                // Doble verificación: nunca procesar mensajes propios
+                if (msg.fromMe) return;
                 await this._handleMessage(msg);
             });
+
+            // ── Ignorar message_create (incluye mensajes que el bot envía) ──
+            // NO registramos "message_create" para evitar eco de nuestras respuestas
 
             await this.client.initialize();
 
@@ -203,13 +216,38 @@ class WhatsAppBot {
 
     /* ─── Manejar mensaje entrante ──────────────────── */
     async _handleMessage(msg) {
-        // Filtros básicos
-        if (msg.from.endsWith("@g.us")) return;   // grupos
-        if (msg.fromMe) return;                     // propios
-        if (msg.from === "status@broadcast") return;
+        // ── Filtros básicos ──────────────────────────────
+        if (msg.from.endsWith("@g.us")) return;      // grupos ignorados
+        if (msg.fromMe) return;                       // mis propios mensajes — evita eco
+        if (msg.from === "status@broadcast") return;  // estados de WA
+        if (msg.type !== "chat") return;              // solo mensajes de texto plano
+
+        // ── Anti-loop: ignorar mensajes ya procesados ───
+        const msgId = msg.id?.id || msg.id;
+        if (msgId && this._processedMsgIds.has(msgId)) {
+            logger.warn(`WhatsAppBot: mensaje duplicado ignorado: ${msgId}`);
+            return;
+        }
+        if (msgId) {
+            this._processedMsgIds.add(msgId);
+            // Limpiar cache cada 500 mensajes para no crecer indefinidamente
+            if (this._processedMsgIds.size > 500) {
+                const iter = this._processedMsgIds.values();
+                for (let i = 0; i < 100; i++) this._processedMsgIds.delete(iter.next().value);
+            }
+        }
 
         const from = msg.from;
         const body = (msg.body || "").trim();
+        if (!body) return; // ignorar mensajes vacíos
+
+        // ── Rate limiting: máx 1 respuesta por número cada 2s ──
+        const now = Date.now();
+        const lastTime = this._lastReplyTime.get(from) || 0;
+        if (now - lastTime < 2000) {
+            logger.warn(`WhatsAppBot: rate limit para ${from} — esperando cooldown`);
+            return;
+        }
 
         logger.info(`WhatsAppBot ← ${from}: "${body.substring(0, 80)}"`);
 
@@ -272,6 +310,8 @@ class WhatsAppBot {
 
     /* ─── IA via /api/chat ──────────────────────────── */
     async _handleAIMessage(msg, body) {
+        // Registrar tiempo de respuesta para rate limiting
+        this._lastReplyTime.set(msg.from, Date.now());
         try {
             const port = process.env.PORT || 3001;
             const response = await fetch(`http://localhost:${port}/api/chat`, {
@@ -290,7 +330,7 @@ class WhatsAppBot {
             if (reply.length > 3900) {
                 for (const chunk of this._splitMessage(reply, 3900)) {
                     await msg.reply(chunk);
-                    await new Promise(r => setTimeout(r, 500));
+                    await new Promise(r => setTimeout(r, 800));
                 }
             } else {
                 await msg.reply(reply);
