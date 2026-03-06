@@ -22,6 +22,7 @@ const logger = require("../logs/logger");
 // ════════════════════════════════════════════════════════
 const QUICK_RULES = [
 
+
     // ── WhatsApp QR ──────────────────────────────────────────────────────────
     {
         patterns: [/qr.*whatsapp|whatsapp.*qr|vincular.*whatsapp|whatsapp.*vincular|mostr[aá].*qr|mand[aá].*qr|pas[aá].*qr/i],
@@ -265,6 +266,129 @@ const QUICK_RULES = [
     {
         patterns: [/captura.*celu|screenshot.*celu|celu.*captura/i],
         result: () => ({ intent: "net_adb_screenshot", parameters: { device: "phone_tobias" } })
+    },
+
+    /**
+ * QUICK_RULES ADICIONALES — DriveBot
+ * ──────────────────────────────────────────────────────────
+ * Pegá estas reglas DENTRO del array QUICK_RULES en ModelService.js,
+ * ANTES de la última regla (la de .bat genérico).
+ *
+ * Cubren todos los casos de uso de DriveBot:
+ *   - Mover/copiar al Drive Sync
+ *   - Buscar archivos en la PC
+ *   - Listar Drive
+ *   - Crear carpetas
+ *   - Eliminar archivos
+ * ──────────────────────────────────────────────────────────
+ */
+
+    // ── MOVER AL DRIVE SYNC ─────────────────────────────────────────────────────
+    {
+        patterns: [
+            /(?:pas[aá]me|mand[aá]me|mand[aá]|mov[eé][r]?|pas[aá])\s+(?:el\s+|la\s+|los\s+|las\s+)?(.+?)\s+(?:al?\s+)?(?:drive|google\s+drive|la\s+nube|nube)/i,
+            /(?:sub[ií][r]?|upload)\s+(?:el\s+|la\s+|los\s+|las\s+)?(.+?)\s+(?:al?\s+)?(?:drive|google\s+drive|la\s+nube)/i,
+            /(?:al?\s+)?(?:drive|google\s+drive)\s+(?:el\s+|la\s+)?(.+)/i,
+        ],
+        result: (m) => {
+            const match =
+                m.match(/(?:pas[aá]me|mand[aá]me|mand[aá]|mov[eé][r]?|pas[aá])\s+(?:el\s+|la\s+|los\s+|las\s+)?(.+?)\s+(?:al?\s+)?(?:drive|google\s+drive|la\s+nube|nube)/i) ||
+                m.match(/(?:sub[ií][r]?|upload)\s+(?:el\s+|la\s+|los\s+|las\s+)?(.+?)\s+(?:al?\s+)?(?:drive|google\s+drive|la\s+nube)/i) ||
+                m.match(/(?:al?\s+)?(?:drive|google\s+drive)\s+(?:el\s+|la\s+)?(.+)/i);
+            const filename = match ? match[1].trim() : m.trim();
+            return {
+                intent: "move_to_drive",
+                parameters: { action: "move_to_drive", filename, skipShortcuts: true }
+            };
+        }
+    },
+
+    // ── COPIAR AL DRIVE (sin borrar original) ───────────────────────────────────
+    {
+        patterns: [
+            /cop[ií][aá][r]?\s+(?:el\s+|la\s+|los\s+|las\s+)?(.+?)\s+(?:al?\s+)?(?:drive|google\s+drive|la\s+nube)/i,
+            /(?:hac[eé][r]?\s+una?\s+copia|copi[aá])\s+(?:de\s+)?(.+?)\s+(?:al?\s+|en\s+el\s+)?(?:drive|google\s+drive)/i,
+        ],
+        result: (m) => {
+            const match =
+                m.match(/cop[ií][aá][r]?\s+(?:el\s+|la\s+|los\s+|las\s+)?(.+?)\s+(?:al?\s+)?(?:drive|google\s+drive)/i) ||
+                m.match(/(?:una?\s+copia|copi[aá])\s+(?:de\s+)?(.+?)\s+(?:al?\s+|en\s+el\s+)?(?:drive|google\s+drive)/i);
+            const filename = match ? match[1].trim() : m.trim();
+            return {
+                intent: "copy_to_drive",
+                parameters: { action: "copy_to_drive", filename, skipShortcuts: true }
+            };
+        }
+    },
+
+    // ── BUSCAR ARCHIVO EN LA PC ──────────────────────────────────────────────────
+    {
+        patterns: [
+            /(?:busca[r]?|encontra[r]?|d[oó]nde\s+(?:est[aá]|qued[oó]|guard[eé]?))\s+(?:el\s+|la\s+|los\s+|las\s+)?(?:archivo\s+|carpeta\s+|pdf\s+|doc\s+|imagen\s+|video\s+|exe\s+)?(.+?)(?:\s+en\s+la\s+pc)?$/i,
+            /(?:en\s+(?:la\s+)?pc|en\s+mi\s+(?:compu|computadora|pc))\s+(.+)/i,
+            /d[oó]nde\s+(?:est[aá]|guard[eé]?)\s+(.+)/i,
+        ],
+        result: (m) => {
+            const match =
+                m.match(/(?:busca[r]?|encontra[r]?|d[oó]nde\s+\w+)\s+(?:el\s+|la\s+)?(?:archivo\s+|carpeta\s+|pdf\s+|doc\s+|imagen\s+|video\s+|exe\s+)?(.+?)(?:\s+en\s+la\s+pc)?$/i) ||
+                m.match(/d[oó]nde\s+(?:est[aá]|guard[eé]?)\s+(.+)/i);
+            // Excluir si ya matcheó otra regla (ej: búsqueda web)
+            if (!match) return null;
+            const query = match[1].trim();
+            // Si tiene "en internet", "en google", etc → no es búsqueda de archivo
+            if (/en\s+(?:internet|google|bing|la\s+web|online)/i.test(query)) return null;
+            return {
+                intent: "file_search",
+                parameters: { action: "search", query, filename: query }
+            };
+        }
+    },
+
+    // ── LISTAR DRIVE ─────────────────────────────────────────────────────────────
+    {
+        patterns: [
+            /(?:qu[eé]\s+hay|lista[r]?|mostr[aá][r]?|ver)\s+(?:en\s+)?(?:el\s+)?(?:drive|google\s+drive|la\s+nube)/i,
+            /(?:archivos|contenido)\s+(?:del?\s+)?(?:drive|google\s+drive)/i,
+        ],
+        result: () => ({
+            intent: "list_drive",
+            parameters: { action: "list_drive" }
+        })
+    },
+
+    // ── CREAR CARPETA ────────────────────────────────────────────────────────────
+    {
+        patterns: [
+            /cre[aá][r]?\s+(?:una?\s+)?carpeta\s+(?:llamada?\s+|con\s+nombre\s+)?(.+?)(?:\s+en\s+(.+))?$/i,
+            /nueva\s+carpeta\s+(?:llamada?\s+|con\s+nombre\s+)?(.+)/i,
+        ],
+        result: (m) => {
+            const match =
+                m.match(/cre[aá][r]?\s+(?:una?\s+)?carpeta\s+(?:llamada?\s+|con\s+nombre\s+)?(.+?)(?:\s+en\s+(.+))?$/i) ||
+                m.match(/nueva\s+carpeta\s+(?:llamada?\s+)?(.+)/i);
+            const name = match ? match[1].trim() : m.trim();
+            const location = match?.[2]?.trim() || null;
+            const inDrive = /drive|nube/i.test(m);
+            return {
+                intent: "folder_create",
+                parameters: { action: "create_folder", name, destination: location || (inDrive ? null : null), inDrive }
+            };
+        }
+    },
+
+    // ── ELIMINAR ARCHIVO ─────────────────────────────────────────────────────────
+    {
+        patterns: [
+            /(?:elimin[aá][r]?|borr[aá][r]?|borra[r]?|remov[eé][r]?)\s+(?:el\s+|la\s+)?(?:archivo\s+|carpeta\s+)?(.+)/i,
+        ],
+        result: (m) => {
+            const match = m.match(/(?:elimin[aá][r]?|borr[aá][r]?|borra[r]?|remov[eé][r]?)\s+(?:el\s+|la\s+)?(?:archivo\s+|carpeta\s+)?(.+)/i);
+            const filename = match ? match[1].trim() : m.trim();
+            return {
+                intent: "file_delete",
+                parameters: { action: "delete_file", filename }
+            };
+        }
     },
 
     // ── .bat genérico ─────────────────────────────────────────────────────────
