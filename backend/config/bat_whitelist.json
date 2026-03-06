@@ -1,7 +1,5 @@
 {
     "scripts": {
-        "_info": "JarvisCore — bat_whitelist.json completo v3.0",
-        "_instrucciones": "Este archivo reemplaza completamente tu bat_whitelist.json existente en backend/config/",
         "media_youtube": {
             "path": "pc/media/open_youtube.bat",
             "label": "Abrir YouTube",
@@ -221,6 +219,13 @@
             "category": "dev",
             "description": "Abre PowerShell",
             "timeout": 4000
+        },
+        "app_github_desktop": {
+            "path": "pc/dev/open_github_desktop.bat",
+            "label": "Abrir GitHub Desktop",
+            "category": "dev",
+            "description": "Abre GitHub Desktop",
+            "timeout": 5000
         },
         "system_screenshot": {
             "path": "pc/system/screenshot.bat",

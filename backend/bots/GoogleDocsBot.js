@@ -7,6 +7,9 @@
  *  3. En .env: GOOGLE_SERVICE_ACCOUNT_PATH=./config/google_service_account.json
  *  4. npm install googleapis
  *  5. Compartir cada documento con el client_email de la service account
+ *
+ * NOTA: Este bot es para leer/editar Google Docs, NO para subir archivos a Drive.
+ * Para acceso remoto a archivos usá Google Drive Sync en tu PC.
  */
 
 const Bot = require("./Bot");
@@ -16,7 +19,7 @@ const fs = require("fs");
 
 class GoogleDocsBot extends Bot {
     constructor() {
-        super("GoogleDocsBot", "Duplica y edita documentos de Google Docs");
+        super("GoogleDocsBot", "Lee y edita documentos de Google Docs");
         this.auth = null;
         this.drive = null;
         this.docs = null;
@@ -24,7 +27,7 @@ class GoogleDocsBot extends Bot {
     }
 
     /* ══════════════════════════════════════════════════
-       RUN — punto de entrada principal (requerido por Bot)
+       RUN — punto de entrada principal
     ══════════════════════════════════════════════════ */
 
     async run(params = {}) {
@@ -85,10 +88,6 @@ class GoogleDocsBot extends Bot {
                 case "create":
                     return await this._createDoc({ title, content });
 
-                case "get_setup_instructions":
-                case "setup":
-                    return this._getSetupInstructions();
-
                 default:
                     if (docName || docId) return await this._readDoc({ docId, docName });
                     return await this._listDocs({ maxResults: 5 });
@@ -128,26 +127,7 @@ class GoogleDocsBot extends Bot {
                 return true;
             }
 
-            // OAuth2 fallback
-            const credsPath = process.env.GOOGLE_CREDENTIALS_PATH
-                ? path.resolve(__dirname, "../..", process.env.GOOGLE_CREDENTIALS_PATH)
-                : path.resolve(__dirname, "../../config/google_credentials.json");
-            const tokenPath = path.resolve(__dirname, "../../config/google_token.json");
-
-            if (fs.existsSync(credsPath) && fs.existsSync(tokenPath)) {
-                const credentials = JSON.parse(fs.readFileSync(credsPath, "utf-8"));
-                const token = JSON.parse(fs.readFileSync(tokenPath, "utf-8"));
-                const { client_secret, client_id, redirect_uris } = credentials.installed || credentials.web;
-                const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
-                oAuth2Client.setCredentials(token);
-                this.drive = google.drive({ version: "v3", auth: oAuth2Client });
-                this.docs = google.docs({ version: "v1", auth: oAuth2Client });
-                this._initialized = true;
-                logger.info("GoogleDocsBot: autenticado con OAuth2");
-                return true;
-            }
-
-            logger.warn("GoogleDocsBot: sin credenciales de Google.");
+            logger.warn("GoogleDocsBot: sin credenciales de Google (google_service_account.json no encontrado).");
             return false;
         } catch (err) {
             logger.error(`GoogleDocsBot _init error: ${err.message}`);
@@ -315,19 +295,9 @@ class GoogleDocsBot extends Bot {
         return last.endIndex || 1;
     }
 
-    _getSetupInstructions() {
-        return `📋 **Setup de Google Docs:**\n\n` +
-            `1. https://console.cloud.google.com → habilitar **Google Docs API** y **Google Drive API**\n` +
-            `2. IAM → Cuentas de servicio → crear → descargar JSON\n` +
-            `3. Guardar como \`backend/config/google_service_account.json\`\n` +
-            `4. En \`.env\`: \`GOOGLE_SERVICE_ACCOUNT_PATH=./config/google_service_account.json\`\n` +
-            `5. \`npm install googleapis\`\n` +
-            `6. Compartir cada doc con el \`client_email\` del JSON → Editor`;
-    }
-
     async start() {
         const ok = await this._init();
-        return ok ? "GoogleDocsBot listo ✅" : "GoogleDocsBot: sin credenciales";
+        return ok ? "GoogleDocsBot listo ✅" : "GoogleDocsBot: sin credenciales (ver backend/config/google_service_account.json)";
     }
 
     async stop() {

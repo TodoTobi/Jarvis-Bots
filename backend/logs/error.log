@@ -118,3 +118,21 @@ Require stack:
 [2026-03-01T14:35:54.965Z] [ERROR] WhatsApp QR handler: Cannot read properties of undefined (reading 'status')
 [2026-03-01T14:36:23.220Z] [ERROR] WhatsApp QR handler: Cannot read properties of undefined (reading 'status')
 [2026-03-01T15:05:47.017Z] [ERROR] WhatsApp QR handler: Cannot read properties of undefined (reading 'status')
+[2026-03-02T02:56:31.142Z] [ERROR] BatBot: failed to load whitelist — Cannot convert undefined or null to object
+[2026-03-02T03:00:04.966Z] [ERROR] BatBot: failed to load whitelist — Cannot convert undefined or null to object
+[2026-03-02T03:03:23.564Z] [ERROR] BatBot: failed to load whitelist — Cannot convert undefined or null to object
+[2026-03-02T03:03:45.313Z] [ERROR] [Error] GoogleDocsBot: run() must be implemented in GoogleDocsBot
+[2026-03-02T03:09:30.852Z] [ERROR] BatBot: failed to load whitelist — Cannot convert undefined or null to object
+[2026-03-02T03:12:10.431Z] [ERROR] BatBot: failed to load whitelist — Cannot convert undefined or null to object
+[2026-03-02T14:54:52.758Z] [ERROR] BatBot: failed to load whitelist — Cannot convert undefined or null to object
+[2026-03-02T14:54:52.913Z] [ERROR] ModelService: Cannot reach LM Studio — 
+[2026-03-02T14:56:37.204Z] [ERROR] ModelService LLM error: 
+[2026-03-02T14:56:37.211Z] [ERROR] ModelService generateText: 
+[2026-03-02T14:56:37.212Z] [ERROR] [Error] WebBot: Error al generar respuesta: 
+[2026-03-02T17:10:31.508Z] [ERROR] BatBot: failed to load whitelist — Cannot convert undefined or null to object
+[2026-03-02T17:49:48.615Z] [ERROR] BatBot: failed to load whitelist — Cannot convert undefined or null to object
+[2026-03-02T17:54:45.549Z] [ERROR] BatBot: failed to load whitelist — Cannot convert undefined or null to object
+[2026-03-02T18:12:16.665Z] [ERROR] [Error] BatBot: Script "media_youtube" is not in the whitelist
+[2026-03-02T18:12:33.508Z] [ERROR] [Error] BatBot: Script "media_youtube" is not in the whitelist
+[2026-03-02T18:17:38.526Z] [ERROR] [Error] BatBot: Script file not found: pc/media/open_youtube.bat
+[2026-03-02T18:21:57.337Z] [ERROR] STT error: could not process file - is it a valid media file?

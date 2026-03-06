@@ -1,19 +1,18 @@
 /**
- * WhatsAppBot.js — v3 con soporte de archivos via Google Drive
+ * WhatsAppBot.js — v4 sin Google Drive API
  * ─────────────────────────────────────────────────────────
  * Comandos disponibles desde WhatsApp:
  *   - Cualquier mensaje → Jarvis responde con IA
- *   - "sube [ruta]" → sube archivo a Google Drive y envía link
- *   - "subir [ruta]" → igual
- *   - "archivos" / "listar" → lista archivos en una carpeta
- *   - "drive [ruta]" → sube a Drive
+ *   - "archivos [carpeta]" / "listar [carpeta]" / "ls [carpeta]" → lista carpeta
+ *   - "info [ruta]" → info de un archivo (tamaño, fecha)
+ *
+ * Para acceso remoto de archivos: usá Google Drive Sync en tu PC.
+ * Cualquier archivo que copies a la carpeta de Drive Sync queda disponible
+ * automáticamente desde cualquier dispositivo con tu cuenta.
  *
  * Configuración .env:
  *   WHATSAPP_NUMBER=5491160597308
  *   WHATSAPP_ALLOWED_NUMBERS=5491160597308
- *   GOOGLE_CLIENT_ID=...
- *   GOOGLE_CLIENT_SECRET=...
- *   GOOGLE_REFRESH_TOKEN=...
  * ─────────────────────────────────────────────────────────
  */
 
@@ -21,13 +20,10 @@ const { Client, LocalAuth } = require("whatsapp-web.js");
 const qrcode = require("qrcode");
 const path = require("path");
 const fs = require("fs");
-const FormData = require("form-data");
-const fetch = (...args) => import("node-fetch").then(({ default: f }) => f(...args));
 
-// Logger simple que no rompe si no existe el módulo
 let logger;
 try {
-    logger = require("../utils/logger");
+    logger = require("../logs/logger");
 } catch {
     logger = {
         info: (...a) => console.log("[WhatsAppBot]", ...a),
@@ -35,6 +31,9 @@ try {
         error: (...a) => console.error("[WhatsAppBot]", ...a),
     };
 }
+
+// Importar fetch de forma compatible
+const fetch = (...args) => import("node-fetch").then(({ default: f }) => f(...args));
 
 class WhatsAppBot {
     constructor() {
@@ -50,7 +49,7 @@ class WhatsAppBot {
         this.lastRun = null;
         this.runCount = 0;
         this.allowedNumbers = this._loadAllowedNumbers();
-        this.description = "Control remoto vía WhatsApp — mensajes, archivos y Drive";
+        this.description = "Control remoto vía WhatsApp — mensajes de texto y voz";
     }
 
     /* ─── Cargar números permitidos ─────────────────── */
@@ -74,16 +73,11 @@ class WhatsAppBot {
 
     /* ─── Verificar si un número está permitido ─────── */
     _isAllowed(rawJid) {
-        // Si no hay restricciones, aceptar todo (modo debug)
         if (this.allowedNumbers.length === 0) return true;
-
-        // rawJid ejemplo: "5491160597308@c.us"
         const number = rawJid.replace("@c.us", "").replace(/\D/g, "");
-
-        return this.allowedNumbers.some(allowed => {
-            // Comparación flexible: puede tener o no el código de país
-            return number.endsWith(allowed) || allowed.endsWith(number) || number === allowed;
-        });
+        return this.allowedNumbers.some(allowed =>
+            number.endsWith(allowed) || allowed.endsWith(number) || number === allowed
+        );
     }
 
     /* ─── Activar bot ───────────────────────────────── */
@@ -146,7 +140,7 @@ class WhatsAppBot {
             this.client.on("disconnected", (reason) => {
                 logger.warn("WhatsAppBot: desconectado:", reason);
                 this.connected = false;
-                this.status = "working"; // intentará reconectar
+                this.status = "working";
                 this.connectedPhone = null;
             });
 
@@ -180,11 +174,8 @@ class WhatsAppBot {
 
     /* ─── Manejar mensaje entrante ──────────────────── */
     async _handleMessage(msg) {
-        // Ignorar grupos
         if (msg.from.endsWith("@g.us")) return;
-        // Ignorar mensajes propios
         if (msg.fromMe) return;
-        // Ignorar status
         if (msg.from === "status@broadcast") return;
 
         const from = msg.from;
@@ -192,7 +183,6 @@ class WhatsAppBot {
 
         logger.info(`WhatsAppBot: mensaje de ${from}: "${body.substring(0, 80)}"`);
 
-        // Verificar número permitido
         if (!this._isAllowed(from)) {
             logger.warn(`WhatsAppBot: número no permitido: ${from}`);
             return;
@@ -203,19 +193,18 @@ class WhatsAppBot {
         this.status = "working";
 
         try {
-            // ── Detectar comando de archivo ──────────────
-            const fileMatch = body.match(/^(subi[r]?|drive|subir)\s+(.+)/i);
-            if (fileMatch) {
-                const filePath = fileMatch[2].trim();
-                await this._handleFileUpload(msg, filePath);
+            // ── Listar archivos de carpeta ────────────────
+            if (/^(archivos|listar|lista|ls)\s*/i.test(body)) {
+                const folder = body.replace(/^(archivos|listar|lista|ls)\s*/i, "").trim() || ".";
+                await this._handleListFiles(msg, folder);
                 this.status = "active";
                 return;
             }
 
-            // ── Detectar lista de carpeta ─────────────────
-            if (/^(archivos|listar|lista|ls)\s*/i.test(body)) {
-                const folder = body.replace(/^(archivos|listar|lista|ls)\s*/i, "").trim() || ".";
-                await this._handleListFiles(msg, folder);
+            // ── Info de archivo ───────────────────────────
+            const infoMatch = body.match(/^info\s+(.+)/i);
+            if (infoMatch) {
+                await this._handleFileInfo(msg, infoMatch[1].trim());
                 this.status = "active";
                 return;
             }
@@ -227,9 +216,7 @@ class WhatsAppBot {
             logger.error(`WhatsAppBot: error manejando mensaje: ${e.message}`);
             this.lastError = e.message;
             this.status = "error";
-            try {
-                await msg.reply(`⚠ Error: ${e.message}`);
-            } catch { }
+            try { await msg.reply(`⚠ Error: ${e.message}`); } catch { }
         }
 
         this.status = "active";
@@ -268,102 +255,29 @@ class WhatsAppBot {
         }
     }
 
-    /* ─── Subir archivo a Google Drive ─────────────── */
-    async _handleFileUpload(msg, inputPath) {
-        // Normalizar ruta
-        let filePath = inputPath.trim().replace(/^["']|["']$/g, "");
-
-        // Si es relativa, resolver desde el directorio del backend
+    /* ─── Info de archivo ───────────────────────────── */
+    async _handleFileInfo(msg, inputPath) {
+        let filePath = inputPath.replace(/^["']|["']$/g, "");
         if (!path.isAbsolute(filePath)) {
             filePath = path.resolve(process.cwd(), filePath);
         }
 
-        // Verificar que el archivo existe
         if (!fs.existsSync(filePath)) {
-            await msg.reply(`❌ Archivo no encontrado:\n\`${filePath}\`\n\nUsá la ruta completa, ejemplo:\n• \`subi C:\\Users\\Tobias\\Downloads\\archivo.pdf\`\n• \`subi ./mi-archivo.exe\``);
+            await msg.reply(`❌ No encontré:\n\`${filePath}\``);
             return;
         }
 
-        const fileName = path.basename(filePath);
-        const fileSize = fs.statSync(filePath).size;
-        const fileSizeMB = (fileSize / 1024 / 1024).toFixed(2);
+        const stat = fs.statSync(filePath);
+        const sizeMB = (stat.size / 1024 / 1024).toFixed(2);
+        const modified = stat.mtime.toLocaleString("es-AR");
 
-        await msg.reply(`📤 Subiendo *${fileName}* (${fileSizeMB} MB) a Google Drive...\n⏳ Esperá un momento.`);
-
-        try {
-            const driveLink = await this._uploadToDrive(filePath, fileName);
-            await msg.reply(
-                `✅ *${fileName}* subido exitosamente!\n\n` +
-                `📁 *Google Drive:*\n${driveLink}\n\n` +
-                `💡 Podés acceder desde cualquier dispositivo con tu cuenta tv286206@gmail.com`
-            );
-        } catch (e) {
-            logger.error("WhatsAppBot: error subiendo a Drive:", e.message);
-
-            // Si Drive falla, intentar link local (solo funciona en red local)
-            await msg.reply(
-                `⚠ Error subiendo a Drive: ${e.message}\n\n` +
-                `🔧 Verificá que configuraste las credenciales de Google en el .env:\n` +
-                `• GOOGLE_CLIENT_ID\n• GOOGLE_CLIENT_SECRET\n• GOOGLE_REFRESH_TOKEN`
-            );
-        }
-    }
-
-    /* ─── Upload real a Google Drive via API ────────── */
-    async _uploadToDrive(filePath, fileName) {
-        const { google } = require("googleapis");
-
-        const oauth2Client = new google.auth.OAuth2(
-            process.env.GOOGLE_CLIENT_ID,
-            process.env.GOOGLE_CLIENT_SECRET,
-            "urn:ietf:wg:oauth:2.0:oob"
+        await msg.reply(
+            `📄 *${path.basename(filePath)}*\n` +
+            `📦 Tamaño: ${sizeMB} MB\n` +
+            `🕐 Modificado: ${modified}\n` +
+            `📂 Ruta: \`${filePath}\`\n\n` +
+            `💡 Para acceder remotamente, copiá el archivo a tu carpeta de Google Drive Sync en la PC.`
         );
-
-        oauth2Client.setCredentials({
-            refresh_token: process.env.GOOGLE_REFRESH_TOKEN,
-        });
-
-        const drive = google.drive({ version: "v3", auth: oauth2Client });
-
-        // Detectar MIME type
-        const mime = this._getMimeType(fileName);
-
-        const fileMetadata = {
-            name: fileName,
-            parents: [process.env.GOOGLE_DRIVE_FOLDER_ID || "root"],
-        };
-
-        const media = {
-            mimeType: mime,
-            body: fs.createReadStream(filePath),
-        };
-
-        logger.info(`WhatsAppBot: subiendo "${fileName}" a Drive...`);
-
-        const response = await drive.files.create({
-            requestBody: fileMetadata,
-            media: media,
-            fields: "id, name, webViewLink, webContentLink",
-        });
-
-        const file = response.data;
-
-        // Hacer el archivo público (o compartido con el usuario)
-        try {
-            await drive.permissions.create({
-                fileId: file.id,
-                requestBody: {
-                    role: "reader",
-                    type: "user",
-                    emailAddress: "tv286206@gmail.com",
-                },
-            });
-        } catch (e) {
-            logger.warn("WhatsAppBot: no se pudo asignar permiso:", e.message);
-        }
-
-        logger.info(`WhatsAppBot: "${fileName}" subido. Link: ${file.webViewLink}`);
-        return file.webViewLink || `https://drive.google.com/file/d/${file.id}/view`;
     }
 
     /* ─── Listar archivos de una carpeta ────────────── */
@@ -386,7 +300,7 @@ class WhatsAppBot {
 
             await msg.reply(
                 `📂 *${absPath}*\n\n${files || "(carpeta vacía)"}\n\n` +
-                `_Para subir un archivo: \`subi [ruta]\`_`
+                `_Para acceder un archivo remotamente, copialo a Google Drive Sync._`
             );
         } catch (e) {
             await msg.reply(`⚠ Error listando carpeta: ${e.message}`);
@@ -394,37 +308,12 @@ class WhatsAppBot {
     }
 
     /* ─── Helpers ───────────────────────────────────── */
-    _getMimeType(fileName) {
-        const ext = path.extname(fileName).toLowerCase();
-        const types = {
-            ".pdf": "application/pdf",
-            ".doc": "application/msword",
-            ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            ".xls": "application/vnd.ms-excel",
-            ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            ".ppt": "application/vnd.ms-powerpoint",
-            ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-            ".txt": "text/plain",
-            ".jpg": "image/jpeg",
-            ".jpeg": "image/jpeg",
-            ".png": "image/png",
-            ".gif": "image/gif",
-            ".zip": "application/zip",
-            ".rar": "application/x-rar-compressed",
-            ".exe": "application/octet-stream",
-            ".mp4": "video/mp4",
-            ".mp3": "audio/mpeg",
-        };
-        return types[ext] || "application/octet-stream";
-    }
-
     _splitMessage(text, maxLen) {
         const chunks = [];
         let start = 0;
         while (start < text.length) {
             let end = start + maxLen;
             if (end < text.length) {
-                // Cortar en salto de línea si es posible
                 const nl = text.lastIndexOf("\n", end);
                 if (nl > start) end = nl;
             }
