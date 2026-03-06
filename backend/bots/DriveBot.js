@@ -24,6 +24,21 @@ const path = require("path");
 const fs = require("fs");
 const logger = require("../logs/logger");
 
+// ── NLP Service: Levenshtein, fuzzy search, context, aliases ──
+let NLP;
+try {
+    NLP = require("../services/NLPService");
+} catch {
+    NLP = null;
+    logger.warn("DriveBot: NLPService no disponible — usando fuzzy interno");
+}
+let LangAliases;
+try {
+    LangAliases = require("../services/LanguageAliases");
+} catch {
+    LangAliases = null;
+}
+
 // Extensiones que son accesos directos — siempre ignorados al mover
 const SHORTCUT_EXTENSIONS = new Set([".lnk", ".url", ".desktop"]);
 
@@ -117,8 +132,10 @@ class DriveBot extends Bot {
             const resolvedLoc = location || parsedLoc;
             const found = await this._findFile(parsedName, resolvedLoc);
             if (!found) {
-                const locHint = resolvedLoc ? " en " + resolvedLoc + "" : " en la PC";
-                return "❌ No encontré ningún archivo parecido a " + parsedName + "" + locHint + ".\n\n💡 Indicá la carpeta: 'pasame 21.mp4 desde Desktop al drive'";
+                const locHint = resolvedLoc ? ` en "${resolvedLoc}"` : " en la PC";
+                return `❌ No encontré ningún archivo parecido a "${parsedName}"${locHint}.
+
+💡 Indicá la carpeta: 'pasame 21.mp4 desde Desktop al drive'`;
             }
             sourcePath = found;
         }
@@ -163,8 +180,8 @@ class DriveBot extends Bot {
             const resolvedLoc = location || parsedLoc;
             const found = await this._findFile(parsedName, resolvedLoc);
             if (!found) {
-                const locHint = resolvedLoc ? " en " + resolvedLoc + "" : " en la PC";
-                return "❌ No encontré ningún archivo parecido a " + parsedName + "" + locHint + ".";
+                const locHint = resolvedLoc ? ` en "${resolvedLoc}"` : " en la PC";
+                return `❌ No encontré ningún archivo parecido a "${parsedName}"${locHint}.`;
             }
             sourcePath = found;
         }
@@ -302,12 +319,13 @@ class DriveBot extends Bot {
 
     /* ── BÚSQUEDA ───────────────────────────────────── */
 
-    async _search({ query, type, location, maxResults = 20 } = {}) {
+    async _search({ query, type, location, typeHint, maxResults = 20 } = {}) {
         if (!query) return "❌ Indicá qué buscar. Ej: 'buscá tarea.pdf'";
 
+        const userProfile = process.env.USERPROFILE || "C:\\Users\\Tobias";
         const searchRoot = location
             ? this._resolvePath(location)
-            : (process.env.USERPROFILE || "C:\\Users\\Tobias");
+            : userProfile;
 
         if (!fs.existsSync(searchRoot)) {
             return `❌ La carpeta de búsqueda no existe:\n\`${searchRoot}\``;
@@ -315,22 +333,35 @@ class DriveBot extends Bot {
 
         logger.info(`DriveBot: buscando "${query}" en "${searchRoot}"`);
 
-        const results = [];
-        const queryLower = query.toLowerCase().replace(/\s+/g, "");
+        let results = [];
 
-        this._walkSearch(searchRoot, queryLower, type, results, maxResults, 0);
+        // ── Usar NLPService si está disponible ──
+        if (NLP) {
+            // Detectar tipo de archivo mencionado en la query
+            const detectedType = NLP.detectFileTypeMention(query);
+            const effectiveTypeHint = typeHint || type || detectedType?.keyword || null;
+
+            results = NLP.walkAndScore(searchRoot, query, {
+                typeHint: effectiveTypeHint,
+                maxResults,
+                minScore: 0.18,
+            });
+        } else {
+            // Fallback al sistema interno
+            const queryLower = query.toLowerCase().replace(/\s+/g, "");
+            this._walkSearch(searchRoot, queryLower, type, results, maxResults, 0);
+            results.sort((a, b) => (b.score || 0) - (a.score || 0));
+        }
 
         if (results.length === 0) {
             return `🔍 No encontré archivos con "${query}" en \`${searchRoot}\`.\n\nProbá con:\n• Otra ubicación: "buscá X en C:\\Users\\Tobias\\Downloads"\n• Otro nombre o parte del nombre`;
         }
 
-        // Ordenar por score de similitud descendente
-        results.sort((a, b) => (b.score || 0) - (a.score || 0));
-
         const lines = results.map((r, i) => {
             const icon = r.isDir ? "📁" : "📄";
             const size = r.isDir ? "" : ` (${(r.size / 1024 / 1024).toFixed(2)} MB)`;
-            return `${i + 1}. ${icon} **${r.name}**${size}\n   📂 ${r.dir}`;
+            const scoreBar = r.score >= 0.8 ? "●●●" : r.score >= 0.5 ? "●●○" : "●○○";
+            return `${i + 1}. ${icon} **${r.name}**${size} \`${scoreBar}\`\n   📂 ${r.dir}`;
         }).join("\n\n");
 
         return `🔍 **Resultados para "${query}" (${results.length}):**\n\n${lines}\n\n💡 Para mover al Drive: "pasame [nombre] al drive"`;
@@ -530,53 +561,75 @@ class DriveBot extends Bot {
     }
 
     /**
-     * Buscar UN archivo con fuzzy matching.
-     * Si se pasa `location`, busca sólo dentro de esa carpeta (Desktop, Downloads, etc).
-     * Devuelve el path del archivo con mayor score de similitud.
+     * Buscar el MEJOR archivo por fuzzy matching con Levenshtein + scoring compuesto.
+     * Usa NLPService cuando está disponible, cae en fuzzy interno si no.
+     * Si se pasa `location`, busca sólo dentro de esa carpeta.
+     * Si se pasa `typeHint`, bonifica extensiones del tipo semántico correspondiente.
      */
-    async _findFile(filename, location = null) {
+    async _findFile(filename, location = null, typeHint = null) {
         const userProfile = process.env.USERPROFILE || "C:\\Users\\Tobias";
 
-        // Mapear nombres comunes de carpetas a rutas reales
-        const FOLDER_MAP = {
-            "desktop":    path.join(userProfile, "Desktop"),
-            "escritorio": path.join(userProfile, "Desktop"),
-            "downloads":  path.join(userProfile, "Downloads"),
-            "descargas":  path.join(userProfile, "Downloads"),
-            "documents":  path.join(userProfile, "Documents"),
-            "documentos": path.join(userProfile, "Documents"),
-            "pictures":   path.join(userProfile, "Pictures"),
-            "imágenes":   path.join(userProfile, "Pictures"),
-            "imagenes":   path.join(userProfile, "Pictures"),
-            "videos":     path.join(userProfile, "Videos"),
-            "music":      path.join(userProfile, "Music"),
-            "música":     path.join(userProfile, "Music"),
-            "musica":     path.join(userProfile, "Music"),
-        };
-
-        // Determinar raíz de búsqueda
+        // ── Resolver carpeta de búsqueda ────────────────────
         let searchRoot = userProfile;
         if (location) {
-            const locKey = location.toLowerCase().trim();
-            if (FOLDER_MAP[locKey]) {
-                searchRoot = FOLDER_MAP[locKey];
-            } else if (fs.existsSync(location)) {
-                searchRoot = location;
+            // 1. Intentar con LanguageAliases
+            if (LangAliases) {
+                const resolved = LangAliases.resolveFolderAlias(location, userProfile);
+                if (resolved && fs.existsSync(resolved)) {
+                    searchRoot = resolved;
+                } else {
+                    // 2. Ruta directa o relativa al perfil
+                    const direct = fs.existsSync(location) ? location : path.join(userProfile, location);
+                    if (fs.existsSync(direct)) searchRoot = direct;
+                }
             } else {
-                // Probar como ruta relativa al perfil
-                const resolved = path.join(userProfile, location);
-                if (fs.existsSync(resolved)) searchRoot = resolved;
+                // Mapa de emergencia sin LanguageAliases
+                const FOLDER_MAP = {
+                    "desktop": path.join(userProfile, "Desktop"),
+                    "escritorio": path.join(userProfile, "Desktop"),
+                    "downloads": path.join(userProfile, "Downloads"),
+                    "descargas": path.join(userProfile, "Downloads"),
+                    "documents": path.join(userProfile, "Documents"),
+                    "documentos": path.join(userProfile, "Documents"),
+                };
+                const mapped = FOLDER_MAP[location.toLowerCase().trim()];
+                if (mapped && fs.existsSync(mapped)) searchRoot = mapped;
+                else if (fs.existsSync(location)) searchRoot = location;
+                else {
+                    const rel = path.join(userProfile, location);
+                    if (fs.existsSync(rel)) searchRoot = rel;
+                }
             }
         }
 
-        // Buscar con score fuzzy, trayendo hasta 20 resultados para elegir el mejor
+        logger.info(`DriveBot._findFile: buscando "${filename}" en "${searchRoot}" [tipo: ${typeHint || "cualquiera"}]`);
+
+        // ── Usar NLPService si está disponible ──────────────
+        if (NLP) {
+            const result = NLP.findBestFile(filename, searchRoot, {
+                typeHint,
+                maxDepth: 6,
+                minScore: 0.20,
+            });
+            if (result) {
+                logger.info(`DriveBot._findFile: NLP encontró "${result.name}" (score: ${result.score})`);
+                return result.path;
+            }
+            // Si hay location, también buscar globalmente como fallback
+            if (location && searchRoot !== userProfile) {
+                const global = NLP.findBestFile(filename, userProfile, { typeHint, maxDepth: 5, minScore: 0.30 });
+                if (global) {
+                    logger.info(`DriveBot._findFile: NLP fallback global → "${global.name}" (score: ${global.score})`);
+                    return global.path;
+                }
+            }
+            return null;
+        }
+
+        // ── Fallback: fuzzy interno (sin NLPService) ─────────
         const results = [];
-        const queryLower = filename.toLowerCase();
-        this._walkSearch(searchRoot, queryLower, null, results, 20, 0);
-
+        this._walkSearch(searchRoot, filename.toLowerCase(), null, results, 20, 0);
         if (results.length === 0) return null;
-
-        // Ordenar por score descendente — devolver el mejor
         results.sort((a, b) => (b.score || 0) - (a.score || 0));
         return results[0].path;
     }

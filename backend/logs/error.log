@@ -277,3 +277,14 @@ Require stack:
 [2026-03-06T20:05:03.231Z] [ERROR] WhatsAppBot: error generando QR:
 [2026-03-06T20:06:03.233Z] [ERROR] WhatsAppBot: error generando QR:
 [2026-03-06T20:06:23.241Z] [ERROR] WhatsAppBot: error generando QR:
+[2026-03-06T21:44:04.923Z] [ERROR] ModelService: Cannot reach LM Studio — 
+[2026-03-06T21:45:15.601Z] [ERROR] ModelService LLM error: 
+[2026-03-06T21:45:15.606Z] [ERROR] ModelService generateText: 
+[2026-03-06T21:45:15.606Z] [ERROR] [Error] WebBot: Error al generar respuesta: 
+[2026-03-06T21:45:38.757Z] [ERROR] [Error] BatBot: Script file not found: pc/media/open_youtube.bat
+[2026-03-06T22:46:05.433Z] [ERROR] ModelService LLM error: 
+[2026-03-06T22:46:05.438Z] [ERROR] ModelService generateText: 
+[2026-03-06T22:46:05.439Z] [ERROR] [Error] WebBot: Error al generar respuesta: 
+[2026-03-06T22:48:23.987Z] [ERROR] ModelService LLM error: 
+[2026-03-06T22:48:23.992Z] [ERROR] ModelService generateText: 
+[2026-03-06T22:48:23.993Z] [ERROR] [Error] WebBot: Error al generar respuesta: 

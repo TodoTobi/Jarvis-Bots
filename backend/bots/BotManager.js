@@ -20,6 +20,18 @@ const SearchBot = require("./SearchBot");
 const DriveBot = require("./DriveBot");
 const logger = require("../logs/logger");
 
+// ── NLP / Contexto / Aliases ─────────────────────────────────────────────────
+let NLP, LangAliases;
+try {
+    NLP = require("../services/NLPService");
+    LangAliases = require("../services/LanguageAliases");
+    logger.info("BotManager: NLPService cargado — contexto y aliases habilitados");
+} catch (e) {
+    NLP = null;
+    LangAliases = null;
+    logger.warn("BotManager: NLPService no disponible:", e.message);
+}
+
 /* ══════════════════════════════════════════════════════
    AUTO-DESACTIVACIÓN (ms de inactividad)
    null = nunca se desactiva
@@ -257,6 +269,33 @@ class BotManager {
 
     async executeIntent(intentObject) {
         const normalized = this._normalizeIntent(intentObject);
+        const rawMessage = normalized.parameters?._originalMessage || "";
+
+        // ── Aplicar aliases lingüísticos al mensaje original ──────────────────────
+        let processedMessage = rawMessage;
+        let aliasCorrection = null;
+        if (LangAliases && rawMessage) {
+            const { text, changed, corrections } = LangAliases.applyAliases(rawMessage);
+            if (changed) {
+                processedMessage = text;
+                aliasCorrection = corrections.length > 0 ? corrections[corrections.length - 1].corrected : text;
+                logger.info(`[Aliases] Corregido: "${rawMessage}" → "${processedMessage}"`);
+            }
+        }
+
+        // ── Resolver referencias contextuales ─────────────────────────────────────
+        // Ej: "mueve ese al drive" → resuelve "ese" con el archivo del turno anterior
+        if (NLP && rawMessage) {
+            const { resolved, contextUsed, hint } = NLP.context.resolveReferences(processedMessage);
+            if (contextUsed) {
+                logger.info(`[Context] ${hint}`);
+                // Actualizar parámetros con referencia resuelta
+                if (!normalized.parameters.filename && !normalized.parameters.source) {
+                    normalized.parameters._resolvedFromContext = resolved;
+                }
+            }
+        }
+
         logger.info(`[Intent] "${normalized.intent}" | params: ${JSON.stringify(normalized.parameters).substring(0, 120)}`);
 
         if (normalized.intent === "error") {
@@ -370,8 +409,8 @@ class BotManager {
             intent.startsWith("archivo_") ||
             intent.startsWith("carpeta_") ||
             ["move_to_drive", "copy_to_drive", "search_file", "search_files",
-                "list_drive", "delete_file", "create_folder", "create_file",
-                "move_file", "copy_file"].includes(intent);
+             "list_drive", "delete_file", "create_folder", "create_file",
+             "move_file", "copy_file"].includes(intent);
 
         if (!isDrive) return null;
 
@@ -661,7 +700,20 @@ ${scriptLines}
             this.states[botName].status = "idle";
             this.states[botName].runCount = (this.states[botName].runCount || 0) + 1;
 
-            return this._response(this._stringify(result), false);
+            const replyText = this._stringify(result);
+
+            // ── Guardar en contexto NLP para refinamiento futuro ──────────────
+            if (NLP) {
+                NLP.context.push({
+                    intent:     parameters.action || parameters.intent || botName,
+                    parameters: parameters,
+                    message:    parameters._originalMessage || "",
+                    reply:      replyText,
+                    bot:        botName,
+                });
+            }
+
+            return this._response(replyText, false);
         } catch (err) {
             this.states[botName].status = "error";
             this.states[botName].lastError = err.message;

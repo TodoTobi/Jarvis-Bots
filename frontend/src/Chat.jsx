@@ -330,74 +330,84 @@ function guessBot(msg) {
     if (l.includes("drive") || l.includes("subir") || l.includes("archivo")) return { botName: "DriveBot", action: "📁 Subiendo a Google Drive..." };
     return { botName: null, action: null };
 }
+/**
+ * correctPrompt — aplica el sistema completo de aliases y correcciones tipográficas.
+ * Es la misma lógica que LanguageAliases.js en el backend, duplicada aquí
+ * para corregir antes de enviar (sin round-trip al servidor).
+ * Retorna { text, changed } — "changed" se usa para mostrar el hint de corrección.
+ */
 function correctPrompt(text) {
-    // ── Correcciones de tipografía e informalidades ──────────────────
-    // Orden importa: más específicos primero para evitar colisiones
-    const fixes = [
-        // WhatsApp variantes
-        [/\bwassap\b/gi, "whatsapp"], [/\bwasap\b/gi, "whatsapp"],
-        [/\bwsp\b/gi, "whatsapp"], [/\bwtsap\b/gi, "whatsapp"],
-        [/\bwhsatapp\b/gi, "whatsapp"], [/\bwhatasapp\b/gi, "whatsapp"],
-        [/\bwhastsapp\b/gi, "whatsapp"], [/\bwatsap\b/gi, "whatsapp"],
+    if (!text) return { text: "", changed: false };
 
-        // YouTube variantes
-        [/\byoutuve\b/gi, "youtube"], [/\byutube\b/gi, "youtube"],
-        [/\byoutub\b/gi, "youtube"], [/\byuotube\b/gi, "youtube"],
-
-        // Spotify variantes
-        [/\bspotifay\b/gi, "spotify"], [/\bspotifi\b/gi, "spotify"],
-        [/\bspotfiy\b/gi, "spotify"],
-
-        // Volumen variantes
-        [/\bvoluem\b/gi, "volumen"], [/\bvolumne\b/gi, "volumen"],
-        [/\bvolumen\b/gi, "volumen"], // ya correcto pero sin tilde
-
-        // Chrome / navegador
-        [/\bcrhome\b/gi, "chrome"], [/\bchorme\b/gi, "chrome"],
-
-        // Drive
-        [/\bgoogle driev\b/gi, "drive"], [/\bdirve\b/gi, "drive"],
-
-        // Discord
-        [/\bdiscrdo\b/gi, "discord"], [/\bdiscrod\b/gi, "discord"],
-
-        // Información (errores comunes)
-        [/\bifromacion\b/gi, "información"], [/\binfomacion\b/gi, "información"],
-        [/\binformacion\b/gi, "información"], [/\binfromacion\b/gi, "información"],
-        [/\binforamcion\b/gi, "información"],
-
-        // Cuando (errores comunes)
-        [/\bciando\b/gi, "cuando"], [/\bcuandp\b/gi, "cuando"],
-        [/\bcuaando\b/gi, "cuando"],
-
-        // Música
-        [/\bmusica\b/gi, "música"], [/\bcancion\b/gi, "canción"],
-        [/\bmusic\b/gi, "música"],
-
-        // Verbos informales en rioplatense (sin acento)
-        [/\bponele\b/gi, "poné"], [/\bponle\b/gi, "poné"],
-        [/\bpone\b(?!\s*(?:rs|rse|mos|n\b))/gi, "poné"],
-        [/\babre\b/gi, "abrí"], [/\babrir\b/gi, "abrí"],
-        [/\bcierra\b/gi, "cerrá"], [/\bcerrar\b/gi, "cerrá"],
-        [/\bpause\b/gi, "pausá"], [/\bpausar\b/gi, "pausá"],
-        [/\bsube\b/gi, "subí"], [/\bsubir\b/gi, "subí"],
-        [/\bbaja\b/gi, "bajá"], [/\bbajar\b/gi, "bajá"],
-        [/\bmute\b/gi, "muteá"], [/\bsilencia\b/gi, "silenciá"],
-        [/\bmueve\b/gi, "mové"], [/\bmover\b/gi, "mová"],
-        [/\bbusca\b(?!\s*(?:r|rs|mos))/gi, "buscá"],
-        [/\bmanda\b/gi, "mandá"], [/\bmandar\b/gi, "mandá"],
-        [/\bpasa\b(?!\s*(?:r|rs|je))/gi, "pasá"],
-
-        // Desktop / Escritorio variantes
-        [/\bdesctop\b/gi, "desktop"], [/\bdesltop\b/gi, "desktop"],
-        [/\bescritoroi\b/gi, "escritorio"],
+    // ── Aliases de aplicaciones ──────────────────────────────────────────────
+    const APP = [
+        [/\bwhastsapp\b/gi, "whatsapp"], [/\bwhatasapp\b/gi, "whatsapp"],
+        [/\bwhsatapp\b/gi, "whatsapp"],  [/\bwatssap\b/gi, "whatsapp"],
+        [/\bwatshap\b/gi, "whatsapp"],   [/\bwassap\b/gi, "whatsapp"],
+        [/\bwatsap\b/gi, "whatsapp"],    [/\bwtsap\b/gi, "whatsapp"],
+        [/\bwasap\b/gi, "whatsapp"],     [/\bwpp\b/gi, "whatsapp"],
+        [/\bwsp\b/gi, "whatsapp"],
+        [/\byuotube\b/gi, "youtube"],    [/\byoutuve\b/gi, "youtube"],
+        [/\byoutub\b/gi, "youtube"],     [/\byutube\b/gi, "youtube"],
+        [/\byou\s*tube\b/gi, "youtube"],
+        [/\bspotifay\b/gi, "spotify"],   [/\bspotfiy\b/gi, "spotify"],
+        [/\bspotifi\b/gi, "spotify"],
+        [/\bcrhome\b/gi, "chrome"],      [/\bchorme\b/gi, "chrome"],
+        [/\bchrom\b/gi, "chrome"],
+        [/\bdiscrod\b/gi, "discord"],    [/\bdiscrdo\b/gi, "discord"],
+        [/\bgoogle\s+driev\b/gi, "drive"], [/\bdirve\b/gi, "drive"],
+        [/\bla\s+nube\b/gi, "drive"],
+        [/\bvs\s*code\b/gi, "vscode"],  [/\bvisual\s+studio\b/gi, "vscode"],
+        [/\bforni\b/gi, "fortnite"],     [/\bfortni\b/gi, "fortnite"],
     ];
+
+    // ── Correcciones tipográficas ────────────────────────────────────────────
+    const TYPOS = [
+        [/\binforamcion\b/gi, "información"], [/\bifromacion\b/gi, "información"],
+        [/\binfromacion\b/gi, "información"], [/\binfomacion\b/gi, "información"],
+        [/\binformacion\b/gi, "información"],
+        [/\bcuaando\b/gi, "cuando"],   [/\bciando\b/gi, "cuando"],
+        [/\bcuandp\b/gi, "cuando"],    [/\bqando\b/gi, "cuando"],
+        [/\bescritoroi\b/gi, "escritorio"], [/\bdesltop\b/gi, "desktop"],
+        [/\bdesctop\b/gi, "desktop"],
+        [/\bvolumne\b/gi, "volumen"],  [/\bvoluem\b/gi, "volumen"],
+        [/\bvolumn\b/gi, "volumen"],
+        [/\bmusica\b/gi, "música"],    [/\bcancion\b/gi, "canción"],
+        [/\bpantallla\b/gi, "pantalla"], [/\bpantala\b/gi, "pantalla"],
+        [/\baplicacion\b/gi, "aplicación"], [/\barchibo\b/gi, "archivo"],
+    ];
+
+    // ── Verbos rioplatenses ──────────────────────────────────────────────────
+    const VERBS = [
+        [/\babrir\b/gi, "abrí"],    [/\babre\b/gi, "abrí"],
+        [/\bcerrar\b/gi, "cerrá"],  [/\bcierra\b/gi, "cerrá"],
+        [/\bpausar\b/gi, "pausá"],  [/\bpause\b/gi, "pausá"],
+        [/\bsubir\b/gi, "subí"],    [/\bsube\b/gi, "subí"],
+        [/\bbajar\b/gi, "bajá"],    [/\bbaja\b/gi, "bajá"],
+        [/\bmutear\b/gi, "muteá"],  [/\bmute\b/gi, "muteá"],
+        [/\bmandar\b/gi, "mandá"],  [/\bmanda\b(?!\w)/gi, "mandá"],
+        [/\bbuscar\b/gi, "buscá"],  [/\bbusca\b(?!\w)/gi, "buscá"],
+        [/\bmover\b/gi, "mová"],    [/\bmueve\b/gi, "mové"],
+        [/\bponele\b/gi, "poné"],   [/\bponle\b/gi, "poné"],
+        [/\bpon\b(?!\w)/gi, "poné"],
+        [/\bpasar\b/gi, "pasá"],    [/\bpasa\b(?!\w)/gi, "pasá"],
+        [/\btomar\b/gi, "tomá"],    [/\btoma\b(?!\w)/gi, "tomá"],
+        [/\bactivar\b/gi, "activá"],
+    ];
+
     let result = text;
-    fixes.forEach(([re, rep]) => {
-        try { result = result.replace(re, rep); } catch { }
-    });
-    return result;
+    const run = (rules) => {
+        for (const [re, rep] of rules) {
+            try { result = result.replace(re, rep); } catch (_) { }
+        }
+    };
+    run(APP);
+    run(TYPOS);
+    run(VERBS);
+
+    return { text: result, changed: result !== text };
 }
+
 /* ════════════════════════════════════════════════════════
    LISTENING OVERLAY
 ═════════════════════════════════════════════════════════ */
@@ -476,8 +486,7 @@ function Chat({
         const raw = (text || input).trim();
         if (!raw || loading) return;
 
-        const trimmed = correctPrompt(raw);
-        const wasCorrect = trimmed !== raw;
+        const { text: trimmed, changed: wasCorrect } = correctPrompt(raw);
         const wantsQR = shouldShowQR(trimmed);
         const { botName, action } = guessBot(trimmed);
 
