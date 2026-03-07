@@ -410,7 +410,9 @@ class BotManager {
             intent.startsWith("carpeta_") ||
             ["move_to_drive", "copy_to_drive", "search_file", "search_files",
              "list_drive", "delete_file", "create_folder", "create_file",
-             "move_file", "copy_file"].includes(intent);
+             "move_file", "copy_file",
+             "open_file", "file_open", "abrir_archivo", "abrir_archivo_local",
+             "play_file", "reproducir_archivo"].includes(intent);
 
         if (!isDrive) return null;
 
@@ -438,6 +440,12 @@ class BotManager {
                 action = "move_file";
             } else if (intent.includes("copy_file") || intent.includes("copiar_archivo")) {
                 action = "copy_file";
+            } else if (
+                intent.includes("open_file") || intent.includes("file_open") ||
+                intent.includes("abrir_archivo") || intent.includes("play_file") ||
+                intent.includes("reproducir_archivo")
+            ) {
+                action = "open_file";
             } else {
                 action = "search";
             }

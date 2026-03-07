@@ -22,6 +22,7 @@
 const Bot = require("./Bot");
 const path = require("path");
 const fs = require("fs");
+const { exec } = require("child_process");
 const logger = require("../logs/logger");
 
 // ── NLP Service: Levenshtein, fuzzy search, context, aliases ──
@@ -112,11 +113,141 @@ class DriveBot extends Bot {
                 return await this._createFile(params);
             case "search":
                 return await this._search(params);
+            case "open_file":
+                return await this._openFile(params);
             case "list_drive":
                 return await this._listDrive(params);
             default:
-                throw new Error(`DriveBot: acción desconocida "${action}". Usá: move_to_drive, copy_to_drive, search, list_drive, move_file, copy_file, delete_file, create_folder, create_file`);
+                throw new Error(`DriveBot: acción desconocida "${action}". Usá: open_file, move_to_drive, copy_to_drive, search, list_drive, move_file, copy_file, delete_file, create_folder, create_file`);
         }
+    }
+
+    /* ── ABRIR ARCHIVO CON APLICACIÓN PREDETERMINADA ── */
+
+    /**
+     * Busca el archivo más similar al nombre solicitado (usando NLPService fuzzy matching)
+     * y lo abre con la aplicación predeterminada de Windows via `start ""`.
+     *
+     * Params:
+     *   filename   — nombre o descripción del archivo (ej: "21", "video del partido", "tarea.pdf")
+     *   location   — carpeta donde buscar (ej: "Desktop", "Downloads"). Si no se da, busca en todo el perfil.
+     *   typeHint   — tipo semántico ("video", "imagen", "pdf"…). Bonifica extensiones del tipo.
+     *   source     — ruta absoluta directa (si ya se conoce; saltea la búsqueda)
+     */
+    async _openFile({ source, filename, location, typeHint } = {}) {
+        const userProfile = process.env.USERPROFILE || "C:\\Users\\Tobias";
+
+        // ── Si ya viene con ruta absoluta, abrir directamente ────────────────
+        let filePath = source ? this._resolvePath(source) : null;
+
+        // ── Buscar por nombre con fuzzy matching ─────────────────────────────
+        if (!filePath) {
+            if (!filename) return "❌ Indicá el archivo a abrir. Ej: \"abrí el video 21 del Desktop\"";
+
+            // Separar nombre de ubicación si viene junto ("21 desde Desktop")
+            const { filename: parsedName, location: parsedLoc } = this._parseFilenameAndLocation(filename);
+            const resolvedLoc = location || parsedLoc;
+
+            // Resolver carpeta de búsqueda
+            let searchRoot = userProfile;
+            if (resolvedLoc) {
+                if (LangAliases) {
+                    const alias = LangAliases.resolveFolderAlias(resolvedLoc, userProfile);
+                    if (alias && fs.existsSync(alias)) {
+                        searchRoot = alias;
+                    } else {
+                        const direct = fs.existsSync(resolvedLoc) ? resolvedLoc : path.join(userProfile, resolvedLoc);
+                        if (fs.existsSync(direct)) searchRoot = direct;
+                    }
+                } else {
+                    const FOLDER_MAP = {
+                        "desktop": path.join(userProfile, "Desktop"),
+                        "escritorio": path.join(userProfile, "Desktop"),
+                        "downloads": path.join(userProfile, "Downloads"),
+                        "descargas": path.join(userProfile, "Downloads"),
+                        "documents": path.join(userProfile, "Documents"),
+                        "documentos": path.join(userProfile, "Documents"),
+                    };
+                    const mapped = FOLDER_MAP[(resolvedLoc || "").toLowerCase().trim()];
+                    if (mapped && fs.existsSync(mapped)) searchRoot = mapped;
+                    else if (fs.existsSync(resolvedLoc)) searchRoot = resolvedLoc;
+                }
+            }
+
+            logger.info(`DriveBot._openFile: buscando "${parsedName}" en "${searchRoot}" [tipo: ${typeHint || "cualquiera"}]`);
+
+            if (NLP) {
+                // 1er intento: buscar en la carpeta indicada (o perfil completo)
+                let result = NLP.findBestFile(parsedName, searchRoot, {
+                    typeHint,
+                    maxDepth: resolvedLoc ? 3 : 5,
+                    minScore: 0.25,
+                });
+
+                // 2do intento: si no encontró en carpeta específica, busca en todo el perfil
+                if (!result && resolvedLoc && searchRoot !== userProfile) {
+                    logger.info("DriveBot._openFile: fallback a búsqueda global");
+                    result = NLP.findBestFile(parsedName, userProfile, {
+                        typeHint,
+                        maxDepth: 4,
+                        minScore: 0.32,
+                    });
+                }
+
+                if (result) {
+                    logger.info(`DriveBot._openFile: encontrado "${result.name}" (score: ${result.score})`);
+                    filePath = result.path;
+                } else {
+                    const locHint = resolvedLoc ? ` en "${resolvedLoc}"` : " en tu PC";
+                    return (
+                        `❌ No encontré ningún archivo parecido a **"${parsedName}"**${locHint}.\n\n` +
+                        `💡 Intentá:\n` +
+                        `• Ser más específico: \"abrí 21.mp4 del Desktop\"\n` +
+                        `• Indicar la carpeta: \"abrí tarea desde Documentos\"\n` +
+                        `• Buscar primero: \"buscá ${parsedName}\"`
+                    );
+                }
+            } else {
+                // Fallback sin NLPService
+                const results = [];
+                this._walkSearch(searchRoot, parsedName.toLowerCase(), null, results, 10, 0);
+                if (results.length === 0) return `❌ No encontré "${parsedName}"${resolvedLoc ? ` en "${resolvedLoc}"` : ""}.`;
+                results.sort((a, b) => (b.score || 0) - (a.score || 0));
+                filePath = results[0].path;
+            }
+        }
+
+        // ── Verificar que el archivo existe ──────────────────────────────────
+        if (!fs.existsSync(filePath)) {
+            return `❌ El archivo ya no existe en:\n\`${filePath}\``;
+        }
+
+        const fileName = path.basename(filePath);
+        const ext      = path.extname(filePath).toLowerCase();
+
+        // ── Abrir con la aplicación predeterminada ────────────────────────────
+        return new Promise((resolve) => {
+            // Windows: start "" "ruta" — las comillas vacías son el título de la ventana
+            // Las comillas en la ruta manejan espacios y caracteres especiales
+            const escaped = filePath.replace(/"/g, '\\"');
+            const cmd     = `start "" "${escaped}"`;
+
+            logger.info(`DriveBot._openFile: ejecutando: ${cmd}`);
+
+            exec(cmd, { shell: true }, (err) => {
+                if (err) {
+                    logger.error(`DriveBot._openFile: error al abrir "${filePath}": ${err.message}`);
+                    resolve(
+                        `⚠ No se pudo abrir el archivo automáticamente.\n\n` +
+                        `📄 **${fileName}**\n` +
+                        `📂 \`${filePath}\`\n\n` +
+                        `Abrilo manualmente desde esa ruta.`
+                    );
+                } else {
+                    resolve(`✅ Abriendo **${fileName}** con la aplicación predeterminada.\n📂 \`${path.dirname(filePath)}\``);
+                }
+            });
+        });
     }
 
     /* ── MOVER A DRIVE ──────────────────────────────── */
