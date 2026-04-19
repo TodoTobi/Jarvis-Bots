@@ -330,29 +330,71 @@ router.post("/gemma/analyze", async (req, res) => {
     });
 });
 
+/**
+ * PATCH — sttGemmaRoutes.js → función /api/gemma/canvas
+ *
+ * CAMBIOS vs original:
+ *   1. Importar mermaidSanitizer al inicio del archivo (agregá esta línea)
+ *   2. Reemplazar router.post("/gemma/canvas"...) con esta versión
+ *
+ * ─────────────────────────────────────────────────────
+ * PASO 1: Al inicio de sttGemmaRoutes.js, después de los requires, agregá:
+ *
+ *   const { sanitizeMermaid } = require("../utils/mermaidSanitizer");
+ *
+ * PASO 2: Reemplazá TODO el bloque router.post("/gemma/canvas"...) con esto:
+ * ─────────────────────────────────────────────────────
+ */
+
 /* ══════════════════════════════════════════════════
-   POST /api/gemma/canvas
-   Genera código para el Canvas (diagramas, HTML, gráficos, scripts)
+   POST /api/gemma/canvas  — VERSIÓN CORREGIDA
+   Genera código para el Canvas con sanitización Mermaid
 ══════════════════════════════════════════════════ */
 router.post("/gemma/canvas", async (req, res) => {
     const { prompt, type } = req.body;
     if (!prompt) return res.status(400).json({ success: false, error: "prompt requerido" });
 
+    // Prompts más estrictos para evitar errores de sintaxis
     const typeInstructions = {
-        diagram: `Genera código Mermaid para un diagrama. Responde SOLO con el bloque de código entre \`\`\`mermaid y \`\`\`. Sin explicaciones.`,
+        diagram: `Genera código Mermaid VÁLIDO para un diagrama de flujo.
+REGLAS CRÍTICAS:
+- Usa SOLO letras, números y guiones bajos en los IDs de nodos (ej: nodo1, paso_a)
+- Si el label tiene espacios o caracteres especiales, SIEMPRE usa comillas dobles: A["Mi Label"]
+- NO uses punto y coma al final de las líneas
+- Usa flowchart TD como tipo por defecto
+- Responde SOLO con el bloque entre \`\`\`mermaid y \`\`\`. Sin explicaciones.
+
+Ejemplo correcto:
+\`\`\`mermaid
+flowchart TD
+    A["Inicio del proceso"] --> B["Validar datos"]
+    B --> C{"¿Es válido?"}
+    C -->|"Sí"| D["Procesar"]
+    C -->|"No"| E["Mostrar error"]
+    D --> F["Fin"]
+\`\`\``,
+
         html: `Genera código HTML/CSS/JS completo y funcional. Responde SOLO con el código entre \`\`\`html y \`\`\`. Sin explicaciones.`,
         chart: `Genera código HTML completo con Chart.js para un gráfico. Incluye el HTML completo con el canvas. Responde SOLO con código entre \`\`\`html y \`\`\`.`,
         react: `Genera un componente React funcional. Responde SOLO con código entre \`\`\`jsx y \`\`\`. Sin imports externos excepto React.`,
         svg: `Genera código SVG inline. Responde SOLO con el código SVG entre \`\`\`svg y \`\`\`. Sin explicaciones.`,
         script: `Genera un script ejecutable. Si es Python entre \`\`\`python y \`\`\`, si es bash entre \`\`\`bash y \`\`\`, si es PowerShell entre \`\`\`powershell y \`\`\`. Sin explicaciones extra.`,
         code: `Genera código funcional en el lenguaje más apropiado. Usa los bloques de código correspondientes.`,
-        auto: `Analiza el pedido y genera el tipo más apropiado: Mermaid para diagramas, HTML para interfaces, SVG para ilustraciones, Python/bash para scripts. Usa el bloque de código apropiado.`,
+        auto: `Analiza el pedido y genera el tipo más apropiado.
+- Para diagramas/flows/esquemas: usa Mermaid CON LABELS ENTRE COMILLAS DOBLES si tienen espacios
+- Para interfaces/formularios/páginas: usa HTML
+- Para ilustraciones: usa SVG
+- Para scripts/programas: usa Python o bash
+
+Si usas Mermaid, SIEMPRE envuelve labels con espacios en comillas dobles: A["Mi nodo"]
+Usa el bloque de código apropiado.`,
     };
 
     const systemPrompt = `Eres Jarvis, un generador de contenido visual y código para el canvas.
 ${typeInstructions[type] || typeInstructions.auto}
 Responde SIEMPRE en español cuando hay texto visible en el resultado.
-El código debe ser funcional y auto-contenido.`;
+El código debe ser funcional y auto-contenido.
+IMPORTANTE para Mermaid: labels con espacios SIEMPRE entre comillas dobles.`;
 
     try {
         const result = await callGemmaMultimodal(prompt, systemPrompt, 4096);
@@ -361,23 +403,38 @@ El código debe ser funcional y auto-contenido.`;
         let detectedType = type || "unknown";
         let code = result;
 
-        const mermaidMatch = result.match(/```mermaid\n([\s\S]+?)\n```/);
-        const htmlMatch = result.match(/```html\n([\s\S]+?)\n```/);
-        const svgMatch = result.match(/```svg\n([\s\S]+?)\n```/);
-        const jsxMatch = result.match(/```jsx\n([\s\S]+?)\n```/);
-        const jsMatch = result.match(/```(?:javascript|js)\n([\s\S]+?)\n```/);
-        const pyMatch = result.match(/```python\n([\s\S]+?)\n```/);
-        const bashMatch = result.match(/```bash\n([\s\S]+?)\n```/);
-        const psMatch = result.match(/```(?:powershell|ps1)\n([\s\S]+?)\n```/);
+        const mermaidMatch = result.match(/```mermaid\n([\s\S]+?)\n?```/);
+        const htmlMatch    = result.match(/```html\n([\s\S]+?)\n?```/);
+        const svgMatch     = result.match(/```svg\n([\s\S]+?)\n?```/);
+        const jsxMatch     = result.match(/```jsx\n([\s\S]+?)\n?```/);
+        const jsMatch      = result.match(/```(?:javascript|js)\n([\s\S]+?)\n?```/);
+        const pyMatch      = result.match(/```python\n([\s\S]+?)\n?```/);
+        const bashMatch    = result.match(/```bash\n([\s\S]+?)\n?```/);
+        const psMatch      = result.match(/```(?:powershell|ps1)\n([\s\S]+?)\n?```/);
 
-        if (mermaidMatch) { detectedType = "mermaid"; code = mermaidMatch[1]; }
-        else if (htmlMatch) { detectedType = "html"; code = htmlMatch[1]; }
-        else if (svgMatch) { detectedType = "svg"; code = svgMatch[1]; }
-        else if (jsxMatch) { detectedType = "react"; code = jsxMatch[1]; }
-        else if (pyMatch) { detectedType = "python"; code = pyMatch[1]; }
-        else if (bashMatch) { detectedType = "bash"; code = bashMatch[1]; }
-        else if (psMatch) { detectedType = "powershell"; code = psMatch[1]; }
-        else if (jsMatch) { detectedType = "javascript"; code = jsMatch[1]; }
+        if (mermaidMatch)  { detectedType = "mermaid";     code = mermaidMatch[1]; }
+        else if (htmlMatch){ detectedType = "html";         code = htmlMatch[1]; }
+        else if (svgMatch) { detectedType = "svg";          code = svgMatch[1]; }
+        else if (jsxMatch) { detectedType = "react";        code = jsxMatch[1]; }
+        else if (pyMatch)  { detectedType = "python";       code = pyMatch[1]; }
+        else if (bashMatch){ detectedType = "bash";         code = bashMatch[1]; }
+        else if (psMatch)  { detectedType = "powershell";   code = psMatch[1]; }
+        else if (jsMatch)  { detectedType = "javascript";   code = jsMatch[1]; }
+
+        // ── SANITIZAR MERMAID antes de devolver ──────────────────────────────
+        if (detectedType === "mermaid") {
+            // Importar sanitizer (agregá el require al inicio del archivo)
+            try {
+                const { sanitizeMermaid } = require("../utils/mermaidSanitizer");
+                const cleaned = sanitizeMermaid(code);
+                if (cleaned !== code) {
+                    logger.info(`Canvas: Mermaid sanitizado (${code.length} → ${cleaned.length} chars)`);
+                    code = cleaned;
+                }
+            } catch (sanitizeErr) {
+                logger.warn(`Canvas: no se pudo sanitizar Mermaid: ${sanitizeErr.message}`);
+            }
+        }
 
         res.json({
             success: true,

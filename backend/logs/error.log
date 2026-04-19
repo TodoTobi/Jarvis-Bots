@@ -331,3 +331,5 @@ Require stack:
 [2026-04-19T20:36:53.878Z] [ERROR] Gemma analyze error: Request failed with status code 400
 [2026-04-19T20:36:53.880Z] [ERROR] Gemma upload analyze failed: Request failed with status code 500
 [2026-04-19T21:03:28.623Z] [ERROR] Gemma analyze error: Request failed with status code 400
+[2026-04-19T21:12:32.097Z] [ERROR] [Error] TerminalBot: TerminalBot: 'command' es requerido
+[2026-04-19T21:24:54.853Z] [ERROR] [Error] TerminalBot: TerminalBot: 'command' es requerido

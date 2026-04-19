@@ -1,21 +1,22 @@
 /**
- * uploadRoutes.js — Dedicated upload handler (replaces inline /api/upload in server.js)
+ * uploadRoutes.js — v2 FIXED
  *
- * FIX: server.js has the /api/upload inline but it has a critical bug:
- *   - It treats ALL files as images first, then falls back to Gemini
- *   - PDFs sent with fileType="pdf" were being sent to Gemma's image analyzer
- *   - Error message was "No se proporcionó una imagen válida" for PDFs
+ * PROBLEMA ANTERIOR:
+ *   - PDFs se enviaban como image_url con MIME application/pdf → Gemma los rechazaba
+ *   - Error: "[google/gemma-4-e4b] 'url' field must be a base64 encoded image"
+ *   - No había separación entre imágenes y documentos
  *
- * This version:
- *   1. Reads req.body.fileType ("image" | "pdf") set by the frontend Chat.jsx
- *   2. Routes PDFs directly to PDF analysis (Claude document block or Gemini Docs)
- *   3. Routes images to image analysis (Gemma vision or Gemini Vision)
- *   4. Returns consistent { success, reply, intent, bot } shape
- *   5. Provides clear error messages per file type
+ * FIXES:
+ *   1. PDFs → extracción de texto primero (pdfExtractor) → texto plano a Gemma
+ *   2. Imágenes → siguen como image_url (JPEG/PNG/WEBP solamente)
+ *   3. Si la extracción de texto falla → fallback a Claude o Gemini Docs
+ *   4. Respuestas consistentes { success, reply, intent, bot }
  *
- * Mount in server.js BEFORE the existing inline /api/upload:
- *   const uploadRoutes = require("./routes/uploadRoutes");
- *   app.use("/api", uploadRoutes);
+ * PIPELINE PDF CORRECTO:
+ *   PDF → extraer texto → texto plano → /api/gemma/chat (NO /api/gemma/analyze)
+ *
+ * PIPELINE IMAGEN CORRECTO:
+ *   imagen → base64 JPEG/PNG → image_url → /api/gemma/analyze ✅
  */
 
 const express  = require("express");
@@ -26,10 +27,22 @@ const axios    = require("axios");
 const https    = require("https");
 const logger   = require("../logs/logger");
 
+// Importar extractor de PDF
+let pdfExtractor;
+try {
+    pdfExtractor = require("../utils/pdfExtractor");
+} catch {
+    // Si el archivo no existe todavía, crearemos un fallback inline
+    pdfExtractor = {
+        extractPDFText: async () => null,
+        buildPDFPrompt: (text, q) => `${q || "Analizá este documento"}\n\nContenido:\n${text}`,
+    };
+}
+
 const GEMINI_MODEL = "gemini-2.0-flash";
 const GEMINI_HOST  = "generativelanguage.googleapis.com";
 
-/* ── helpers ──────────────────────────────────────────── */
+/* ── helpers Gemini ──────────────────────────────────────────────────────── */
 
 function callGemini(body, apiKey) {
     return new Promise((resolve, reject) => {
@@ -71,40 +84,40 @@ function callGemini(body, apiKey) {
     });
 }
 
-async function analyzeWithGemma(filePath, mimeType, query, port) {
-    const FormData = require("form-data");
-    const form     = new FormData();
-    form.append("file", fs.createReadStream(filePath), {
-        filename:    path.basename(filePath),
-        contentType: mimeType,
-    });
-    form.append("query", query);
-    const res = await axios.post(
-        `http://localhost:${port}/api/gemma/analyze`,
-        form,
-        { headers: form.getHeaders(), timeout: 120000 }
+/* ── PDF con extracción de texto → Gemma local ──────────────────────────── */
+
+async function analyzePDFWithGemmaText(filePath, query, port) {
+    // 1. Extraer texto del PDF
+    const extractedText = await pdfExtractor.extractPDFText(filePath);
+
+    if (!extractedText) {
+        throw new Error(
+            "No se pudo extraer texto del PDF.\n" +
+            "Instalá pdf-parse: npm install pdf-parse\n" +
+            "O bien instalá poppler: apt install poppler-utils"
+        );
+    }
+
+    // 2. Construir prompt con el texto extraído
+    const prompt = pdfExtractor.buildPDFPrompt(extractedText, query);
+
+    logger.info(`analyzePDFWithGemmaText: ${extractedText.length} chars → Gemma`);
+
+    // 3. Enviar como texto plano a Gemma (NO como image_url)
+    const response = await axios.post(
+        `http://localhost:${port}/api/gemma/chat`,
+        {
+            message: prompt,
+            context: "Eres Jarvis, un analizador de documentos. Respondés en español rioplatense con análisis detallado.",
+        },
+        { timeout: 120000 }
     );
-    return res.data;
+
+    const reply = response.data?.reply || "Sin respuesta";
+    return { success: true, reply, intent: "document_analysis", bot: "GemmaBot" };
 }
 
-async function analyzeImageWithGemini(filePath, mimeType, query) {
-    const visionKey = process.env.GEMINI_VISION_KEY || process.env.GEMINI_DOCS_KEY;
-    if (!visionKey) throw new Error("GEMINI_VISION_KEY no configurada");
-    const base64 = fs.readFileSync(filePath).toString("base64");
-    const text = await callGemini(
-        {
-            contents: [{
-                parts: [
-                    { inline_data: { mime_type: mimeType, data: base64 } },
-                    { text: query },
-                ],
-            }],
-            generationConfig: { temperature: 0.3, maxOutputTokens: 2048 },
-        },
-        visionKey
-    );
-    return { success: true, reply: text, intent: "image_analysis", bot: "GeminiBot" };
-}
+/* ── PDF con Gemini (fallback si Gemma falla) ───────────────────────────── */
 
 async function analyzePDFWithGemini(filePath, query) {
     const docsKey = process.env.GEMINI_DOCS_KEY || process.env.GEMINI_VISION_KEY;
@@ -125,6 +138,8 @@ async function analyzePDFWithGemini(filePath, query) {
     return { success: true, reply: text, intent: "document_analysis", bot: "GeminiBot" };
 }
 
+/* ── PDF con Claude (mejor opción si está configurado) ──────────────────── */
+
 async function analyzePDFWithClaude(filePath, query) {
     const visionKey = process.env.VISION_API_KEY;
     if (!visionKey) throw new Error("VISION_API_KEY no configurada");
@@ -132,7 +147,7 @@ async function analyzePDFWithClaude(filePath, query) {
     const response = await axios.post(
         "https://api.anthropic.com/v1/messages",
         {
-            model: "claude-opus-4-6",
+            model: "claude-sonnet-4-6",
             max_tokens: 2000,
             messages: [{
                 role: "user",
@@ -158,7 +173,54 @@ async function analyzePDFWithClaude(filePath, query) {
     return { success: true, reply: text, intent: "document_analysis", bot: "ClaudeBot" };
 }
 
-/* ── route ────────────────────────────────────────────── */
+/* ── Imagen con Gemma (análisis visual correcto) ────────────────────────── */
+
+async function analyzeImageWithGemma(filePath, mimeType, query, port) {
+    // Verificar que sea un MIME de imagen válido para Gemma
+    const validImageMimes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
+    const safeMime = validImageMimes.includes(mimeType) ? mimeType : "image/jpeg";
+
+    const FormData = require("form-data");
+    const form     = new FormData();
+    form.append("file", fs.createReadStream(filePath), {
+        filename:    path.basename(filePath),
+        contentType: safeMime,  // ← SIEMPRE imagen válida, nunca application/pdf
+    });
+    form.append("query", query);
+
+    const res = await axios.post(
+        `http://localhost:${port}/api/gemma/analyze`,
+        form,
+        { headers: form.getHeaders(), timeout: 120000 }
+    );
+    return res.data;
+}
+
+/* ── Imagen con Gemini Vision (fallback) ────────────────────────────────── */
+
+async function analyzeImageWithGemini(filePath, mimeType, query) {
+    const visionKey = process.env.GEMINI_VISION_KEY || process.env.GEMINI_DOCS_KEY;
+    if (!visionKey) throw new Error("GEMINI_VISION_KEY no configurada");
+    const base64 = fs.readFileSync(filePath).toString("base64");
+    const safeMime = mimeType.startsWith("image/") ? mimeType : "image/jpeg";
+    const text = await callGemini(
+        {
+            contents: [{
+                parts: [
+                    { inline_data: { mime_type: safeMime, data: base64 } },
+                    { text: query },
+                ],
+            }],
+            generationConfig: { temperature: 0.3, maxOutputTokens: 2048 },
+        },
+        visionKey
+    );
+    return { success: true, reply: text, intent: "image_analysis", bot: "GeminiBot" };
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ROUTE PRINCIPAL: POST /api/upload
+══════════════════════════════════════════════════════════════════════════ */
 
 router.post("/upload", (req, res, next) => {
     let multer;
@@ -186,91 +248,108 @@ router.post("/upload", (req, res, next) => {
 
         const filePath  = req.file.path;
         const mimeType  = req.file.mimetype || "application/octet-stream";
-        const fileType  = (req.body?.fileType || "").toLowerCase(); // "image" | "pdf" set by frontend
+        const fileType  = (req.body?.fileType || "").toLowerCase();
         const query     = req.body?.query || "";
         const port      = process.env.PORT || 3001;
-        const isPDF     = fileType === "pdf" || mimeType === "application/pdf";
-        const isImage   = fileType === "image" || mimeType.startsWith("image/");
-        const provider  = process.env.VISION_PROVIDER || "claude";
 
-        logger.info(`Upload: ${isPDF ? "PDF" : isImage ? "image" : mimeType} | query: "${query.substring(0, 60)}"`);
+        // Determinar tipo real
+        const isPDF   = fileType === "pdf" || mimeType === "application/pdf" || filePath.endsWith(".pdf");
+        const isImage = !isPDF && (fileType === "image" || mimeType.startsWith("image/"));
 
-        const cleanup = () => { try { fs.unlinkSync(filePath); } catch { } };
+        const defaultPDFQuery  = query || "Resumí y analizá este PDF detalladamente. Extraé los puntos clave, estructura y datos importantes.";
+        const defaultImgQuery  = query || "Describí detalladamente el contenido de esta imagen. ¿Qué se ve? ¿Qué texto hay? ¿Qué contexto inferís?";
 
-        const defaultQuery = isPDF
-            ? (query || "Resumí y analizá este PDF detalladamente. Extraé los puntos clave, estructura y datos importantes.")
-            : (query || "Describí detalladamente el contenido de esta imagen. ¿Qué se ve? ¿Qué texto hay? ¿Qué contexto inferís?");
+        const cleanup = () => { try { fs.unlinkSync(filePath); } catch {} };
+
+        logger.info(`Upload v2: ${isPDF ? "PDF" : isImage ? "imagen" : mimeType} | ${req.file.originalname}`);
 
         try {
-            let result;
-
             if (isPDF) {
-                // ── PDF pipeline ───────────────────────────────────────────
-                // Priority: Claude (native PDF) > Gemini Docs > Gemma local
-                if (provider === "claude" && process.env.VISION_API_KEY) {
+                // ════════════════════════════════════════════════════════
+                // PIPELINE PDF — CORRECTO
+                // Orden: texto+Gemma → Claude → Gemini → error
+                // NUNCA enviar como image_url
+                // ════════════════════════════════════════════════════════
+
+                // Paso 1: Extraer texto → Gemma (sin tocar image_url)
+                if (process.env.LM_API_URL) {
                     try {
-                        result = await analyzePDFWithClaude(filePath, defaultQuery);
+                        const result = await analyzePDFWithGemmaText(filePath, defaultPDFQuery, port);
+                        cleanup();
+                        return res.json(result);
+                    } catch (gemmaErr) {
+                        logger.warn(`PDF Gemma texto falló (${gemmaErr.message}), probando Claude...`);
+                    }
+                }
+
+                // Paso 2: Claude (soporta PDF nativo)
+                if (process.env.VISION_API_KEY) {
+                    try {
+                        const result = await analyzePDFWithClaude(filePath, defaultPDFQuery);
                         cleanup();
                         return res.json(result);
                     } catch (claudeErr) {
-                        logger.warn(`Claude PDF failed (${claudeErr.message}), trying Gemini Docs...`);
+                        logger.warn(`PDF Claude falló (${claudeErr.message}), probando Gemini...`);
                     }
                 }
+
+                // Paso 3: Gemini Docs
                 if (process.env.GEMINI_DOCS_KEY || process.env.GEMINI_VISION_KEY) {
                     try {
-                        result = await analyzePDFWithGemini(filePath, defaultQuery);
+                        const result = await analyzePDFWithGemini(filePath, defaultPDFQuery);
                         cleanup();
                         return res.json(result);
                     } catch (geminiErr) {
-                        logger.warn(`Gemini PDF failed (${geminiErr.message}), trying Gemma...`);
+                        logger.warn(`PDF Gemini falló: ${geminiErr.message}`);
                     }
                 }
-                // Gemma local fallback
-                try {
-                    result = await analyzeWithGemma(filePath, "application/pdf", defaultQuery, port);
-                    cleanup();
-                    return res.json(result);
-                } catch (gemmaErr) {
-                    cleanup();
-                    return res.status(500).json({
-                        success: false,
-                        error: `No se pudo analizar el PDF. Configurá GEMINI_DOCS_KEY o VISION_API_KEY (Claude) en .env. Error: ${gemmaErr.message}`,
-                        hint: "Opciones: 1) GEMINI_DOCS_KEY=tu_clave  2) VISION_API_KEY=tu_clave_anthropic + VISION_PROVIDER=claude",
-                    });
-                }
+
+                cleanup();
+                return res.status(500).json({
+                    success: false,
+                    error: "No se pudo analizar el PDF. Instala pdf-parse para habilitarlo con Gemma local:\n  npm install pdf-parse",
+                    hint: "Opciones:\n1) npm install pdf-parse (recomendado)\n2) GEMINI_DOCS_KEY=tu_clave\n3) VISION_API_KEY=tu_clave_anthropic",
+                });
+
             } else if (isImage) {
-                // ── Image pipeline ─────────────────────────────────────────
-                // Priority: Gemma local > Gemini Vision > Claude Vision
+                // ════════════════════════════════════════════════════════
+                // PIPELINE IMAGEN — image_url con MIME válido
+                // Orden: Gemma → Gemini → Claude → error
+                // ════════════════════════════════════════════════════════
+
                 if (process.env.LM_API_URL) {
                     try {
-                        result = await analyzeWithGemma(filePath, mimeType, defaultQuery, port);
+                        const result = await analyzeImageWithGemma(filePath, mimeType, defaultImgQuery, port);
                         if (result?.success) { cleanup(); return res.json(result); }
-                    } catch (gemmaErr) {
-                        logger.warn(`Gemma image failed (${gemmaErr.message}), trying Gemini...`);
+                    } catch (err) {
+                        logger.warn(`Imagen Gemma falló (${err.message}), probando Gemini...`);
                     }
                 }
+
                 if (process.env.GEMINI_VISION_KEY) {
                     try {
-                        result = await analyzeImageWithGemini(filePath, mimeType, defaultQuery);
+                        const result = await analyzeImageWithGemini(filePath, mimeType, defaultImgQuery);
                         cleanup();
                         return res.json(result);
-                    } catch (geminiErr) {
-                        logger.warn(`Gemini image failed (${geminiErr.message}), trying Claude...`);
+                    } catch (err) {
+                        logger.warn(`Imagen Gemini falló: ${err.message}`);
                     }
                 }
-                if (provider === "claude" && process.env.VISION_API_KEY) {
+
+                if (process.env.VISION_API_KEY) {
                     try {
                         const base64 = fs.readFileSync(filePath).toString("base64");
+                        const safeMime = mimeType.startsWith("image/") ? mimeType : "image/jpeg";
                         const response = await axios.post(
                             "https://api.anthropic.com/v1/messages",
                             {
-                                model: "claude-opus-4-6",
+                                model: "claude-sonnet-4-6",
                                 max_tokens: 1500,
                                 messages: [{
                                     role: "user",
                                     content: [
-                                        { type: "image", source: { type: "base64", media_type: mimeType, data: base64 } },
-                                        { type: "text", text: defaultQuery },
+                                        { type: "image", source: { type: "base64", media_type: safeMime, data: base64 } },
+                                        { type: "text", text: defaultImgQuery },
                                     ],
                                 }],
                             },
@@ -286,8 +365,8 @@ router.post("/upload", (req, res, next) => {
                         const text = response.data?.content?.[0]?.text || "Sin respuesta";
                         cleanup();
                         return res.json({ success: true, reply: text, intent: "image_analysis", bot: "ClaudeBot" });
-                    } catch (claudeErr) {
-                        logger.warn(`Claude image failed: ${claudeErr.message}`);
+                    } catch (err) {
+                        logger.warn(`Imagen Claude falló: ${err.message}`);
                     }
                 }
 
@@ -295,16 +374,16 @@ router.post("/upload", (req, res, next) => {
                 return res.status(500).json({
                     success: false,
                     error: "No se pudo analizar la imagen. Configurá GEMINI_VISION_KEY o VISION_API_KEY en .env.",
-                    hint: "Opciones: 1) GEMINI_VISION_KEY=tu_clave_google  2) VISION_API_KEY=tu_clave_anthropic + VISION_PROVIDER=claude",
                 });
+
             } else {
-                // Unknown type
                 cleanup();
                 return res.status(400).json({
                     success: false,
                     error: `Tipo de archivo no soportado: ${mimeType}. Usá imágenes (PNG, JPG, WEBP) o PDF.`,
                 });
             }
+
         } catch (err) {
             cleanup();
             logger.error(`Upload handler error: ${err.message}`);

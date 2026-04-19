@@ -23285,3 +23285,295 @@ Lo siento, pero no " → search_web:{"query":"terms that might help you find wha
 [2026-04-19T21:08:07.673Z] [INFO] GET /api/history/projects
 [2026-04-19T21:08:07.675Z] [INFO] GET /api/doctor/scan
 [2026-04-19T21:08:07.768Z] [INFO] InstructionLoader: memory.md trimmed from 5598B to ~5000B
+[2026-04-19T21:08:22.665Z] [INFO] GET /api/history/status
+[2026-04-19T21:08:22.667Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:08:22.668Z] [INFO] GET /api/history/projects
+[2026-04-19T21:08:45.248Z] [INFO] GET /api/history/status
+[2026-04-19T21:08:45.252Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:08:45.255Z] [INFO] GET /api/history/projects
+[2026-04-19T21:08:45.258Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:08:45.365Z] [INFO] InstructionLoader: memory.md trimmed from 5598B to ~5000B
+[2026-04-19T21:08:51.949Z] [INFO] GET /api/history/status
+[2026-04-19T21:08:51.951Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:08:51.955Z] [INFO] GET /api/history/projects
+[2026-04-19T21:08:58.549Z] [INFO] POST /api/chat
+[2026-04-19T21:08:58.550Z] [INFO] Chat: "hazme un diagrama explciandome el funcionamiento de google drive"
+[2026-04-19T21:08:58.550Z] [INFO] QuickClassify: "hazme un diagrama explciandome el funcionamiento de google d" → canvas_generate:{"prompt":"hazme un diagrama explciandome el funcionamiento de google drive","ty
+[2026-04-19T21:08:58.551Z] [INFO] Intent: canvas_generate
+[2026-04-19T21:08:58.552Z] [INFO] [Intent] "canvas_generate" | params: {"prompt":"hazme un diagrama explciandome el funcionamiento de google drive","type":"diagram","question":"hazme un diagr
+[2026-04-19T21:08:58.557Z] [INFO] POST /api/gemma/canvas
+[2026-04-19T21:09:06.946Z] [INFO] GET /api/history/status
+[2026-04-19T21:09:06.947Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:09:06.950Z] [INFO] GET /api/history/projects
+[2026-04-19T21:09:06.952Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:09:07.066Z] [INFO] InstructionLoader: memory.md trimmed from 5598B to ~5000B
+[2026-04-19T21:09:10.066Z] [INFO] Chat done in 11516ms | intent=canvas_generate | type=artifact
+[2026-04-19T21:09:10.074Z] [INFO] InstructionLoader: memory.md trimmed from 5406B to ~5000B
+[2026-04-19T21:09:21.946Z] [INFO] GET /api/history/status
+[2026-04-19T21:09:21.948Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:09:21.950Z] [INFO] GET /api/history/projects
+[2026-04-19T21:09:36.947Z] [INFO] GET /api/history/status
+[2026-04-19T21:09:36.948Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:09:36.950Z] [INFO] GET /api/history/projects
+[2026-04-19T21:09:36.952Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:09:37.025Z] [INFO] InstructionLoader: memory.md trimmed from 5597B to ~5000B
+[2026-04-19T21:09:51.948Z] [INFO] GET /api/history/status
+[2026-04-19T21:09:51.949Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:09:51.951Z] [INFO] GET /api/history/projects
+[2026-04-19T21:10:06.948Z] [INFO] GET /api/history/status
+[2026-04-19T21:10:06.950Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:10:06.954Z] [INFO] GET /api/history/projects
+[2026-04-19T21:10:06.955Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:10:07.028Z] [INFO] InstructionLoader: memory.md trimmed from 5599B to ~5000B
+[2026-04-19T21:10:21.949Z] [INFO] GET /api/history/status
+[2026-04-19T21:10:21.951Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:10:21.953Z] [INFO] GET /api/history/projects
+[2026-04-19T21:10:36.948Z] [INFO] GET /api/history/status
+[2026-04-19T21:10:36.950Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:10:36.952Z] [INFO] GET /api/history/projects
+[2026-04-19T21:10:36.953Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:10:37.033Z] [INFO] InstructionLoader: memory.md trimmed from 5599B to ~5000B
+[2026-04-19T21:10:51.950Z] [INFO] GET /api/history/status
+[2026-04-19T21:10:51.951Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:10:51.953Z] [INFO] GET /api/history/projects
+[2026-04-19T21:11:06.948Z] [INFO] GET /api/history/status
+[2026-04-19T21:11:06.950Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:11:06.953Z] [INFO] GET /api/history/projects
+[2026-04-19T21:11:06.955Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:11:07.030Z] [INFO] InstructionLoader: memory.md trimmed from 5599B to ~5000B
+[2026-04-19T21:11:21.946Z] [INFO] GET /api/history/status
+[2026-04-19T21:11:21.947Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:11:21.949Z] [INFO] GET /api/history/projects
+[2026-04-19T21:11:36.946Z] [INFO] GET /api/history/status
+[2026-04-19T21:11:36.948Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:11:36.950Z] [INFO] GET /api/history/projects
+[2026-04-19T21:11:36.951Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:11:37.024Z] [INFO] InstructionLoader: memory.md trimmed from 5599B to ~5000B
+[2026-04-19T21:11:51.949Z] [INFO] GET /api/history/status
+[2026-04-19T21:11:51.951Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:11:51.953Z] [INFO] GET /api/history/projects
+[2026-04-19T21:12:06.946Z] [INFO] GET /api/history/status
+[2026-04-19T21:12:06.948Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:12:06.950Z] [INFO] GET /api/history/projects
+[2026-04-19T21:12:06.951Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:12:07.030Z] [INFO] InstructionLoader: memory.md trimmed from 5596B to ~5000B
+[2026-04-19T21:12:22.669Z] [INFO] GET /api/history/status
+[2026-04-19T21:12:22.670Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:12:22.672Z] [INFO] GET /api/history/projects
+[2026-04-19T21:12:32.090Z] [INFO] POST /api/chat
+[2026-04-19T21:12:32.091Z] [INFO] Chat: "abre yotuube"
+[2026-04-19T21:12:32.094Z] [INFO] QuickClassify: "abre yotuube" → bat_exec:{"script":"media_youtube","args":[]}
+[2026-04-19T21:12:32.095Z] [INFO] Intent: bat_exec
+[2026-04-19T21:12:32.095Z] [INFO] [Aliases] Corregido: "abre yotuube" → "abrí yotuube"
+[2026-04-19T21:12:32.096Z] [INFO] [Intent] "bat_exec" | params: {"script":"media_youtube","args":[],"_originalMessage":"abre yotuube"}
+[2026-04-19T21:12:32.097Z] [INFO] TerminalBot: action="exec" command=""
+[2026-04-19T21:12:32.098Z] [INFO] DoctorBot diagnosing: TerminalBot → TerminalBot: 'command' es requerido
+[2026-04-19T21:12:32.099Z] [INFO] DoctorBot diagnosis complete for TerminalBot
+[2026-04-19T21:12:33.404Z] [INFO] Chat done in 1313ms | intent=bat_exec | type=text
+[2026-04-19T21:12:33.410Z] [INFO] InstructionLoader: memory.md trimmed from 5416B to ~5000B
+[2026-04-19T21:12:36.946Z] [INFO] GET /api/history/status
+[2026-04-19T21:12:36.947Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:12:36.948Z] [INFO] GET /api/history/projects
+[2026-04-19T21:12:36.950Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:12:37.022Z] [INFO] InstructionLoader: memory.md trimmed from 5652B to ~5000B
+[2026-04-19T21:12:52.667Z] [INFO] GET /api/history/status
+[2026-04-19T21:12:52.668Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:12:52.670Z] [INFO] GET /api/history/projects
+[2026-04-19T21:13:07.666Z] [INFO] GET /api/history/status
+[2026-04-19T21:13:07.668Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:13:07.669Z] [INFO] GET /api/history/projects
+[2026-04-19T21:13:07.671Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:13:07.744Z] [INFO] InstructionLoader: memory.md trimmed from 5652B to ~5000B
+[2026-04-19T21:13:22.664Z] [INFO] GET /api/history/status
+[2026-04-19T21:13:22.665Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:13:22.667Z] [INFO] GET /api/history/projects
+[2026-04-19T21:13:37.658Z] [INFO] GET /api/history/status
+[2026-04-19T21:13:37.659Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:13:37.661Z] [INFO] GET /api/history/projects
+[2026-04-19T21:13:37.663Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:13:37.738Z] [INFO] InstructionLoader: memory.md trimmed from 5650B to ~5000B
+[2026-04-19T21:13:52.657Z] [INFO] GET /api/history/status
+[2026-04-19T21:13:52.659Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:13:52.662Z] [INFO] GET /api/history/projects
+[2026-04-19T21:14:07.658Z] [INFO] GET /api/history/status
+[2026-04-19T21:14:07.660Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:14:07.663Z] [INFO] GET /api/history/projects
+[2026-04-19T21:14:07.664Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:14:07.748Z] [INFO] InstructionLoader: memory.md trimmed from 5651B to ~5000B
+[2026-04-19T21:14:22.660Z] [INFO] GET /api/history/status
+[2026-04-19T21:14:22.662Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:14:22.665Z] [INFO] GET /api/history/projects
+[2026-04-19T21:14:37.665Z] [INFO] GET /api/history/status
+[2026-04-19T21:14:37.667Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:14:37.668Z] [INFO] GET /api/history/projects
+[2026-04-19T21:14:37.670Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:14:37.747Z] [INFO] InstructionLoader: memory.md trimmed from 5651B to ~5000B
+[2026-04-19T21:15:34.672Z] [INFO] GET /api/history/status
+[2026-04-19T21:15:34.674Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:15:34.678Z] [INFO] GET /api/history/projects
+[2026-04-19T21:15:34.681Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:15:34.763Z] [INFO] InstructionLoader: memory.md trimmed from 5649B to ~5000B
+[2026-04-19T21:16:34.668Z] [INFO] GET /api/history/status
+[2026-04-19T21:16:34.670Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:16:34.673Z] [INFO] GET /api/history/projects
+[2026-04-19T21:16:34.676Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:16:34.771Z] [INFO] InstructionLoader: memory.md trimmed from 5649B to ~5000B
+[2026-04-19T21:17:34.672Z] [INFO] GET /api/history/status
+[2026-04-19T21:17:34.677Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:17:34.683Z] [INFO] GET /api/history/projects
+[2026-04-19T21:17:34.687Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:17:34.790Z] [INFO] InstructionLoader: memory.md trimmed from 5649B to ~5000B
+[2026-04-19T21:18:34.668Z] [INFO] GET /api/history/status
+[2026-04-19T21:18:34.670Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:18:34.673Z] [INFO] GET /api/history/projects
+[2026-04-19T21:18:34.675Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:18:34.764Z] [INFO] InstructionLoader: memory.md trimmed from 5647B to ~5000B
+[2026-04-19T21:19:34.672Z] [INFO] GET /api/history/status
+[2026-04-19T21:19:34.674Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:19:34.678Z] [INFO] GET /api/history/projects
+[2026-04-19T21:19:34.679Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:19:34.765Z] [INFO] InstructionLoader: memory.md trimmed from 5649B to ~5000B
+[2026-04-19T21:20:34.660Z] [INFO] GET /api/history/status
+[2026-04-19T21:20:34.662Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:20:34.664Z] [INFO] GET /api/history/projects
+[2026-04-19T21:20:34.666Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:20:34.767Z] [INFO] InstructionLoader: memory.md trimmed from 5649B to ~5000B
+[2026-04-19T21:21:34.663Z] [INFO] GET /api/history/status
+[2026-04-19T21:21:34.665Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:21:34.668Z] [INFO] GET /api/history/projects
+[2026-04-19T21:21:34.670Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:21:34.744Z] [INFO] InstructionLoader: memory.md trimmed from 5649B to ~5000B
+[2026-04-19T21:22:33.461Z] [INFO] InstructionLoader: loaded 8 md files from C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\md
+[2026-04-19T21:22:33.464Z] [INFO] InstructionLoader: memory.md trimmed from 5062B to ~5000B
+[2026-04-19T21:22:33.908Z] [INFO] BotManager: NLPService cargado
+[2026-04-19T21:22:33.909Z] [INFO] BatBot: whitelist loaded (37 scripts)
+[2026-04-19T21:22:33.911Z] [INFO] NetBot: 2 devices loaded
+[2026-04-19T21:22:33.911Z] [INFO] NetBot: ADB from ADB_PATH: C:\Users\usuario\Desktop\platform-tools\adb.exe
+[2026-04-19T21:22:33.912Z] [INFO] DriveBot: Drive Sync folder → C:\Users\usuario\Desktop\Jarvis Drive
+[2026-04-19T21:22:33.913Z] [INFO] BotManager v6 initialized. Bots: WebBot, DoctorBot, BatBot, MediaBot, NetBot, WhatsAppBot, ComputerBot, VisionBot, SearchBot, DriveBot, TerminalBot, GoogleDocsBot
+[2026-04-19T21:22:33.978Z] [INFO] Upload fallback enabled (Gemma 4 only)
+[2026-04-19T21:22:33.983Z] [INFO] JarvisCore backend running on http://localhost:3001
+[2026-04-19T21:22:33.983Z] [INFO] Routes: /api/chat | /api/upload | /api/gemma | /api/terminal | etc
+[2026-04-19T21:22:34.000Z] [INFO] ModelService: connected. Models: google/gemma-4-e4b, meta-llama-3.1-8b-instruct, liquid/lfm2.5-1.2b, text-embedding-nomic-embed-text-v1.5
+[2026-04-19T21:22:34.334Z] [INFO] SupabaseService: conectado ✅ → https://eznjcwfpvrurfdydpell.supabase.co
+[2026-04-19T21:22:34.678Z] [INFO] GET /api/history/status
+[2026-04-19T21:22:34.688Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:22:34.691Z] [INFO] GET /api/history/projects
+[2026-04-19T21:22:34.694Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:22:34.796Z] [INFO] InstructionLoader: memory.md trimmed from 5591B to ~5000B
+[2026-04-19T21:22:36.948Z] [INFO] GET /api/history/status
+[2026-04-19T21:22:36.951Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:22:36.954Z] [INFO] GET /api/history/projects
+[2026-04-19T21:22:36.959Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:22:37.073Z] [INFO] InstructionLoader: memory.md trimmed from 5593B to ~5000B
+[2026-04-19T21:22:38.029Z] [INFO] GET /api/history/status
+[2026-04-19T21:22:38.031Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:22:38.033Z] [INFO] GET /api/history/projects
+[2026-04-19T21:22:38.035Z] [INFO] GET /api/health
+[2026-04-19T21:22:38.037Z] [INFO] GET /api/bots
+[2026-04-19T21:22:38.040Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:22:38.144Z] [INFO] InstructionLoader: memory.md trimmed from 5593B to ~5000B
+[2026-04-19T21:22:38.161Z] [INFO] GET /api/health/model
+[2026-04-19T21:22:38.205Z] [INFO] GET /api/health
+[2026-04-19T21:22:38.221Z] [INFO] GET /api/health/model
+[2026-04-19T21:22:38.225Z] [INFO] GET /api/whatsapp/qr
+[2026-04-19T21:22:38.233Z] [INFO] GET /api/history/status
+[2026-04-19T21:22:38.240Z] [INFO] GET /api/whatsapp/qr
+[2026-04-19T21:22:38.264Z] [INFO] GET /api/history/status
+[2026-04-19T21:22:39.405Z] [INFO] GET /api/history/conversations/ea8549fc-0a71-47ed-86f7-a474fd282c10/messages
+[2026-04-19T21:22:45.087Z] [INFO] DELETE /api/history/conversations/ea8549fc-0a71-47ed-86f7-a474fd282c10
+[2026-04-19T21:22:45.362Z] [INFO] GET /api/history/status
+[2026-04-19T21:22:45.363Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:22:45.365Z] [INFO] GET /api/history/projects
+[2026-04-19T21:22:45.829Z] [INFO] POST /api/history/conversations
+[2026-04-19T21:22:46.059Z] [INFO] GET /api/history/status
+[2026-04-19T21:22:46.061Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:22:46.062Z] [INFO] GET /api/history/projects
+[2026-04-19T21:22:46.279Z] [INFO] GET /api/history/conversations/70ffc014-3d6b-4ede-8ab4-21af60b4a093/messages
+[2026-04-19T21:22:48.421Z] [INFO] GET /api/history/status
+[2026-04-19T21:22:48.424Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:22:48.427Z] [INFO] GET /api/history/projects
+[2026-04-19T21:22:48.430Z] [INFO] GET /api/health
+[2026-04-19T21:22:48.433Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:22:48.459Z] [INFO] GET /api/bots
+[2026-04-19T21:22:48.461Z] [INFO] GET /api/health/model
+[2026-04-19T21:22:48.483Z] [INFO] GET /api/health
+[2026-04-19T21:22:48.485Z] [INFO] GET /api/whatsapp/qr
+[2026-04-19T21:22:48.488Z] [INFO] GET /api/health/model
+[2026-04-19T21:22:48.492Z] [INFO] GET /api/history/status
+[2026-04-19T21:22:48.508Z] [INFO] GET /api/whatsapp/qr
+[2026-04-19T21:22:48.513Z] [INFO] GET /api/history/status
+[2026-04-19T21:22:48.542Z] [INFO] InstructionLoader: memory.md trimmed from 5593B to ~5000B
+[2026-04-19T21:22:49.532Z] [INFO] POST /api/history/conversations
+[2026-04-19T21:22:49.741Z] [INFO] GET /api/history/status
+[2026-04-19T21:22:49.743Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:22:49.745Z] [INFO] GET /api/history/projects
+[2026-04-19T21:22:49.966Z] [INFO] GET /api/history/conversations/6c736f9c-792c-4781-b8e1-261a12f9f41d/messages
+[2026-04-19T21:22:54.392Z] [INFO] POST /api/chat
+[2026-04-19T21:22:54.393Z] [INFO] Chat: "hazme un diagrama explciandome el funcionamiento de google drive"
+[2026-04-19T21:22:54.396Z] [INFO] QuickClassify: "hazme un diagrama explciandome el funcionamiento de google d" → canvas_generate:{"prompt":"hazme un diagrama explciandome el funcionamiento de google drive","ty
+[2026-04-19T21:22:54.396Z] [INFO] Intent: canvas_generate
+[2026-04-19T21:22:54.398Z] [INFO] [Intent] "canvas_generate" | params: {"prompt":"hazme un diagrama explciandome el funcionamiento de google drive","type":"diagram","question":"hazme un diagr
+[2026-04-19T21:22:54.403Z] [INFO] POST /api/gemma/canvas
+[2026-04-19T21:23:03.419Z] [INFO] GET /api/history/status
+[2026-04-19T21:23:03.420Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:23:03.424Z] [INFO] GET /api/history/projects
+[2026-04-19T21:23:05.764Z] [INFO] Canvas: Mermaid sanitizado (1467 → 1442 chars)
+[2026-04-19T21:23:06.620Z] [INFO] Chat done in 12227ms | intent=canvas_generate | type=artifact
+[2026-04-19T21:23:06.628Z] [INFO] InstructionLoader: memory.md trimmed from 5401B to ~5000B
+[2026-04-19T21:23:18.423Z] [INFO] GET /api/history/status
+[2026-04-19T21:23:18.425Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:23:18.427Z] [INFO] GET /api/history/projects
+[2026-04-19T21:23:18.429Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:23:18.514Z] [INFO] InstructionLoader: memory.md trimmed from 5594B to ~5000B
+[2026-04-19T21:23:29.156Z] [INFO] POST /api/upload
+[2026-04-19T21:23:29.168Z] [INFO] Upload v2: PDF | Calefon y cocina (1).pdf
+[2026-04-19T21:23:29.361Z] [WARN] pdfExtractor: ningún método pudo extraer texto del PDF
+[2026-04-19T21:23:29.362Z] [WARN] PDF Gemma texto falló (No se pudo extraer texto del PDF.
+Instalá pdf-parse: npm install pdf-parse
+O bien instalá poppler: apt install poppler-utils), probando Claude...
+[2026-04-19T21:23:29.665Z] [WARN] PDF Claude falló (Request failed with status code 401), probando Gemini...
+[2026-04-19T21:23:30.917Z] [WARN] PDF Gemini falló: API key not valid. Please pass a valid API key.
+[2026-04-19T21:23:33.427Z] [INFO] GET /api/history/status
+[2026-04-19T21:23:33.429Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:23:33.431Z] [INFO] GET /api/history/projects
+[2026-04-19T21:23:36.514Z] [INFO] POST /api/upload
+[2026-04-19T21:23:36.556Z] [INFO] Upload v2: imagen | unnamed (1).png
+[2026-04-19T21:23:36.562Z] [INFO] POST /api/gemma/analyze
+[2026-04-19T21:23:36.603Z] [INFO] Gemma analyze: image/png (6654KB)
+[2026-04-19T21:23:48.672Z] [INFO] GET /api/history/status
+[2026-04-19T21:23:48.675Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:23:48.677Z] [INFO] GET /api/history/projects
+[2026-04-19T21:23:48.679Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:23:48.771Z] [INFO] InstructionLoader: memory.md trimmed from 5594B to ~5000B
+[2026-04-19T21:24:00.685Z] [INFO] Gemma analyze: respuesta 4069 chars
+[2026-04-19T21:24:03.667Z] [INFO] GET /api/history/status
+[2026-04-19T21:24:03.669Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:24:03.672Z] [INFO] GET /api/history/projects
+[2026-04-19T21:24:18.422Z] [INFO] GET /api/history/status
+[2026-04-19T21:24:18.424Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:24:18.426Z] [INFO] GET /api/history/projects
+[2026-04-19T21:24:18.428Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:24:18.517Z] [INFO] InstructionLoader: memory.md trimmed from 5596B to ~5000B
+[2026-04-19T21:24:33.667Z] [INFO] GET /api/history/status
+[2026-04-19T21:24:33.668Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:24:33.670Z] [INFO] GET /api/history/projects
+[2026-04-19T21:24:48.422Z] [INFO] GET /api/history/status
+[2026-04-19T21:24:48.424Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:24:48.426Z] [INFO] GET /api/history/projects
+[2026-04-19T21:24:48.428Z] [INFO] GET /api/doctor/scan
+[2026-04-19T21:24:48.517Z] [INFO] InstructionLoader: memory.md trimmed from 5596B to ~5000B
+[2026-04-19T21:24:54.843Z] [INFO] POST /api/chat
+[2026-04-19T21:24:54.844Z] [INFO] Chat: "abre youtube"
+[2026-04-19T21:24:54.848Z] [INFO] QuickClassify: "abre youtube" → bat_exec:{"script":"media_youtube","args":[]}
+[2026-04-19T21:24:54.849Z] [INFO] Intent: bat_exec
+[2026-04-19T21:24:54.850Z] [INFO] [Aliases] Corregido: "abre youtube" → "abrí youtube"
+[2026-04-19T21:24:54.851Z] [INFO] [Intent] "bat_exec" | params: {"script":"media_youtube","args":[],"_originalMessage":"abre youtube"}
+[2026-04-19T21:24:54.852Z] [INFO] TerminalBot: action="exec" command=""
+[2026-04-19T21:24:54.855Z] [INFO] DoctorBot diagnosing: TerminalBot → TerminalBot: 'command' es requerido
+[2026-04-19T21:24:54.856Z] [INFO] DoctorBot diagnosis complete for TerminalBot
+[2026-04-19T21:24:55.775Z] [INFO] Chat done in 931ms | intent=bat_exec | type=text
+[2026-04-19T21:24:55.783Z] [INFO] InstructionLoader: memory.md trimmed from 5416B to ~5000B
+[2026-04-19T21:25:03.422Z] [INFO] GET /api/history/status
+[2026-04-19T21:25:03.424Z] [INFO] GET /api/history/conversations
+[2026-04-19T21:25:03.427Z] [INFO] GET /api/history/projects
