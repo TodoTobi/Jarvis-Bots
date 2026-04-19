@@ -294,3 +294,22 @@ Require stack:
 [2026-03-07T00:04:55.945Z] [ERROR] [Error] WebBot: Error al generar respuesta: 
 [2026-03-08T01:46:37.582Z] [ERROR] ModelService: Cannot reach LM Studio — 
 [2026-03-08T01:50:10.160Z] [ERROR] [Error] BatBot: Script file not found: pc/media/open_youtube.bat
+[2026-04-19T15:50:21.678Z] [ERROR] ModelService: Cannot reach LM Studio — 
+[2026-04-19T15:54:31.636Z] [ERROR] ModelService: Cannot reach LM Studio — 
+[2026-04-19T15:54:47.552Z] [ERROR] ModelService LLM error: 
+[2026-04-19T15:54:47.560Z] [ERROR] ModelService generateText: 
+[2026-04-19T15:54:47.560Z] [ERROR] [Error] WebBot: Error al generar respuesta: 
+[2026-04-19T15:57:02.979Z] [ERROR] ModelService: Cannot reach LM Studio — 
+[2026-04-19T15:57:25.982Z] [ERROR] ModelService LLM error: 
+[2026-04-19T15:57:25.989Z] [ERROR] ModelService generateText: 
+[2026-04-19T15:57:25.989Z] [ERROR] [Error] WebBot: Error al generar respuesta: 
+[2026-04-19T16:10:31.423Z] [ERROR] ModelService LLM error: timeout of 90000ms exceeded
+[2026-04-19T16:12:01.432Z] [ERROR] ModelService generateText: timeout of 90000ms exceeded
+[2026-04-19T16:12:01.434Z] [ERROR] [Error] WebBot: Error al generar respuesta: timeout of 90000ms exceeded
+[2026-04-19T16:19:18.184Z] [ERROR] ModelService generateText: timeout of 90000ms exceeded
+[2026-04-19T16:19:18.185Z] [ERROR] [Error] WebBot: Error al generar respuesta: timeout of 90000ms exceeded
+[2026-04-19T16:34:46.535Z] [ERROR] STT error: Invalid API Key
+[2026-04-19T16:34:59.076Z] [ERROR] STT error: Invalid API Key
+[2026-04-19T16:35:13.060Z] [ERROR] STT error: Invalid API Key
+[2026-04-19T16:35:22.127Z] [ERROR] STT error: Invalid API Key
+[2026-04-19T16:37:08.690Z] [ERROR] STT error: Invalid API Key
