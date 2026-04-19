@@ -19,7 +19,7 @@ const fs = require("fs");
 const axios = require("axios");
 const logger = require("../logs/logger");
 
-const GEMMA_MODEL = process.env.LM_MODEL || "gemma-3-4b-it"; // ajusta al nombre exacto en LM Studio
+const GEMMA_MODEL = process.env.LM_MODEL || "gemma-4"; // ajusta al nombre exacto en LM Studio
 const LM_BASE = (process.env.LM_API_URL || "http://localhost:1234/v1").replace(/\/$/, "");
 const MAX_SIZE_MB = 25;
 

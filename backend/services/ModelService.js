@@ -37,6 +37,47 @@ const QUICK_RULES = [
  * ──────────────────────────────────────────────────────────
  */
 
+/**
+ * PATCH — ModelService.js
+ * 
+ * Agregá estas reglas AL INICIO del array QUICK_RULES (antes de la regla de WhatsApp QR).
+ * Esto le permite a Jarvis detectar preguntas sobre su propio código sin usar el LLM.
+ */
+
+// ── SELF-AWARENESS RULES — pegar al INICIO de QUICK_RULES ────────────────────
+{
+    patterns: [
+        /(?:c[oó]mo\s+)?funciona[s]?\s+(?:vos|tu\s+c[oó]digo|internamente|por\s+dentro)/i,
+        /explic[aá](me)?\s+(?:tu|el)\s+(?:c[oó]digo|arquitectura|sistema|funcionamiento)/i,
+        /qu[eé]\s+hace\s+(?:el\s+archivo\s+|el\s+m[oó]dulo\s+)?(.+\.(?:js|json|md|jsx|ts))/i,
+        /qu[eé]\s+es\s+(?:el\s+|la\s+)?(\w+Bot|\w+Service|\w+Route|\w+Controller)/i,
+        /c[oó]mo\s+est[aá]s\s+(?:hecho|construido|programado|armado)/i,
+        /(?:mostr[aá]me|ver|dame|mand[aá]me)\s+(?:tu\s+)?(?:c[oó]digo|arquitectura|estructura)/i,
+        /(?:lee|leer|mostrame|mostrá)\s+(?:el\s+)?(?:archivo|fichero)\s+(.+\.(?:js|json|md|jsx|ts))/i,
+        /(?:qu[eé]|para\s+qu[eé])\s+sirve\s+(?:el\s+)?(\w+\.js|\w+Service|\w+Bot|\w+Route)/i,
+        /explic[aá](me)?\s+(?:c[oó]mo\s+funciona\s+)?(?:el\s+)?(\w+Bot|\w+Service|\w+Route)/i,
+        /cu[aá]l\s+es\s+tu\s+(?:estructura|arquitectura|c[oó]digo|composici[oó]n)/i,
+        /de\s+qu[eé]\s+est[aá]s\s+(?:hecho|compuesto|armado|formado)/i,
+        /qu[eé]\s+(?:archivos|m[oó]dulos|componentes)\s+(?:ten[eé]s|ten[eé]s|tiene)\s+(?:vos|Jarvis)?/i,
+    ],
+    result: (m) => {
+        const fileMatch = m.match(/(?:archivo|fichero|lee|leer)\s+(.+\.(?:js|json|md|jsx|ts))/i)
+            || m.match(/qu[eé]\s+hace\s+(?:el\s+archivo\s+)?(.+\.(?:js|json|md|jsx|ts))/i);
+        const moduleMatch = m.match(/(?:el\s+)?(\w+Bot|\w+Service|\w+Route|\w+Controller)/i)
+            || m.match(/(?:sirve|funciona)\s+(?:el\s+)?(\w+\.js)/i);
+
+        return {
+            intent: "self_explain",
+            parameters: {
+                filePath: fileMatch ? fileMatch[1].trim() : null,
+                question: m.trim(),
+                module: moduleMatch ? moduleMatch[1].trim() : null,
+            }
+        };
+    }
+},
+// ── FIN SELF-AWARENESS RULES ──────────────────────────────────────────────────
+
 // ── MOVER AL DRIVE SYNC ─────────────────────────────────────────────────────
 {
     patterns: [

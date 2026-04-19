@@ -1,11 +1,10 @@
 /**
- * BotManager.js — v4.0
+ * BotManager.js — v5.0
  *
- * CAMBIOS vs v3:
- *  - DriveBot registrado: mover/copiar/buscar archivos + Google Drive Sync
- *  - WhatsApp fix: _startWhatsApp llama a bot.activate() no bot.run()
- *  - Intent map: drive_*, file_* → DriveBot
- *  - getCapabilities() actualizado con DriveBot
+ * CAMBIOS vs v4:
+ *  - Self-awareness: handler para intent "self_explain" → llama a /api/self/explain
+ *  - Self-awareness: candidatos de módulos expandidos con todos los bots y servicios
+ *  - Canvas: intent "canvas_generate" → llama a /api/gemma/canvas
  */
 
 const WebBot = require("./WebBot");
@@ -40,7 +39,7 @@ const AUTO_DEACTIVATE_CONFIG = {
     WebBot: null,
     BatBot: null,
     SearchBot: null,
-    DriveBot: null,           // Siempre activo — operaciones de archivo son frecuentes
+    DriveBot: null,
     ComputerBot: 15 * 60000,
     VisionBot: 10 * 60000,
     MediaBot: 20 * 60000,
@@ -68,7 +67,6 @@ const INTENT_MAP = {
     "talk_": "WebBot",
     "google_docs": "GoogleDocsBot",
     "gdocs_": "GoogleDocsBot",
-    // ── DriveBot ──────────────────────────────────
     "drive_": "DriveBot",
     "file_": "DriveBot",
     "folder_": "DriveBot",
@@ -111,6 +109,9 @@ const BAT_SCRIPT_ALIASES = {
     "previous": "media_prev", "prev_track": "media_prev", "prev": "media_prev",
     "close_youtube": "close_youtube", "cerrar_youtube": "close_youtube",
     "close_spotify": "close_spotify", "cerrar_spotify": "close_spotify",
+    "close_discord": "close_discord", "cerrar_discord": "close_discord",
+    "close_chrome": "close_chrome", "cerrar_chrome": "close_chrome",
+    "close_vscode": "close_vscode", "cerrar_vscode": "close_vscode",
     "close_vlc": "close_vlc", "cerrar_vlc": "close_vlc",
     "discord": "app_discord", "open_discord": "app_discord",
     "vscode": "app_vscode", "code": "app_vscode", "open_vscode": "app_vscode",
@@ -126,17 +127,34 @@ const BAT_SCRIPT_ALIASES = {
     "powershell": "app_powershell",
     "postman": "app_postman",
     "github": "app_github_desktop", "github_desktop": "app_github_desktop",
-    "close_discord": "close_discord", "cerrar_discord": "close_discord",
-    "close_chrome": "close_chrome", "cerrar_chrome": "close_chrome",
-    "close_vscode": "close_vscode", "cerrar_vscode": "close_vscode",
-    "close_firefox": "close_firefox", "cerrar_firefox": "close_firefox",
-    "screenshot": "system_screenshot", "captura": "system_screenshot",
-    "lock": "system_lock", "lock_pc": "system_lock", "bloquear": "system_lock",
-    "sleep": "system_sleep", "suspend": "system_sleep", "dormir": "system_sleep",
-    "night_mode": "system_night_mode", "dark_mode": "system_night_mode",
 };
 
 const ANTIGRAVITY_KEYWORDS = ["antigravity", "antigraviti", "anti gravity", "abre antigravity", "abrir antigravity"];
+
+// ── Mapa de módulos para self-awareness ──────────────────────────────────────
+const SELF_AWARENESS_MODULE_MAP = {
+    BotManager:       "backend/bots/BotManager.js",
+    ModelService:     "backend/services/ModelService.js",
+    NLPService:       "backend/services/NLPService.js",
+    LanguageAliases:  "backend/services/LanguageAliases.js",
+    SupabaseService:  "backend/services/SupabaseService.js",
+    InstructionLoader:"backend/utils/InstructionLoader.js",
+    DriveBot:         "backend/bots/DriveBot.js",
+    WebBot:           "backend/bots/WebBot.js",
+    BatBot:           "backend/bots/BatBot.js",
+    ComputerBot:      "backend/bots/ComputerBot.js",
+    VisionBot:        "backend/bots/VisionBot.js",
+    SearchBot:        "backend/bots/SearchBot.js",
+    MediaBot:         "backend/bots/MediaBot.js",
+    NetBot:           "backend/bots/NetBot.js",
+    WhatsAppBot:      "backend/bots/WhatsAppBot.js",
+    DoctorBot:        "backend/bots/DoctorBot.js",
+    GoogleDocsBot:    "backend/bots/GoogleDocsBot.js",
+    Bot:              "backend/bots/Bot.js",
+    chatController:   "backend/controllers/chatController.js",
+    deviceController: "backend/controllers/deviceController.js",
+    server:           "backend/server.js",
+};
 
 class BotManager {
     constructor() {
@@ -175,7 +193,6 @@ class BotManager {
             };
         }
 
-        // Auto-activar bots esenciales
         ["WebBot", "BatBot", "SearchBot", "DriveBot"].forEach(n => {
             this.states[n].active = true;
         });
@@ -184,7 +201,7 @@ class BotManager {
             this._checkAutoDeactivate();
         }, 2 * 60 * 1000);
 
-        logger.info(`BotManager v4 initialized. Bots: ${Object.keys(this.bots).join(", ")}`);
+        logger.info(`BotManager v5 initialized. Bots: ${Object.keys(this.bots).join(", ")}`);
     }
 
     /* ── AUTO-DESACTIVACIÓN ───────────────────────── */
@@ -212,9 +229,6 @@ class BotManager {
         this.states[name].status = "idle";
         if (name === "WhatsAppBot") {
             this._startWhatsApp().catch(err => logger.error(`WhatsAppBot start error: ${err.message}`));
-        }
-        if (name === "GoogleDocsBot" && !this.bots.GoogleDocsBot) {
-            logger.warn("BotManager: GoogleDocsBot no disponible. npm install googleapis");
         }
         logger.info(`Bot activated: ${name}`);
     }
@@ -252,44 +266,35 @@ class BotManager {
         if (!(name in this.bots)) throw new Error(`Bot "${name}" no existe`);
     }
 
-    /* ── WhatsApp — FIX: usar activate() no run() ─── */
-
     async _startWhatsApp() {
         if (!this.bots.WhatsAppBot) {
             this.bots.WhatsAppBot = new WhatsAppBot();
         }
-        // FIX: el bot expone activate(), no run({action:"start"})
         await this.bots.WhatsAppBot.activate();
         this.states.WhatsAppBot.status = "idle";
     }
 
     /* ══════════════════════════════════════════════════
-       EXECUTE INTENT
+       EXECUTE INTENT — PUNTO CENTRAL
     ══════════════════════════════════════════════════ */
 
     async executeIntent(intentObject) {
         const normalized = this._normalizeIntent(intentObject);
         const rawMessage = normalized.parameters?._originalMessage || "";
 
-        // ── Aplicar aliases lingüísticos al mensaje original ──────────────────────
         let processedMessage = rawMessage;
-        let aliasCorrection = null;
         if (LangAliases && rawMessage) {
             const { text, changed, corrections } = LangAliases.applyAliases(rawMessage);
             if (changed) {
                 processedMessage = text;
-                aliasCorrection = corrections.length > 0 ? corrections[corrections.length - 1].corrected : text;
                 logger.info(`[Aliases] Corregido: "${rawMessage}" → "${processedMessage}"`);
             }
         }
 
-        // ── Resolver referencias contextuales ─────────────────────────────────────
-        // Ej: "mueve ese al drive" → resuelve "ese" con el archivo del turno anterior
         if (NLP && rawMessage) {
             const { resolved, contextUsed, hint } = NLP.context.resolveReferences(processedMessage);
             if (contextUsed) {
                 logger.info(`[Context] ${hint}`);
-                // Actualizar parámetros con referencia resuelta
                 if (!normalized.parameters.filename && !normalized.parameters.source) {
                     normalized.parameters._resolvedFromContext = resolved;
                 }
@@ -308,6 +313,16 @@ class BotManager {
 
         if (normalized.intent === "whatsapp_qr") {
             return this._handleWhatsAppQR();
+        }
+
+        // ── SELF-AWARENESS ────────────────────────────────────────────────────
+        if (normalized.intent === "self_explain") {
+            return await this._handleSelfExplain(normalized.parameters);
+        }
+
+        // ── CANVAS ────────────────────────────────────────────────────────────
+        if (normalized.intent === "canvas_generate" || normalized.intent === "canvas_create") {
+            return await this._handleCanvas(normalized.parameters);
         }
 
         // ── DriveBot ──────────────────────────────────
@@ -395,6 +410,138 @@ class BotManager {
     }
 
     /* ══════════════════════════════════════════════════
+       SELF-AWARENESS HANDLER
+    ══════════════════════════════════════════════════ */
+
+    async _handleSelfExplain({ filePath, question, module: moduleName }) {
+        const axios = require("axios");
+        const port = process.env.PORT || 3001;
+
+        // Resolver ruta del módulo si no vino filePath directo
+        let resolvedPath = filePath;
+        if (!resolvedPath && moduleName) {
+            // Buscar en el mapa de candidatos
+            resolvedPath = SELF_AWARENESS_MODULE_MAP[moduleName] || null;
+
+            // Si no está en el mapa, intentar inferir por nombre
+            if (!resolvedPath) {
+                if (moduleName.endsWith(".js")) {
+                    // buscar en bots, services, routes, controllers
+                    const candidates = [
+                        `backend/bots/${moduleName}`,
+                        `backend/services/${moduleName}`,
+                        `backend/routes/${moduleName}`,
+                        `backend/controllers/${moduleName}`,
+                        `backend/utils/${moduleName}`,
+                    ];
+                    resolvedPath = candidates[0]; // el más probable
+                } else if (/Bot$/.test(moduleName)) {
+                    resolvedPath = `backend/bots/${moduleName}.js`;
+                } else if (/Service$/.test(moduleName)) {
+                    resolvedPath = `backend/services/${moduleName}.js`;
+                } else if (/Route[s]?$/.test(moduleName)) {
+                    resolvedPath = `backend/routes/${moduleName}.js`;
+                } else if (/Controller$/.test(moduleName)) {
+                    resolvedPath = `backend/controllers/${moduleName}.js`;
+                }
+            }
+        }
+
+        logger.info(`[SelfAwareness] filePath="${resolvedPath}" question="${(question || "").substring(0, 80)}"`);
+
+        try {
+            const response = await axios.post(
+                `http://localhost:${port}/api/self/explain`,
+                {
+                    filePath: resolvedPath,
+                    question: question || `Explicá qué hace ${resolvedPath || moduleName} y cómo se integra con el sistema`,
+                    context: moduleName ? `El usuario preguntó sobre el módulo: ${moduleName}` : null,
+                },
+                { timeout: 90000 }
+            );
+
+            const explanation = response.data?.explanation || "No pude generar una explicación.";
+            return this._response(explanation, false);
+        } catch (err) {
+            logger.error(`[SelfAwareness] Error: ${err.message}`);
+
+            // Fallback: responder con info de arquitectura hardcodeada
+            const fallback = this._selfAwarenessFallback(resolvedPath, question, moduleName);
+            if (fallback) return this._response(fallback, false);
+
+            return this._response(
+                `❌ No pude leer mi propio código en este momento.\n\n` +
+                `Error: ${err.message}\n\n` +
+                `💡 Asegurate que el servidor tenga montado /api/self/explain (selfAwarenessRoutes.js)`,
+                true
+            );
+        }
+    }
+
+    _selfAwarenessFallback(filePath, question, moduleName) {
+        // Respuesta básica desde el mapa hardcodeado si falla el endpoint
+        const MODULE_DESCRIPTIONS = {
+            "backend/server.js": "Punto de entrada del backend Express. Registra todas las rutas, configura CORS y maneja errores globales.",
+            "backend/bots/BotManager.js": "Orquestador central. Recibe intents del ModelService y los enruta al bot correcto.",
+            "backend/services/ModelService.js": "Cerebro NLP. Tiene QUICK_RULES (clasificador por regex) y fallback al LLM local (Gemma 4).",
+            "backend/services/NLPService.js": "Motor de NLP: Levenshtein, similitud de strings, scoring de archivos, búsqueda fuzzy.",
+            "backend/bots/DriveBot.js": "Gestión de archivos locales y sync con Google Drive Sync.",
+            "backend/bots/SearchBot.js": "Búsqueda web real via DuckDuckGo HTML scraping.",
+        };
+
+        const key = filePath || (moduleName ? `backend/bots/${moduleName}.js` : null);
+        if (key && MODULE_DESCRIPTIONS[key]) {
+            return `📄 **${key}**\n\n${MODULE_DESCRIPTIONS[key]}\n\n*Para más detalles, el endpoint /api/self/explain debe estar disponible.*`;
+        }
+        return null;
+    }
+
+    /* ══════════════════════════════════════════════════
+       CANVAS HANDLER
+    ══════════════════════════════════════════════════ */
+
+    async _handleCanvas({ prompt, type, question }) {
+        const axios = require("axios");
+        const port = process.env.PORT || 3001;
+        const canvasPrompt = prompt || question || "";
+
+        if (!canvasPrompt) {
+            return this._response("❌ Indicame qué querés que genere en el canvas. Ej: 'haceme un diagrama de flujo del login'", true);
+        }
+
+        try {
+            const response = await axios.post(
+                `http://localhost:${port}/api/gemma/canvas`,
+                { prompt: canvasPrompt, type: type || "auto" },
+                { timeout: 120000 }
+            );
+
+            if (!response.data?.success) {
+                throw new Error(response.data?.error || "Error al generar canvas");
+            }
+
+            const { code, type: detectedType } = response.data;
+
+            // Formatear respuesta con marcadores que el frontend detecta
+            const typeLabel = {
+                mermaid: "diagrama Mermaid",
+                html: "diseño HTML",
+                svg: "ilustración SVG",
+                react: "componente React",
+                javascript: "gráfico JavaScript",
+            }[detectedType] || "contenido visual";
+
+            return this._response(
+                `🎨 Generé un ${typeLabel}:\n\n\`\`\`${detectedType}\n${code}\n\`\`\``,
+                false
+            );
+        } catch (err) {
+            logger.error(`[Canvas] Error: ${err.message}`);
+            return this._response(`❌ Error generando canvas: ${err.message}`, true);
+        }
+    }
+
+    /* ══════════════════════════════════════════════════
        DRIVE INTENT HANDLER
     ══════════════════════════════════════════════════ */
 
@@ -410,7 +557,7 @@ class BotManager {
             intent.startsWith("carpeta_") ||
             ["move_to_drive", "copy_to_drive", "search_file", "search_files",
              "list_drive", "delete_file", "create_folder", "create_file",
-             "move_file", "copy_file",
+             "move_file", "copy_file", "file_search", "file_delete", "folder_create",
              "open_file", "file_open", "abrir_archivo", "abrir_archivo_local",
              "play_file", "reproducir_archivo"].includes(intent);
 
@@ -418,37 +565,20 @@ class BotManager {
 
         if (!this.isBotActive("DriveBot")) this.activateBot("DriveBot");
 
-        // Normalizar acción
         let action = params.action || "";
 
         if (!action) {
-            if (intent.includes("move_to_drive") || intent.includes("pasar_drive") || intent.includes("mover_drive")) {
-                action = "move_to_drive";
-            } else if (intent.includes("copy_to_drive") || intent.includes("copiar_drive")) {
-                action = "copy_to_drive";
-            } else if (intent.includes("search") || intent.includes("buscar")) {
-                action = "search";
-            } else if (intent.includes("list_drive") || intent.includes("listar_drive")) {
-                action = "list_drive";
-            } else if (intent.includes("delete") || intent.includes("eliminar")) {
-                action = "delete_file";
-            } else if (intent.includes("create_folder") || intent.includes("crear_carpeta")) {
-                action = "create_folder";
-            } else if (intent.includes("create_file") || intent.includes("crear_archivo")) {
-                action = "create_file";
-            } else if (intent.includes("move_file") || intent.includes("mover_archivo")) {
-                action = "move_file";
-            } else if (intent.includes("copy_file") || intent.includes("copiar_archivo")) {
-                action = "copy_file";
-            } else if (
-                intent.includes("open_file") || intent.includes("file_open") ||
-                intent.includes("abrir_archivo") || intent.includes("play_file") ||
-                intent.includes("reproducir_archivo")
-            ) {
-                action = "open_file";
-            } else {
-                action = "search";
-            }
+            if (intent.includes("move_to_drive") || intent.includes("pasar_drive")) action = "move_to_drive";
+            else if (intent.includes("copy_to_drive") || intent.includes("copiar_drive")) action = "copy_to_drive";
+            else if (intent.includes("search") || intent.includes("buscar") || intent === "file_search") action = "search";
+            else if (intent.includes("list_drive")) action = "list_drive";
+            else if (intent.includes("delete") || intent.includes("eliminar") || intent === "file_delete") action = "delete_file";
+            else if (intent.includes("create_folder") || intent === "folder_create") action = "create_folder";
+            else if (intent.includes("create_file")) action = "create_file";
+            else if (intent.includes("move_file")) action = "move_file";
+            else if (intent.includes("copy_file")) action = "copy_file";
+            else if (intent.includes("open_file") || intent.includes("abrir_archivo") || intent.includes("play_file")) action = "open_file";
+            else action = "search";
         }
 
         const driveParams = {
@@ -485,22 +615,19 @@ class BotManager {
         if (!isGdocs) return null;
 
         if (!this.bots.GoogleDocsBot) {
-            return this._response(
-                "❌ GoogleDocsBot no disponible.\n```\nnpm install googleapis\n```\nLuego configurá la service account.",
-                true
-            );
+            return this._response("❌ GoogleDocsBot no disponible.\n```\nnpm install googleapis\n```", true);
         }
         if (!this.isBotActive("GoogleDocsBot")) this.activateBot("GoogleDocsBot");
 
         let action = params.action || "";
         if (!action) {
-            if (intent.includes("duplicate") || intent.includes("duplicar")) action = "duplicate_doc";
-            else if (intent.includes("read") || intent.includes("leer")) action = "read_doc";
-            else if (intent.includes("write") || intent.includes("escribir") || intent.includes("edit")) action = "write_doc";
-            else if (intent.includes("list") || intent.includes("listar")) action = "list_docs";
-            else if (intent.includes("create") || intent.includes("crear")) action = "create_doc";
-            else if (intent.includes("find_replace") || intent.includes("reemplazar")) action = "find_replace";
-            else if (intent.includes("append") || intent.includes("agregar")) action = "append_doc";
+            if (intent.includes("duplicate")) action = "duplicate_doc";
+            else if (intent.includes("read")) action = "read_doc";
+            else if (intent.includes("write") || intent.includes("edit")) action = "write_doc";
+            else if (intent.includes("list")) action = "list_docs";
+            else if (intent.includes("create")) action = "create_doc";
+            else if (intent.includes("find_replace")) action = "find_replace";
+            else if (intent.includes("append")) action = "append_doc";
             else action = "list_docs";
         }
 
@@ -540,7 +667,7 @@ class BotManager {
         const newDocId = idMatch?.[1] || null;
 
         if (!newDocId || !params.content) {
-            return this._response(`${dupResult.reply}\n\n${params.content ? "⚠ No pude extraer el ID. Pedime que escriba en él por nombre." : "✅ Documento duplicado."}`, false);
+            return this._response(`${dupResult.reply}\n\n${params.content ? "⚠ No pude extraer el ID." : "✅ Documento duplicado."}`, false);
         }
 
         const writeResult = await this._runSafe("GoogleDocsBot", {
@@ -621,38 +748,35 @@ class BotManager {
             `${icons[cat] || "🔧"} **${names[cat] || cat}**\n${items.join("\n")}`
         ).join("\n\n");
 
-        const driveFolder = this.bots["DriveBot"]?.driveFolder || "No configurada (DRIVE_SYNC_FOLDER en .env)";
-
-        return `🤖 **JarvisCore — Todo lo que puedo hacer:**
+        return `🤖 **JarvisCore v5 — Capacidades:**
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+🧠 **Self-Awareness** — Conocimiento de mi propio código
+• "¿Cómo funcionás?" → Explico mi arquitectura
+• "¿Qué hace DriveBot?" → Leo y explico mi código
+• "¿De qué estás hecho?" → Muestro mi estructura
+
+🎨 **Canvas/Artifacts** — Contenido visual generado por IA
+• Diagramas Mermaid, flujos, ER, secuencia
+• Interfaces HTML/CSS/JS interactivas
+• Gráficos con Chart.js
+• Componentes SVG e ilustraciones
+
 📁 **DriveBot** — Archivos y Google Drive Sync
-• Mover archivos al Drive: "pasame tarea.pdf al drive"
-• Copiar al Drive: "copiá cuphead al drive"
-• Buscar en la PC: "buscá el archivo tarea.pdf"
-• Listar Drive: "qué hay en el drive"
-• Crear carpetas: "creá una carpeta Proyectos en el drive"
-• Eliminar archivos: "eliminá el archivo X"
-• Carpeta sincronizada: \`${driveFolder}\`
+• Mover/copiar archivos al Drive
+• Buscar archivos en la PC
+• Listar, crear, eliminar
 
 🖥️ **ComputerBot** — Control del PC con visión IA
-• Automatizar cualquier tarea visual
 
 📄 **GoogleDocsBot** — Google Docs
-• Duplicar, editar, leer y crear documentos
 
 🌐 **SearchBot** — Búsqueda web real
-• "buscá X en internet"
 
-🤖 **Antigravity AI** — Agente externo
-
-💬 **WebBot** — Conversación con IA local
+💬 **WebBot** — Conversación con Gemma 4
 
 📱 **WhatsAppBot** — Control remoto
-• "pasame [archivo] al drive"
-• "buscá [archivo]"
-• "archivos [carpeta]"
 
 📷 **VisionBot** — Análisis de imágenes y PDFs
 
@@ -666,7 +790,7 @@ ${scriptLines}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🗣️ **Voz:** wake word "jarvis [comando]"`;
+🗣️ **Voz:** wake word "sistema [comando]", di "enviar" para detener`;
     }
 
     /* ── WhatsApp QR ──────────────────────────────── */
@@ -710,14 +834,13 @@ ${scriptLines}
 
             const replyText = this._stringify(result);
 
-            // ── Guardar en contexto NLP para refinamiento futuro ──────────────
             if (NLP) {
                 NLP.context.push({
-                    intent:     parameters.action || parameters.intent || botName,
-                    parameters: parameters,
-                    message:    parameters._originalMessage || "",
-                    reply:      replyText,
-                    bot:        botName,
+                    intent: parameters.action || parameters.intent || botName,
+                    parameters,
+                    message: parameters._originalMessage || "",
+                    reply: replyText,
+                    bot: botName,
                 });
             }
 

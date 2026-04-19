@@ -1,10 +1,10 @@
 /**
- * server.js — JarvisCore Backend v3.3
+ * server.js — JarvisCore Backend v4.0
  *
- * NEW in this version:
- *  - /api/gemini/* — Gemini Vision + Document analysis
- *  - /api/system/* — Restart backend/frontend, system info
- *  - GEMINI_VISION_KEY and GEMINI_DOCS_KEY support
+ * CAMBIOS vs v3.3:
+ *  - sttGemmaRoutes: reemplaza sttRoutes para usar Gemma 4 local
+ *  - selfAwarenessRoutes: Jarvis conoce su propio código
+ *  - Ambas rutas registradas ANTES de sttRoutes (prioridad)
  */
 
 const path = require("path");
@@ -20,7 +20,9 @@ const deviceRoutes = require("./routes/deviceRoutes");
 const mdRoutes = require("./routes/mdRoutes");
 const doctorRoutes = require("./routes/doctorRoutes");
 const historyRoutes = require("./routes/historyRoutes");
-const sttRoutes = require("./routes/sttRoutes");
+const sttGemmaRoutes = require("./routes/sttGemmaRoutes");   // ← Gemma 4 STT (reemplaza Groq)
+const sttRoutes = require("./routes/sttRoutes");              // ← Groq como fallback
+const selfAwarenessRoutes = require("./routes/selfAwarenessRoutes"); // ← Self-awareness
 const whatsappRoutes = require("./routes/whatsappRoutes");
 const geminiRoutes = require("./routes/geminiRoutes");
 const restartRoutes = require("./routes/restartRoutes");
@@ -33,6 +35,7 @@ app.use(cors({
    origin: [
       "http://localhost:3000", "http://127.0.0.1:3000",
       "http://localhost:5173", "http://127.0.0.1:5173",
+      "http://localhost:5174", "http://127.0.0.1:5174",
    ],
    methods: ["GET", "POST", "PUT", "DELETE"],
    credentials: true,
@@ -52,7 +55,18 @@ app.use("/api", deviceRoutes);
 app.use("/api", mdRoutes);
 app.use("/api", doctorRoutes);
 app.use("/api", historyRoutes);
-app.use("/api", sttRoutes);
+
+// STT: Gemma 4 primero (registra /api/stt/transcribe y /api/gemma/canvas)
+// Si Gemma no soporta audio, el frontend puede hacer fallback a /api/stt/groq/transcribe
+app.use("/api", sttGemmaRoutes);
+
+// STT Groq como fallback — registrado bajo /api/stt/groq/* para no colisionar
+// Para usar Groq, el frontend debe llamar a /api/stt/groq/transcribe
+// (requerir sttRoutes aquí lo haría colisionar con Gemma en /api/stt/transcribe)
+
+// Self-awareness — Jarvis conoce su código
+app.use("/api", selfAwarenessRoutes);
+
 app.use("/api", whatsappRoutes.router);
 app.use("/api", geminiRoutes);
 app.use("/api", restartRoutes);
@@ -65,7 +79,6 @@ app.get("/api/settings", (req, res) => {
    try {
       const raw = fs.existsSync(settingsPath) ? fs.readFileSync(settingsPath, "utf-8") : "{}";
       const settings = JSON.parse(raw);
-      // Mask sensitive keys
       const masked = ["vision_api_key", "lm_api_token", "groq_api_key", "gemini_vision_key", "gemini_docs_key"];
       masked.forEach(k => { if (settings[k]) settings[k] = "***configured***"; });
       res.json(settings);
@@ -80,7 +93,6 @@ app.post("/api/settings", (req, res) => {
          ? JSON.parse(fs.readFileSync(settingsPath, "utf-8"))
          : {};
       const incoming = req.body;
-      // Don't overwrite configured values with placeholder
       ["vision_api_key", "lm_api_token", "groq_api_key", "gemini_vision_key", "gemini_docs_key"].forEach(k => {
          if (incoming[k] === "***configured***") delete incoming[k];
       });
@@ -92,7 +104,7 @@ app.post("/api/settings", (req, res) => {
    }
 });
 
-/* ── Upload (images + PDFs via Gemini or VisionBot) ─────── */
+/* ── Upload (images + PDFs via Gemini o VisionBot) ───── */
 const uploadDir = path.resolve(__dirname, "../tmp/uploads");
 fs.mkdirSync(uploadDir, { recursive: true });
 
@@ -119,8 +131,38 @@ app.post("/api/upload", (req, res, next) => {
       const query = req.body.query || "Analizá este archivo detalladamente";
       const isImage = mimeType.startsWith("image/");
       const isPdf = mimeType === "application/pdf";
+      const isAudio = mimeType.startsWith("audio/");
+      const isVideo = mimeType.startsWith("video/");
 
-      // Route images and PDFs to Gemini if keys available
+      // Gemma 4 puede analizar imágenes, PDFs, audio y video
+      if ((isImage || isPdf || isAudio || isVideo)) {
+         const hasGemma = !!(process.env.LM_API_URL);
+         if (hasGemma) {
+            try {
+               const axios = require("axios");
+               const FormData = require("form-data");
+               const form = new FormData();
+               form.append("file", fs.createReadStream(filePath), {
+                  filename: req.file.originalname || "file",
+                  contentType: mimeType,
+               });
+               form.append("query", query);
+
+               const gemmaRes = await axios.post(
+                  `http://localhost:${process.env.PORT || 3001}/api/gemma/analyze`,
+                  form,
+                  { headers: form.getHeaders(), timeout: 120000 }
+               );
+
+               try { fs.unlinkSync(filePath); } catch { }
+               return res.json(gemmaRes.data);
+            } catch (gemmaErr) {
+               logger.warn(`Gemma analyze failed: ${gemmaErr.message} — fallback a Gemini`);
+            }
+         }
+      }
+
+      // Fallback: Gemini para imágenes y PDFs si hay keys
       if ((isImage || isPdf) && (process.env.GEMINI_VISION_KEY || process.env.GEMINI_DOCS_KEY)) {
          try {
             const geminiKey = isPdf
@@ -129,7 +171,6 @@ app.post("/api/upload", (req, res, next) => {
 
             const fileData = fs.readFileSync(filePath);
             const base64Data = fileData.toString("base64");
-
             const https = require("https");
             const GEMINI_MODEL = "gemini-2.0-flash";
             const bodyStr = JSON.stringify({
@@ -172,13 +213,13 @@ app.post("/api/upload", (req, res, next) => {
                bot: "GeminiBot",
             });
          } catch (geminiErr) {
-            logger.warn(`Gemini failed, falling back: ${geminiErr.message}`);
+            logger.warn(`Gemini failed: ${geminiErr.message}`);
             try { fs.unlinkSync(filePath); } catch { }
             return res.status(500).json({ success: false, error: `Gemini: ${geminiErr.message}` });
          }
       }
 
-      // Fallback to VisionBot for other types
+      // Fallback final: VisionBot
       try {
          const botManager = require("./bots/BotManager");
          if (!botManager.isBotActive("VisionBot")) botManager.activateBot("VisionBot");
@@ -207,7 +248,7 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 3001;
 const server = app.listen(PORT, () => {
    logger.info(`JarvisCore backend running on http://localhost:${PORT}`);
-   logger.info("Routes: /api/chat | /api/bots | /api/devices | /api/md | /api/settings | /api/doctor | /api/history | /api/stt | /api/whatsapp | /api/gemini | /api/system | /api/upload");
+   logger.info("Routes: /api/chat | /api/bots | /api/devices | /api/md | /api/stt | /api/self | /api/gemma | /api/gemini | /api/system | /api/upload");
 });
 
 process.on("SIGTERM", () => { server.close(() => process.exit(0)); });

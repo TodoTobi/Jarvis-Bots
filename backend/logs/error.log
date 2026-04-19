@@ -313,3 +313,4 @@ Require stack:
 [2026-04-19T16:35:13.060Z] [ERROR] STT error: Invalid API Key
 [2026-04-19T16:35:22.127Z] [ERROR] STT error: Invalid API Key
 [2026-04-19T16:37:08.690Z] [ERROR] STT error: Invalid API Key
+[2026-04-19T18:01:08.190Z] [ERROR] Gemma analyze error: Request failed with status code 400

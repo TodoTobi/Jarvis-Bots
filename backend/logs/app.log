@@ -20621,3 +20621,835 @@ Lo siento, pero no " → search_web:{"query":"terms that might help you find wha
 [2026-04-19T17:09:34.686Z] [INFO] GET /api/history/projects
 [2026-04-19T17:09:34.688Z] [INFO] GET /api/doctor/scan
 [2026-04-19T17:09:34.774Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:10:34.682Z] [INFO] GET /api/history/status
+[2026-04-19T17:10:34.683Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:10:34.685Z] [INFO] GET /api/history/projects
+[2026-04-19T17:10:34.687Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:10:34.777Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:11:34.682Z] [INFO] GET /api/history/status
+[2026-04-19T17:11:34.684Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:11:34.687Z] [INFO] GET /api/history/projects
+[2026-04-19T17:11:34.690Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:11:34.779Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:12:34.681Z] [INFO] GET /api/history/status
+[2026-04-19T17:12:34.683Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:12:34.685Z] [INFO] GET /api/history/projects
+[2026-04-19T17:12:34.688Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:12:34.772Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:13:34.687Z] [INFO] GET /api/history/status
+[2026-04-19T17:13:34.690Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:13:34.693Z] [INFO] GET /api/history/projects
+[2026-04-19T17:13:34.695Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:13:34.810Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:14:34.680Z] [INFO] GET /api/history/status
+[2026-04-19T17:14:34.681Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:14:34.683Z] [INFO] GET /api/history/projects
+[2026-04-19T17:14:34.685Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:14:34.772Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:15:34.702Z] [INFO] GET /api/history/status
+[2026-04-19T17:15:34.705Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:15:34.707Z] [INFO] GET /api/history/projects
+[2026-04-19T17:15:34.710Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:15:34.806Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:16:34.684Z] [INFO] GET /api/history/status
+[2026-04-19T17:16:34.686Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:16:34.690Z] [INFO] GET /api/history/projects
+[2026-04-19T17:16:34.693Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:16:34.813Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:17:34.671Z] [INFO] GET /api/history/status
+[2026-04-19T17:17:34.673Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:17:34.676Z] [INFO] GET /api/history/projects
+[2026-04-19T17:17:34.679Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:17:34.773Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:18:34.683Z] [INFO] GET /api/history/status
+[2026-04-19T17:18:34.704Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:18:34.708Z] [INFO] GET /api/history/projects
+[2026-04-19T17:18:34.711Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:18:34.813Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:19:34.677Z] [INFO] GET /api/history/status
+[2026-04-19T17:19:34.679Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:19:34.681Z] [INFO] GET /api/history/projects
+[2026-04-19T17:19:34.683Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:19:34.770Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:20:34.690Z] [INFO] GET /api/history/status
+[2026-04-19T17:20:34.692Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:20:34.696Z] [INFO] GET /api/history/projects
+[2026-04-19T17:20:34.700Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:20:34.796Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:21:34.685Z] [INFO] GET /api/history/status
+[2026-04-19T17:21:34.687Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:21:34.689Z] [INFO] GET /api/history/projects
+[2026-04-19T17:21:34.691Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:21:34.785Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:22:34.684Z] [INFO] GET /api/history/status
+[2026-04-19T17:22:34.685Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:22:34.688Z] [INFO] GET /api/history/projects
+[2026-04-19T17:22:34.690Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:22:34.773Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:23:34.678Z] [INFO] GET /api/history/status
+[2026-04-19T17:23:34.679Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:23:34.683Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:23:34.708Z] [INFO] GET /api/history/projects
+[2026-04-19T17:23:34.768Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:24:34.681Z] [INFO] GET /api/history/status
+[2026-04-19T17:24:34.683Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:24:34.685Z] [INFO] GET /api/history/projects
+[2026-04-19T17:24:34.687Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:24:34.768Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:25:34.685Z] [INFO] GET /api/history/status
+[2026-04-19T17:25:34.688Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:25:34.690Z] [INFO] GET /api/history/projects
+[2026-04-19T17:25:34.693Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:25:34.787Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:26:34.685Z] [INFO] GET /api/history/status
+[2026-04-19T17:26:34.690Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:26:34.696Z] [INFO] GET /api/history/projects
+[2026-04-19T17:26:34.699Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:26:34.789Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:27:34.673Z] [INFO] GET /api/history/status
+[2026-04-19T17:27:34.675Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:27:34.677Z] [INFO] GET /api/history/projects
+[2026-04-19T17:27:34.679Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:27:34.773Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:28:34.679Z] [INFO] GET /api/history/status
+[2026-04-19T17:28:34.680Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:28:34.683Z] [INFO] GET /api/history/projects
+[2026-04-19T17:28:34.686Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:28:34.795Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:29:34.680Z] [INFO] GET /api/history/status
+[2026-04-19T17:29:34.682Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:29:34.687Z] [INFO] GET /api/history/projects
+[2026-04-19T17:29:34.690Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:29:34.790Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:30:34.678Z] [INFO] GET /api/history/status
+[2026-04-19T17:30:34.680Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:30:34.682Z] [INFO] GET /api/history/projects
+[2026-04-19T17:30:34.684Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:30:34.773Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:31:34.675Z] [INFO] GET /api/history/status
+[2026-04-19T17:31:34.676Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:31:34.679Z] [INFO] GET /api/history/projects
+[2026-04-19T17:31:34.681Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:31:34.764Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:32:34.706Z] [INFO] GET /api/history/status
+[2026-04-19T17:32:34.708Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:32:34.710Z] [INFO] GET /api/history/projects
+[2026-04-19T17:32:34.711Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:32:34.817Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:33:34.687Z] [INFO] GET /api/history/status
+[2026-04-19T17:33:34.688Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:33:34.691Z] [INFO] GET /api/history/projects
+[2026-04-19T17:33:34.695Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:33:34.785Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:34:34.676Z] [INFO] GET /api/history/status
+[2026-04-19T17:34:34.678Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:34:34.681Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:34:34.710Z] [INFO] GET /api/history/projects
+[2026-04-19T17:34:34.768Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:35:34.673Z] [INFO] GET /api/history/status
+[2026-04-19T17:35:34.675Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:35:34.677Z] [INFO] GET /api/history/projects
+[2026-04-19T17:35:34.678Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:35:34.765Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:36:34.673Z] [INFO] GET /api/history/status
+[2026-04-19T17:36:34.675Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:36:34.677Z] [INFO] GET /api/history/projects
+[2026-04-19T17:36:34.679Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:36:34.764Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:37:34.674Z] [INFO] GET /api/history/status
+[2026-04-19T17:37:34.677Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:37:34.681Z] [INFO] GET /api/history/projects
+[2026-04-19T17:37:34.685Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:37:34.792Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:38:34.709Z] [INFO] GET /api/history/status
+[2026-04-19T17:38:34.710Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:38:34.713Z] [INFO] GET /api/history/projects
+[2026-04-19T17:38:34.715Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:38:34.821Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:39:34.682Z] [INFO] GET /api/history/status
+[2026-04-19T17:39:34.684Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:39:34.687Z] [INFO] GET /api/history/projects
+[2026-04-19T17:39:34.689Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:39:34.782Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:40:34.673Z] [INFO] GET /api/history/status
+[2026-04-19T17:40:34.674Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:40:34.677Z] [INFO] GET /api/history/projects
+[2026-04-19T17:40:34.682Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:40:34.771Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:41:34.675Z] [INFO] GET /api/history/status
+[2026-04-19T17:41:34.677Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:41:34.680Z] [INFO] GET /api/history/projects
+[2026-04-19T17:41:34.684Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:41:34.769Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:42:34.704Z] [INFO] GET /api/history/status
+[2026-04-19T17:42:34.707Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:42:34.710Z] [INFO] GET /api/history/projects
+[2026-04-19T17:42:34.712Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:42:34.815Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:43:34.689Z] [INFO] GET /api/history/status
+[2026-04-19T17:43:34.692Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:43:34.696Z] [INFO] GET /api/history/projects
+[2026-04-19T17:43:34.699Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:43:34.794Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:44:34.677Z] [INFO] GET /api/history/status
+[2026-04-19T17:44:34.681Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:44:34.711Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:44:34.714Z] [INFO] GET /api/history/projects
+[2026-04-19T17:44:34.789Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:45:34.701Z] [INFO] GET /api/history/status
+[2026-04-19T17:45:34.707Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:45:34.711Z] [INFO] GET /api/history/projects
+[2026-04-19T17:45:34.715Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:45:34.835Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:46:34.679Z] [INFO] GET /api/history/status
+[2026-04-19T17:46:34.681Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:46:34.684Z] [INFO] GET /api/history/projects
+[2026-04-19T17:46:34.688Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:46:34.773Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:47:34.688Z] [INFO] GET /api/history/status
+[2026-04-19T17:47:34.691Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:47:34.692Z] [INFO] GET /api/history/projects
+[2026-04-19T17:47:34.694Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:47:34.798Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:48:34.689Z] [INFO] GET /api/history/status
+[2026-04-19T17:48:34.690Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:48:34.693Z] [INFO] GET /api/history/projects
+[2026-04-19T17:48:34.695Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:48:34.798Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:49:34.711Z] [INFO] GET /api/history/status
+[2026-04-19T17:49:34.713Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:49:34.715Z] [INFO] GET /api/history/projects
+[2026-04-19T17:49:34.718Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:49:34.830Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:50:34.665Z] [INFO] GET /api/history/status
+[2026-04-19T17:50:34.667Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:50:34.670Z] [INFO] GET /api/history/projects
+[2026-04-19T17:50:34.674Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:50:34.775Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:51:34.699Z] [INFO] GET /api/history/status
+[2026-04-19T17:51:34.700Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:51:34.702Z] [INFO] GET /api/history/projects
+[2026-04-19T17:51:34.704Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:51:34.793Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:52:34.694Z] [INFO] GET /api/history/status
+[2026-04-19T17:52:34.698Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:52:34.701Z] [INFO] GET /api/history/projects
+[2026-04-19T17:52:34.703Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:52:34.816Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:53:34.698Z] [INFO] GET /api/history/status
+[2026-04-19T17:53:34.701Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:53:34.705Z] [INFO] GET /api/history/projects
+[2026-04-19T17:53:34.708Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:53:34.817Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:54:34.693Z] [INFO] GET /api/history/status
+[2026-04-19T17:54:34.695Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:54:34.697Z] [INFO] GET /api/history/projects
+[2026-04-19T17:54:34.699Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:54:34.799Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:55:34.697Z] [INFO] GET /api/history/status
+[2026-04-19T17:55:34.698Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:55:34.700Z] [INFO] GET /api/history/projects
+[2026-04-19T17:55:34.703Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:55:34.801Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:56:34.695Z] [INFO] GET /api/history/status
+[2026-04-19T17:56:34.696Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:56:34.698Z] [INFO] GET /api/history/projects
+[2026-04-19T17:56:34.700Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:56:34.799Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:57:34.663Z] [INFO] GET /api/history/status
+[2026-04-19T17:57:34.665Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:57:34.668Z] [INFO] GET /api/history/projects
+[2026-04-19T17:57:34.672Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:57:34.782Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:58:34.662Z] [INFO] GET /api/history/status
+[2026-04-19T17:58:34.663Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:58:34.665Z] [INFO] GET /api/history/projects
+[2026-04-19T17:58:34.667Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:58:34.761Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:59:34.661Z] [INFO] GET /api/history/status
+[2026-04-19T17:59:34.663Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:59:34.664Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:59:34.690Z] [INFO] GET /api/history/projects
+[2026-04-19T17:59:34.757Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:59:45.939Z] [INFO] InstructionLoader: loaded 8 md files from C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\md
+[2026-04-19T17:59:45.942Z] [INFO] InstructionLoader: memory.md trimmed from 5076B to ~5000B
+[2026-04-19T17:59:46.453Z] [INFO] BotManager: NLPService cargado — contexto y aliases habilitados
+[2026-04-19T17:59:46.454Z] [INFO] BatBot: whitelist loaded (37 scripts)
+[2026-04-19T17:59:46.455Z] [INFO] NetBot: 2 devices loaded
+[2026-04-19T17:59:46.456Z] [INFO] NetBot: ADB from ADB_PATH: C:\Users\usuario\Desktop\platform-tools\adb.exe
+[2026-04-19T17:59:46.457Z] [INFO] DriveBot: Drive Sync folder → C:\Users\usuario\Desktop\Jarvis Drive
+[2026-04-19T17:59:46.458Z] [INFO] BotManager v5 initialized. Bots: WebBot, DoctorBot, BatBot, MediaBot, NetBot, WhatsAppBot, ComputerBot, VisionBot, SearchBot, DriveBot, GoogleDocsBot
+[2026-04-19T17:59:46.527Z] [INFO] Upload endpoint enabled
+[2026-04-19T17:59:46.531Z] [INFO] JarvisCore backend running on http://localhost:3001
+[2026-04-19T17:59:46.531Z] [INFO] Routes: /api/chat | /api/bots | /api/devices | /api/md | /api/stt | /api/self | /api/gemma | /api/gemini | /api/system | /api/upload
+[2026-04-19T17:59:46.546Z] [INFO] ModelService: connected. Models: google/gemma-4-e4b, meta-llama-3.1-8b-instruct, liquid/lfm2.5-1.2b, text-embedding-nomic-embed-text-v1.5
+[2026-04-19T17:59:46.863Z] [INFO] SupabaseService: conectado ✅ → https://eznjcwfpvrurfdydpell.supabase.co
+[2026-04-19T17:59:49.453Z] [INFO] GET /api/history/status
+[2026-04-19T17:59:49.458Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:59:49.467Z] [INFO] GET /api/history/projects
+[2026-04-19T17:59:49.471Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:59:49.600Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:59:51.759Z] [INFO] GET /api/history/status
+[2026-04-19T17:59:51.762Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:59:51.764Z] [INFO] GET /api/history/projects
+[2026-04-19T17:59:52.209Z] [INFO] GET /api/history/status
+[2026-04-19T17:59:52.212Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:59:52.214Z] [INFO] GET /api/history/projects
+[2026-04-19T17:59:52.217Z] [INFO] GET /api/health
+[2026-04-19T17:59:52.221Z] [INFO] GET /api/bots
+[2026-04-19T17:59:52.224Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:59:52.330Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:59:52.345Z] [INFO] GET /api/health/model
+[2026-04-19T17:59:52.373Z] [INFO] GET /api/whatsapp/qr
+[2026-04-19T17:59:52.380Z] [INFO] GET /api/history/status
+[2026-04-19T17:59:53.644Z] [INFO] GET /api/history/status
+[2026-04-19T17:59:53.647Z] [INFO] GET /api/history/conversations
+[2026-04-19T17:59:53.649Z] [INFO] GET /api/history/projects
+[2026-04-19T17:59:53.653Z] [INFO] GET /api/health
+[2026-04-19T17:59:53.655Z] [INFO] GET /api/bots
+[2026-04-19T17:59:53.656Z] [INFO] GET /api/doctor/scan
+[2026-04-19T17:59:53.688Z] [INFO] GET /api/health/model
+[2026-04-19T17:59:53.692Z] [INFO] GET /api/health
+[2026-04-19T17:59:53.703Z] [INFO] GET /api/health/model
+[2026-04-19T17:59:53.710Z] [INFO] GET /api/whatsapp/qr
+[2026-04-19T17:59:53.714Z] [INFO] GET /api/whatsapp/qr
+[2026-04-19T17:59:53.719Z] [INFO] GET /api/history/status
+[2026-04-19T17:59:53.721Z] [INFO] GET /api/history/status
+[2026-04-19T17:59:53.773Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T17:59:58.640Z] [INFO] GET /api/bots
+[2026-04-19T17:59:58.659Z] [INFO] GET /api/health
+[2026-04-19T17:59:58.669Z] [INFO] GET /api/health/model
+[2026-04-19T17:59:58.687Z] [INFO] GET /api/whatsapp/qr
+[2026-04-19T17:59:58.694Z] [INFO] GET /api/history/status
+[2026-04-19T18:00:03.664Z] [INFO] GET /api/bots
+[2026-04-19T18:00:03.672Z] [INFO] GET /api/health
+[2026-04-19T18:00:03.675Z] [INFO] GET /api/health/model
+[2026-04-19T18:00:03.684Z] [INFO] GET /api/whatsapp/qr
+[2026-04-19T18:00:03.689Z] [INFO] GET /api/history/status
+[2026-04-19T18:00:08.674Z] [INFO] GET /api/history/status
+[2026-04-19T18:00:08.676Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:00:08.678Z] [INFO] GET /api/history/projects
+[2026-04-19T18:00:08.680Z] [INFO] GET /api/bots
+[2026-04-19T18:00:08.694Z] [INFO] GET /api/health
+[2026-04-19T18:00:08.700Z] [INFO] GET /api/health/model
+[2026-04-19T18:00:08.711Z] [INFO] GET /api/whatsapp/qr
+[2026-04-19T18:00:08.716Z] [INFO] GET /api/history/status
+[2026-04-19T18:00:13.673Z] [INFO] GET /api/bots
+[2026-04-19T18:00:13.679Z] [INFO] GET /api/health
+[2026-04-19T18:00:13.682Z] [INFO] GET /api/health/model
+[2026-04-19T18:00:13.691Z] [INFO] GET /api/whatsapp/qr
+[2026-04-19T18:00:13.695Z] [INFO] GET /api/history/status
+[2026-04-19T18:00:18.677Z] [INFO] GET /api/bots
+[2026-04-19T18:00:18.684Z] [INFO] GET /api/health
+[2026-04-19T18:00:18.688Z] [INFO] GET /api/health/model
+[2026-04-19T18:00:18.696Z] [INFO] GET /api/whatsapp/qr
+[2026-04-19T18:00:18.700Z] [INFO] GET /api/history/status
+[2026-04-19T18:00:23.662Z] [INFO] GET /api/history/status
+[2026-04-19T18:00:23.665Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:00:23.668Z] [INFO] GET /api/history/projects
+[2026-04-19T18:00:23.670Z] [INFO] GET /api/bots
+[2026-04-19T18:00:23.671Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:00:23.687Z] [INFO] GET /api/health
+[2026-04-19T18:00:23.693Z] [INFO] GET /api/health/model
+[2026-04-19T18:00:23.703Z] [INFO] GET /api/whatsapp/qr
+[2026-04-19T18:00:23.708Z] [INFO] GET /api/history/status
+[2026-04-19T18:00:23.752Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T18:00:28.669Z] [INFO] GET /api/bots
+[2026-04-19T18:00:28.679Z] [INFO] GET /api/health
+[2026-04-19T18:00:28.682Z] [INFO] GET /api/health/model
+[2026-04-19T18:00:28.691Z] [INFO] GET /api/whatsapp/qr
+[2026-04-19T18:00:28.695Z] [INFO] GET /api/history/status
+[2026-04-19T18:00:33.662Z] [INFO] GET /api/bots
+[2026-04-19T18:00:33.669Z] [INFO] GET /api/health
+[2026-04-19T18:00:33.672Z] [INFO] GET /api/health/model
+[2026-04-19T18:00:33.680Z] [INFO] GET /api/whatsapp/qr
+[2026-04-19T18:00:33.683Z] [INFO] GET /api/history/status
+[2026-04-19T18:00:38.675Z] [INFO] GET /api/history/status
+[2026-04-19T18:00:38.677Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:00:38.679Z] [INFO] GET /api/history/projects
+[2026-04-19T18:00:38.680Z] [INFO] GET /api/bots
+[2026-04-19T18:00:38.687Z] [INFO] GET /api/health
+[2026-04-19T18:00:38.690Z] [INFO] GET /api/health/model
+[2026-04-19T18:00:38.704Z] [INFO] GET /api/whatsapp/qr
+[2026-04-19T18:00:38.708Z] [INFO] GET /api/history/status
+[2026-04-19T18:00:43.637Z] [INFO] GET /api/bots
+[2026-04-19T18:00:43.645Z] [INFO] GET /api/health
+[2026-04-19T18:00:43.649Z] [INFO] GET /api/health/model
+[2026-04-19T18:00:43.661Z] [INFO] GET /api/whatsapp/qr
+[2026-04-19T18:00:43.666Z] [INFO] GET /api/history/status
+[2026-04-19T18:00:48.082Z] [INFO] GET /api/history/conversations/4125f5e3-aa8e-49ae-a454-f3f2fc3e6395/messages
+[2026-04-19T18:00:53.637Z] [INFO] GET /api/history/status
+[2026-04-19T18:00:53.638Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:00:53.641Z] [INFO] GET /api/history/projects
+[2026-04-19T18:00:53.643Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:00:53.745Z] [INFO] InstructionLoader: memory.md trimmed from 5691B to ~5000B
+[2026-04-19T18:01:08.110Z] [INFO] POST /api/upload
+[2026-04-19T18:01:08.129Z] [INFO] POST /api/gemma/analyze
+[2026-04-19T18:01:08.166Z] [INFO] Gemma analyze: application/pdf (177KB)
+[2026-04-19T18:01:08.192Z] [WARN] Gemma analyze failed: Request failed with status code 500 — fallback a Gemini
+[2026-04-19T18:01:08.638Z] [INFO] GET /api/history/status
+[2026-04-19T18:01:08.639Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:01:08.642Z] [INFO] GET /api/history/projects
+[2026-04-19T18:01:09.087Z] [WARN] Gemini failed: API key expired. Please renew the API key.
+[2026-04-19T18:01:23.662Z] [INFO] GET /api/history/status
+[2026-04-19T18:01:23.666Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:01:23.669Z] [INFO] GET /api/history/projects
+[2026-04-19T18:01:23.672Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:01:23.756Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:01:38.662Z] [INFO] GET /api/history/status
+[2026-04-19T18:01:38.664Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:01:38.665Z] [INFO] GET /api/history/projects
+[2026-04-19T18:01:53.637Z] [INFO] GET /api/history/status
+[2026-04-19T18:01:53.639Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:01:53.641Z] [INFO] GET /api/history/projects
+[2026-04-19T18:01:53.643Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:01:53.746Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:02:08.661Z] [INFO] GET /api/history/status
+[2026-04-19T18:02:08.663Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:02:08.664Z] [INFO] GET /api/history/projects
+[2026-04-19T18:02:23.662Z] [INFO] GET /api/history/status
+[2026-04-19T18:02:23.664Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:02:23.665Z] [INFO] GET /api/history/projects
+[2026-04-19T18:02:23.667Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:02:23.759Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:02:38.662Z] [INFO] GET /api/history/status
+[2026-04-19T18:02:38.664Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:02:38.665Z] [INFO] GET /api/history/projects
+[2026-04-19T18:02:53.662Z] [INFO] GET /api/history/status
+[2026-04-19T18:02:53.663Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:02:53.665Z] [INFO] GET /api/history/projects
+[2026-04-19T18:02:53.667Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:02:53.756Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:03:34.663Z] [INFO] GET /api/history/status
+[2026-04-19T18:03:34.668Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:03:34.673Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:03:34.713Z] [INFO] GET /api/history/projects
+[2026-04-19T18:03:34.790Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:04:34.660Z] [INFO] GET /api/history/status
+[2026-04-19T18:04:34.662Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:04:34.664Z] [INFO] GET /api/history/projects
+[2026-04-19T18:04:34.667Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:04:34.761Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:05:14.676Z] [INFO] GET /api/history/conversations/4125f5e3-aa8e-49ae-a454-f3f2fc3e6395/messages
+[2026-04-19T18:05:34.661Z] [INFO] GET /api/history/status
+[2026-04-19T18:05:34.662Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:05:34.665Z] [INFO] GET /api/history/projects
+[2026-04-19T18:05:34.667Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:05:34.760Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:06:34.672Z] [INFO] GET /api/history/status
+[2026-04-19T18:06:34.676Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:06:34.680Z] [INFO] GET /api/history/projects
+[2026-04-19T18:06:34.683Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:06:34.782Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:07:34.660Z] [INFO] GET /api/history/status
+[2026-04-19T18:07:34.664Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:07:34.668Z] [INFO] GET /api/history/projects
+[2026-04-19T18:07:34.673Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:07:34.778Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:08:00.437Z] [INFO] GET /api/history/status
+[2026-04-19T18:08:00.440Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:08:00.447Z] [INFO] GET /api/history/projects
+[2026-04-19T18:08:00.450Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:08:00.576Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:08:03.676Z] [INFO] GET /api/history/status
+[2026-04-19T18:08:03.678Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:08:03.679Z] [INFO] GET /api/history/projects
+[2026-04-19T18:08:03.683Z] [INFO] GET /api/health
+[2026-04-19T18:08:03.685Z] [INFO] GET /api/bots
+[2026-04-19T18:08:03.687Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:08:03.794Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:08:03.800Z] [INFO] GET /api/health/model
+[2026-04-19T18:08:03.830Z] [INFO] GET /api/health
+[2026-04-19T18:08:03.832Z] [INFO] GET /api/whatsapp/qr
+[2026-04-19T18:08:03.841Z] [INFO] GET /api/health/model
+[2026-04-19T18:08:03.847Z] [INFO] GET /api/history/status
+[2026-04-19T18:08:03.852Z] [INFO] GET /api/whatsapp/qr
+[2026-04-19T18:08:03.863Z] [INFO] GET /api/history/status
+[2026-04-19T18:08:06.543Z] [INFO] GET /api/history/conversations/4125f5e3-aa8e-49ae-a454-f3f2fc3e6395/messages
+[2026-04-19T18:08:13.972Z] [INFO] GET /api/history/status
+[2026-04-19T18:08:13.974Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:08:13.977Z] [INFO] GET /api/history/projects
+[2026-04-19T18:08:13.979Z] [INFO] GET /api/health
+[2026-04-19T18:08:13.980Z] [INFO] GET /api/bots
+[2026-04-19T18:08:13.982Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:08:14.011Z] [INFO] GET /api/health/model
+[2026-04-19T18:08:14.013Z] [INFO] GET /api/health
+[2026-04-19T18:08:14.022Z] [INFO] GET /api/health/model
+[2026-04-19T18:08:14.024Z] [INFO] GET /api/whatsapp/qr
+[2026-04-19T18:08:14.032Z] [INFO] GET /api/history/status
+[2026-04-19T18:08:14.034Z] [INFO] GET /api/whatsapp/qr
+[2026-04-19T18:08:14.045Z] [INFO] GET /api/history/status
+[2026-04-19T18:08:14.088Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:08:14.958Z] [INFO] GET /api/history/conversations/4125f5e3-aa8e-49ae-a454-f3f2fc3e6395/messages
+[2026-04-19T18:08:28.967Z] [INFO] GET /api/history/status
+[2026-04-19T18:08:28.969Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:08:28.970Z] [INFO] GET /api/history/projects
+[2026-04-19T18:08:44.661Z] [INFO] GET /api/history/status
+[2026-04-19T18:08:44.663Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:08:44.666Z] [INFO] GET /api/history/projects
+[2026-04-19T18:08:44.668Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:08:44.758Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:08:59.662Z] [INFO] GET /api/history/status
+[2026-04-19T18:08:59.664Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:08:59.667Z] [INFO] GET /api/history/projects
+[2026-04-19T18:09:14.661Z] [INFO] GET /api/history/status
+[2026-04-19T18:09:14.663Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:09:14.665Z] [INFO] GET /api/history/projects
+[2026-04-19T18:09:14.667Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:09:14.760Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:09:29.661Z] [INFO] GET /api/history/status
+[2026-04-19T18:09:29.662Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:09:29.664Z] [INFO] GET /api/history/projects
+[2026-04-19T18:09:44.662Z] [INFO] GET /api/history/status
+[2026-04-19T18:09:44.663Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:09:44.665Z] [INFO] GET /api/history/projects
+[2026-04-19T18:09:44.667Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:09:44.791Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:09:52.607Z] [INFO] POST /api/chat
+[2026-04-19T18:09:52.608Z] [INFO] Chat request: "hola"
+[2026-04-19T18:09:52.616Z] [INFO] ModelService: no quick match, querying LLM: "hola"
+[2026-04-19T18:09:53.036Z] [INFO] ModelService raw: {"intent":"greeting","parameters":{},"priority":"normal"}
+[2026-04-19T18:09:53.037Z] [INFO] Intent resolved: greeting
+[2026-04-19T18:09:53.038Z] [INFO] [Intent] "greeting" | params: {}
+[2026-04-19T18:09:53.039Z] [INFO] WebBot processing: "greeting"
+[2026-04-19T18:09:58.423Z] [INFO] WebBot response: 72 chars
+[2026-04-19T18:09:58.970Z] [INFO] GET /api/history/status
+[2026-04-19T18:09:58.972Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:09:58.974Z] [INFO] GET /api/history/projects
+[2026-04-19T18:09:59.414Z] [INFO] InstructionLoader: memory.md trimmed from 5215B to ~5000B
+[2026-04-19T18:10:05.319Z] [INFO] POST /api/chat
+[2026-04-19T18:10:05.320Z] [INFO] Chat request: "tienes conocimientos osbre ti mismo? dime cual es la estrucutra de carpetas de tu mismo sistema?"
+[2026-04-19T18:10:05.324Z] [INFO] ModelService: no quick match, querying LLM: "tienes conocimientos osbre ti mismo? dime cual es la estrucu"
+[2026-04-19T18:10:05.974Z] [INFO] ModelService raw: {"intent":"chat_response","parameters":{"query":"tienes conocimientos sobre ti mismo? dime cual es l
+[2026-04-19T18:10:05.975Z] [INFO] Intent resolved: chat_response
+[2026-04-19T18:10:05.976Z] [INFO] [Intent] "chat_response" | params: {"query":"tienes conocimientos osbre ti mismo? dime cual es la estrucutra de carpetas de tu mismo sistema?"}
+[2026-04-19T18:10:05.976Z] [INFO] WebBot processing: "tienes conocimientos osbre ti mismo? dime cual es la estrucutra de carpetas de t..."
+[2026-04-19T18:10:13.976Z] [INFO] GET /api/history/status
+[2026-04-19T18:10:13.978Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:10:13.981Z] [INFO] GET /api/history/projects
+[2026-04-19T18:10:13.983Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:10:14.081Z] [INFO] InstructionLoader: memory.md trimmed from 5699B to ~5000B
+[2026-04-19T18:10:19.320Z] [INFO] WebBot response: 1561 chars
+[2026-04-19T18:10:20.294Z] [INFO] InstructionLoader: memory.md trimmed from 5440B to ~5000B
+[2026-04-19T18:10:28.969Z] [INFO] GET /api/history/status
+[2026-04-19T18:10:28.971Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:10:28.972Z] [INFO] GET /api/history/projects
+[2026-04-19T18:10:43.967Z] [INFO] GET /api/history/status
+[2026-04-19T18:10:43.969Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:10:43.971Z] [INFO] GET /api/history/projects
+[2026-04-19T18:10:43.972Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:10:44.079Z] [INFO] InstructionLoader: memory.md trimmed from 5695B to ~5000B
+[2026-04-19T18:10:58.967Z] [INFO] GET /api/history/status
+[2026-04-19T18:10:58.968Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:10:58.971Z] [INFO] GET /api/history/projects
+[2026-04-19T18:11:13.968Z] [INFO] GET /api/history/status
+[2026-04-19T18:11:13.970Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:11:13.972Z] [INFO] GET /api/history/projects
+[2026-04-19T18:11:13.975Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:11:14.084Z] [INFO] InstructionLoader: memory.md trimmed from 5695B to ~5000B
+[2026-04-19T18:11:15.271Z] [INFO] POST /api/chat
+[2026-04-19T18:11:15.272Z] [INFO] Chat request: "claro, me refiero no a vos como ia sino a todo el proeycto que te conforma, por ejemplo tu backend y"
+[2026-04-19T18:11:15.272Z] [INFO] ModelService: no quick match, querying LLM: "claro, me refiero no a vos como ia sino a todo el proeycto q"
+[2026-04-19T18:11:16.184Z] [INFO] ModelService raw: {"intent":"chat_response","parameters":{"query":"me refiero no a vos como ia sino a todo el proeycto
+[2026-04-19T18:11:16.185Z] [INFO] Intent resolved: chat_response
+[2026-04-19T18:11:16.185Z] [INFO] [Intent] "chat_response" | params: {"query":"claro, me refiero no a vos como ia sino a todo el proeycto que te conforma, por ejemplo tu backend y frontend 
+[2026-04-19T18:11:16.186Z] [INFO] WebBot processing: "claro, me refiero no a vos como ia sino a todo el proeycto que te conforma, por ..."
+[2026-04-19T18:11:25.906Z] [INFO] WebBot response: 409 chars
+[2026-04-19T18:11:26.957Z] [INFO] InstructionLoader: memory.md trimmed from 5484B to ~5000B
+[2026-04-19T18:11:28.968Z] [INFO] GET /api/history/status
+[2026-04-19T18:11:28.970Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:11:28.971Z] [INFO] GET /api/history/projects
+[2026-04-19T18:11:43.967Z] [INFO] GET /api/history/status
+[2026-04-19T18:11:43.968Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:11:43.970Z] [INFO] GET /api/history/projects
+[2026-04-19T18:11:43.972Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:11:44.073Z] [INFO] InstructionLoader: memory.md trimmed from 5693B to ~5000B
+[2026-04-19T18:11:44.957Z] [INFO] POST /api/chat
+[2026-04-19T18:11:44.958Z] [INFO] Chat request: "haz u diagrama que explique como funcionas"
+[2026-04-19T18:11:44.959Z] [INFO] QuickClassify: "haz u diagrama que explique como funcionas" → capabilities:{}
+[2026-04-19T18:11:44.960Z] [INFO] Intent resolved: capabilities
+[2026-04-19T18:11:44.960Z] [INFO] [Intent] "capabilities" | params: {}
+[2026-04-19T18:11:45.810Z] [INFO] InstructionLoader: memory.md trimmed from 5455B to ~5000B
+[2026-04-19T18:11:58.974Z] [INFO] GET /api/history/status
+[2026-04-19T18:11:58.976Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:11:58.978Z] [INFO] GET /api/history/projects
+[2026-04-19T18:12:14.661Z] [INFO] GET /api/history/status
+[2026-04-19T18:12:14.663Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:12:14.665Z] [INFO] GET /api/history/projects
+[2026-04-19T18:12:14.668Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:12:14.792Z] [INFO] InstructionLoader: memory.md trimmed from 5767B to ~5000B
+[2026-04-19T18:12:29.660Z] [INFO] GET /api/history/status
+[2026-04-19T18:12:29.663Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:12:29.666Z] [INFO] GET /api/history/projects
+[2026-04-19T18:12:44.662Z] [INFO] GET /api/history/status
+[2026-04-19T18:12:44.663Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:12:44.665Z] [INFO] GET /api/history/projects
+[2026-04-19T18:12:44.667Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:12:44.768Z] [INFO] InstructionLoader: memory.md trimmed from 5767B to ~5000B
+[2026-04-19T18:12:59.661Z] [INFO] GET /api/history/status
+[2026-04-19T18:12:59.663Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:12:59.665Z] [INFO] GET /api/history/projects
+[2026-04-19T18:13:14.661Z] [INFO] GET /api/history/status
+[2026-04-19T18:13:14.664Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:13:14.666Z] [INFO] GET /api/history/projects
+[2026-04-19T18:13:14.668Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:13:14.767Z] [INFO] InstructionLoader: memory.md trimmed from 5767B to ~5000B
+[2026-04-19T18:13:34.661Z] [INFO] GET /api/history/status
+[2026-04-19T18:13:34.662Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:13:34.664Z] [INFO] GET /api/history/projects
+[2026-04-19T18:14:34.659Z] [INFO] GET /api/history/status
+[2026-04-19T18:14:34.662Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:14:34.665Z] [INFO] GET /api/history/projects
+[2026-04-19T18:14:34.668Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:14:34.780Z] [INFO] InstructionLoader: memory.md trimmed from 5767B to ~5000B
+[2026-04-19T18:15:34.667Z] [INFO] GET /api/history/status
+[2026-04-19T18:15:34.670Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:15:34.673Z] [INFO] GET /api/history/projects
+[2026-04-19T18:15:34.676Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:15:34.789Z] [INFO] InstructionLoader: memory.md trimmed from 5771B to ~5000B
+[2026-04-19T18:16:34.661Z] [INFO] GET /api/history/status
+[2026-04-19T18:16:34.665Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:16:34.670Z] [INFO] GET /api/history/projects
+[2026-04-19T18:16:34.673Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:16:34.785Z] [INFO] InstructionLoader: memory.md trimmed from 5771B to ~5000B
+[2026-04-19T18:17:34.660Z] [INFO] GET /api/history/status
+[2026-04-19T18:17:34.662Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:17:34.665Z] [INFO] GET /api/history/projects
+[2026-04-19T18:17:34.666Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:17:34.769Z] [INFO] InstructionLoader: memory.md trimmed from 5771B to ~5000B
+[2026-04-19T18:18:34.660Z] [INFO] GET /api/history/status
+[2026-04-19T18:18:34.662Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:18:34.665Z] [INFO] GET /api/history/projects
+[2026-04-19T18:18:34.672Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:18:34.783Z] [INFO] InstructionLoader: memory.md trimmed from 5775B to ~5000B
+[2026-04-19T18:19:34.661Z] [INFO] GET /api/history/status
+[2026-04-19T18:19:34.663Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:19:34.665Z] [INFO] GET /api/history/projects
+[2026-04-19T18:19:34.668Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:19:34.778Z] [INFO] InstructionLoader: memory.md trimmed from 5708B to ~5000B
+[2026-04-19T18:20:34.661Z] [INFO] GET /api/history/status
+[2026-04-19T18:20:34.662Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:20:34.665Z] [INFO] GET /api/history/projects
+[2026-04-19T18:20:34.668Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:20:34.782Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:21:34.661Z] [INFO] GET /api/history/status
+[2026-04-19T18:21:34.663Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:21:34.665Z] [INFO] GET /api/history/projects
+[2026-04-19T18:21:34.669Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:21:34.799Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:22:34.660Z] [INFO] GET /api/history/status
+[2026-04-19T18:22:34.662Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:22:34.664Z] [INFO] GET /api/history/projects
+[2026-04-19T18:22:34.665Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:22:34.766Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:23:34.663Z] [INFO] GET /api/history/status
+[2026-04-19T18:23:34.669Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:23:34.674Z] [INFO] GET /api/history/projects
+[2026-04-19T18:23:34.676Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:23:34.789Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:24:34.660Z] [INFO] GET /api/history/status
+[2026-04-19T18:24:34.661Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:24:34.664Z] [INFO] GET /api/history/projects
+[2026-04-19T18:24:34.668Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:24:34.773Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:25:34.659Z] [INFO] GET /api/history/status
+[2026-04-19T18:25:34.660Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:25:34.663Z] [INFO] GET /api/history/projects
+[2026-04-19T18:25:34.667Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:25:34.768Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:26:34.660Z] [INFO] GET /api/history/status
+[2026-04-19T18:26:34.662Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:26:34.664Z] [INFO] GET /api/history/projects
+[2026-04-19T18:26:34.668Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:26:34.768Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:27:34.659Z] [INFO] GET /api/history/status
+[2026-04-19T18:27:34.662Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:27:34.664Z] [INFO] GET /api/history/projects
+[2026-04-19T18:27:34.667Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:27:34.762Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:28:34.660Z] [INFO] GET /api/history/status
+[2026-04-19T18:28:34.662Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:28:34.665Z] [INFO] GET /api/history/projects
+[2026-04-19T18:28:34.667Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:28:34.787Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:29:34.660Z] [INFO] GET /api/history/status
+[2026-04-19T18:29:34.663Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:29:34.667Z] [INFO] GET /api/history/projects
+[2026-04-19T18:29:34.670Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:29:34.779Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:29:45.178Z] [INFO] GET /api/history/status
+[2026-04-19T18:29:45.180Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:29:45.182Z] [INFO] GET /api/history/projects
+[2026-04-19T18:29:45.184Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:29:45.288Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:29:59.660Z] [INFO] GET /api/history/status
+[2026-04-19T18:29:59.662Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:29:59.664Z] [INFO] GET /api/history/projects
+[2026-04-19T18:30:14.661Z] [INFO] GET /api/history/status
+[2026-04-19T18:30:14.664Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:30:14.667Z] [INFO] GET /api/history/projects
+[2026-04-19T18:30:14.669Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:30:14.776Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:30:29.658Z] [INFO] GET /api/history/status
+[2026-04-19T18:30:29.661Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:30:29.663Z] [INFO] GET /api/history/projects
+[2026-04-19T18:30:44.659Z] [INFO] GET /api/history/status
+[2026-04-19T18:30:44.661Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:30:44.663Z] [INFO] GET /api/history/projects
+[2026-04-19T18:30:44.665Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:30:44.752Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:30:59.660Z] [INFO] GET /api/history/status
+[2026-04-19T18:30:59.661Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:30:59.663Z] [INFO] GET /api/history/projects
+[2026-04-19T18:31:13.968Z] [INFO] GET /api/history/status
+[2026-04-19T18:31:13.970Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:31:13.973Z] [INFO] GET /api/history/projects
+[2026-04-19T18:31:13.976Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:31:14.104Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:31:29.660Z] [INFO] GET /api/history/status
+[2026-04-19T18:31:29.661Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:31:29.664Z] [INFO] GET /api/history/projects
+[2026-04-19T18:31:44.660Z] [INFO] GET /api/history/status
+[2026-04-19T18:31:44.662Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:31:44.664Z] [INFO] GET /api/history/projects
+[2026-04-19T18:31:44.667Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:31:44.763Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:31:59.659Z] [INFO] GET /api/history/status
+[2026-04-19T18:31:59.661Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:31:59.663Z] [INFO] GET /api/history/projects
+[2026-04-19T18:32:14.658Z] [INFO] GET /api/history/status
+[2026-04-19T18:32:14.660Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:32:14.662Z] [INFO] GET /api/history/projects
+[2026-04-19T18:32:14.664Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:32:14.762Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:32:29.657Z] [INFO] GET /api/history/status
+[2026-04-19T18:32:29.659Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:32:29.660Z] [INFO] GET /api/history/projects
+[2026-04-19T18:32:44.659Z] [INFO] GET /api/history/status
+[2026-04-19T18:32:44.661Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:32:44.663Z] [INFO] GET /api/history/projects
+[2026-04-19T18:32:44.665Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:32:44.761Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:32:59.664Z] [INFO] GET /api/history/status
+[2026-04-19T18:32:59.666Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:32:59.668Z] [INFO] GET /api/history/projects
+[2026-04-19T18:33:34.659Z] [INFO] GET /api/history/status
+[2026-04-19T18:33:34.661Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:33:34.664Z] [INFO] GET /api/history/projects
+[2026-04-19T18:33:34.667Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:33:34.782Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:34:34.660Z] [INFO] GET /api/history/status
+[2026-04-19T18:34:34.662Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:34:34.666Z] [INFO] GET /api/history/projects
+[2026-04-19T18:34:34.669Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:34:34.764Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:35:34.660Z] [INFO] GET /api/history/status
+[2026-04-19T18:35:34.662Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:35:34.667Z] [INFO] GET /api/history/projects
+[2026-04-19T18:35:34.672Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:35:34.776Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:36:34.658Z] [INFO] GET /api/history/status
+[2026-04-19T18:36:34.660Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:36:34.663Z] [INFO] GET /api/history/projects
+[2026-04-19T18:36:34.666Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:36:34.767Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:37:34.660Z] [INFO] GET /api/history/status
+[2026-04-19T18:37:34.662Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:37:34.665Z] [INFO] GET /api/history/projects
+[2026-04-19T18:37:34.667Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:37:34.761Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:38:20.701Z] [INFO] GET /api/history/conversations/4125f5e3-aa8e-49ae-a454-f3f2fc3e6395/messages
+[2026-04-19T18:38:45.670Z] [INFO] InstructionLoader: loaded 8 md files from C:\Users\usuario\Desktop\Jarvis 26-02-2026\Jarvis-Bots\md
+[2026-04-19T18:38:45.672Z] [INFO] InstructionLoader: memory.md trimmed from 5076B to ~5000B
+[2026-04-19T18:38:46.148Z] [INFO] BotManager: NLPService cargado — contexto y aliases habilitados
+[2026-04-19T18:38:46.150Z] [INFO] BatBot: whitelist loaded (37 scripts)
+[2026-04-19T18:38:46.151Z] [INFO] NetBot: 2 devices loaded
+[2026-04-19T18:38:46.152Z] [INFO] NetBot: ADB from ADB_PATH: C:\Users\usuario\Desktop\platform-tools\adb.exe
+[2026-04-19T18:38:46.153Z] [INFO] DriveBot: Drive Sync folder → C:\Users\usuario\Desktop\Jarvis Drive
+[2026-04-19T18:38:46.153Z] [INFO] BotManager v5 initialized. Bots: WebBot, DoctorBot, BatBot, MediaBot, NetBot, WhatsAppBot, ComputerBot, VisionBot, SearchBot, DriveBot, GoogleDocsBot
+[2026-04-19T18:38:46.225Z] [INFO] Upload endpoint enabled
+[2026-04-19T18:38:46.229Z] [INFO] JarvisCore backend running on http://localhost:3001
+[2026-04-19T18:38:46.229Z] [INFO] Routes: /api/chat | /api/bots | /api/devices | /api/md | /api/stt | /api/self | /api/gemma | /api/gemini | /api/system | /api/upload
+[2026-04-19T18:38:46.245Z] [INFO] ModelService: connected. Models: google/gemma-4-e4b, meta-llama-3.1-8b-instruct, liquid/lfm2.5-1.2b, text-embedding-nomic-embed-text-v1.5
+[2026-04-19T18:38:46.538Z] [INFO] SupabaseService: conectado ✅ → https://eznjcwfpvrurfdydpell.supabase.co
+[2026-04-19T18:38:56.151Z] [INFO] GET /api/history/status
+[2026-04-19T18:38:56.157Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:38:56.162Z] [INFO] GET /api/history/projects
+[2026-04-19T18:38:56.164Z] [INFO] GET /api/health
+[2026-04-19T18:38:56.167Z] [INFO] GET /api/bots
+[2026-04-19T18:38:56.169Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:38:56.205Z] [INFO] GET /api/health/model
+[2026-04-19T18:38:56.275Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:38:56.346Z] [INFO] GET /api/whatsapp/qr
+[2026-04-19T18:38:56.348Z] [INFO] GET /api/health
+[2026-04-19T18:38:56.371Z] [INFO] GET /api/health/model
+[2026-04-19T18:38:56.380Z] [INFO] GET /api/history/status
+[2026-04-19T18:38:56.386Z] [INFO] GET /api/whatsapp/qr
+[2026-04-19T18:38:56.396Z] [INFO] GET /api/history/status
+[2026-04-19T18:38:58.115Z] [INFO] GET /api/history/conversations/4125f5e3-aa8e-49ae-a454-f3f2fc3e6395/messages
+[2026-04-19T18:42:00.892Z] [INFO] GET /api/history/status
+[2026-04-19T18:42:00.895Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:42:00.902Z] [INFO] GET /api/history/projects
+[2026-04-19T18:42:00.908Z] [INFO] GET /api/health
+[2026-04-19T18:42:00.913Z] [INFO] GET /api/bots
+[2026-04-19T18:42:00.916Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:42:01.048Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:42:01.104Z] [INFO] GET /api/health/model
+[2026-04-19T18:42:01.142Z] [INFO] GET /api/health
+[2026-04-19T18:42:01.149Z] [INFO] GET /api/whatsapp/qr
+[2026-04-19T18:42:01.157Z] [INFO] GET /api/health/model
+[2026-04-19T18:42:01.159Z] [INFO] GET /api/history/status
+[2026-04-19T18:42:01.176Z] [INFO] GET /api/whatsapp/qr
+[2026-04-19T18:42:01.184Z] [INFO] GET /api/history/status
+[2026-04-19T18:42:02.805Z] [INFO] GET /api/history/conversations/4125f5e3-aa8e-49ae-a454-f3f2fc3e6395/messages
+[2026-04-19T18:42:16.667Z] [INFO] GET /api/history/status
+[2026-04-19T18:42:16.668Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:42:16.671Z] [INFO] GET /api/history/projects
+[2026-04-19T18:42:31.659Z] [INFO] GET /api/history/status
+[2026-04-19T18:42:31.661Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:42:31.663Z] [INFO] GET /api/history/projects
+[2026-04-19T18:42:31.665Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:42:31.743Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:42:46.666Z] [INFO] GET /api/history/status
+[2026-04-19T18:42:46.667Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:42:46.670Z] [INFO] GET /api/history/projects
+[2026-04-19T18:43:01.667Z] [INFO] GET /api/history/status
+[2026-04-19T18:43:01.669Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:43:01.671Z] [INFO] GET /api/history/projects
+[2026-04-19T18:43:01.673Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:43:01.749Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:43:15.875Z] [INFO] GET /api/history/status
+[2026-04-19T18:43:15.877Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:43:15.879Z] [INFO] GET /api/history/projects
+[2026-04-19T18:43:31.669Z] [INFO] GET /api/history/status
+[2026-04-19T18:43:31.671Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:43:31.673Z] [INFO] GET /api/history/projects
+[2026-04-19T18:43:31.674Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:43:31.750Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:43:46.673Z] [INFO] GET /api/history/status
+[2026-04-19T18:43:46.674Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:43:46.676Z] [INFO] GET /api/history/projects
+[2026-04-19T18:44:01.670Z] [INFO] GET /api/history/status
+[2026-04-19T18:44:01.671Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:44:01.673Z] [INFO] GET /api/history/projects
+[2026-04-19T18:44:01.675Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:44:01.756Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:44:16.662Z] [INFO] GET /api/history/status
+[2026-04-19T18:44:16.664Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:44:16.666Z] [INFO] GET /api/history/projects
+[2026-04-19T18:44:31.672Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:44:31.756Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:44:34.665Z] [INFO] GET /api/history/status
+[2026-04-19T18:44:34.667Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:44:34.669Z] [INFO] GET /api/history/projects
+[2026-04-19T18:44:45.877Z] [INFO] GET /api/history/status
+[2026-04-19T18:44:45.879Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:44:45.882Z] [INFO] GET /api/history/projects
+[2026-04-19T18:45:00.876Z] [INFO] GET /api/history/status
+[2026-04-19T18:45:00.878Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:45:00.885Z] [INFO] GET /api/history/projects
+[2026-04-19T18:45:00.891Z] [INFO] GET /api/doctor/scan
+[2026-04-19T18:45:00.983Z] [INFO] InstructionLoader: memory.md trimmed from 5701B to ~5000B
+[2026-04-19T18:45:15.877Z] [INFO] GET /api/history/status
+[2026-04-19T18:45:15.879Z] [INFO] GET /api/history/conversations
+[2026-04-19T18:45:15.880Z] [INFO] GET /api/history/projects

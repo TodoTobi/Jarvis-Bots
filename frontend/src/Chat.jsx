@@ -1,6 +1,15 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { sendMessageToBot, saveMemory } from "./api";
-// WakeWord ya NO se importa aquí — está en App.jsx a nivel global
+import ArtifactCanvas, { useArtifactDetector as _useArtifactDetector } from "./ArtifactCanvas";
+
+// Wrapper seguro — garantiza que el resultado siempre tenga .code string y .raw string
+function useArtifactDetector(text) {
+    const result = _useArtifactDetector(text);
+    if (!result) return null;
+    if (!result.code || typeof result.code !== "string") return null;
+    if (!result.raw) result.raw = result.code; // fallback: raw = code completo
+    return result;
+}
 
 const API = "http://localhost:3001";
 
@@ -9,6 +18,38 @@ const WELCOME = {
     content: "Sistema en línea ✓\n\nHola Tobías, soy **Jarvis**. ¿En qué puedo ayudarte?\n\nPuedo **buscar en la web** 🔍, controlar tu PC 💻, poner música 🎵, editar Google Docs 📄 y mucho más.\n\n💡 Decí **\"Jarvis [tu comando] enviar\"** desde cualquier parte de la app.",
     intent: null, bot: null,
 };
+
+/* ════════════════════════════════════════════════════════
+   FILTROS DE RESPUESTA — evita que el modelo mande JSON/intents crudos
+═════════════════════════════════════════════════════════ */
+
+/**
+ * Detecta si una respuesta es un JSON de intent crudo que el modelo
+ * está mandando en lugar de texto natural.
+ * Ej: { "intent": "web_search", "parameters": {...} }
+ */
+function isRawIntentJSON(text) {
+    if (!text) return false;
+    const t = text.trim();
+    // Si empieza con { y tiene "intent" → es un JSON de intent crudo
+    if (t.startsWith("{") && t.includes('"intent"')) return true;
+    // Si es un bloque de código JSON con intent
+    if (t.includes("```json") && t.includes('"intent"')) return true;
+    return false;
+}
+
+/**
+ * Limpia bloques de código JSON de intents del texto de respuesta.
+ * Los reemplaza con nada (el intent ya se procesó en el backend).
+ */
+function stripIntentBlocks(text) {
+    if (!text) return text;
+    // Eliminar bloques ```json ... ``` que contengan "intent"
+    let cleaned = text.replace(/```json\s*\{[\s\S]*?"intent"[\s\S]*?\}\s*```/g, "").trim();
+    // Eliminar JSON inline { "intent": ... } que aparezca solo en una línea
+    cleaned = cleaned.replace(/^\s*\{[\s\S]*?"intent"[\s\S]*?\}\s*$/gm, "").trim();
+    return cleaned || text;
+}
 
 /* ════════════════════════════════════════════════════════
    MARKDOWN RENDERER
@@ -157,25 +198,225 @@ function InlineWhatsAppQR() {
 }
 
 /* ════════════════════════════════════════════════════════
-   ASSISTANT MESSAGE
+   INLINE ARTIFACT CARD — muestra artefacto detectado en el chat
 ═════════════════════════════════════════════════════════ */
-function AssistantMessage({ msg, isNew }) {
+function InlineArtifact({ artifact, onExpand }) {
+    const TYPE_LABELS = {
+        mermaid: { icon: "📊", label: "Diagrama", color: "#6366f1" },
+        html:    { icon: "🌐", label: "Interfaz Web", color: "#10a37f" },
+        svg:     { icon: "🎨", label: "Gráfico SVG", color: "#f59e0b" },
+        react:   { icon: "⚛️", label: "Componente", color: "#06b6d4" },
+        javascript: { icon: "⚡", label: "Script JS", color: "#eab308" },
+    };
+    const meta = TYPE_LABELS[artifact.type] || { icon: "📄", label: "Código", color: "#6b7280" };
+
+    return (
+        <div style={{
+            margin: "12px 0", borderRadius: 12, overflow: "hidden",
+            border: `1px solid ${meta.color}33`,
+            background: `${meta.color}08`,
+        }}>
+            {/* Header */}
+            <div style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "10px 14px",
+                background: `${meta.color}12`,
+                borderBottom: `1px solid ${meta.color}22`,
+            }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 16 }}>{meta.icon}</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: meta.color }}>{meta.label} generado</span>
+                </div>
+                <button
+                    onClick={onExpand}
+                    style={{
+                        background: meta.color, border: "none", borderRadius: 8,
+                        padding: "5px 14px", color: "#fff", fontSize: 12,
+                        fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
+                        display: "flex", alignItems: "center", gap: 6,
+                    }}
+                >
+                    ⊞ Abrir Canvas
+                </button>
+            </div>
+
+            {/* Preview embed */}
+            <ArtifactPreview artifact={artifact} />
+        </div>
+    );
+}
+
+/* ════════════════════════════════════════════════════════
+   ARTIFACT PREVIEW — renderiza inline (compacto)
+═════════════════════════════════════════════════════════ */
+function ArtifactPreview({ artifact }) {
+    if (!artifact || !artifact.code || typeof artifact.code !== 'string') return null;
+    const { type, code } = artifact;
+
+    if (type === "mermaid") {
+        return <MermaidPreview code={code} />;
+    }
+    if (type === "svg") {
+        return (
+            <div style={{ padding: 12, maxHeight: 300, overflow: "auto", display: "flex", justifyContent: "center" }}
+                dangerouslySetInnerHTML={{ __html: code }} />
+        );
+    }
+    if (type === "html" || type === "react" || type === "javascript") {
+        return <HtmlPreview code={code} />;
+    }
+    // Fallback: mostrar código
+    const preview = typeof code === "string" ? code : "";
+    return (
+        <pre style={{ margin: 0, padding: 14, fontSize: 12, color: "#e5e7eb", fontFamily: "'DM Mono',monospace", overflowX: "auto", maxHeight: 200 }}>
+            <code>{preview.slice(0, 500)}{preview.length > 500 ? "\n..." : ""}</code>
+        </pre>
+    );
+}
+
+/* Mermaid renderizado inline */
+function MermaidPreview({ code }) {
+    const [svg, setSvg] = useState(null);
+    const [error, setError] = useState(null);
+    const idRef = useRef(`mmd-${Math.random().toString(36).slice(2)}`);
+
+    useEffect(() => {
+        let cancelled = false;
+        const render = async () => {
+            try {
+                let mermaid = window.mermaid;
+                if (!mermaid) {
+                    await new Promise((res, rej) => {
+                        if (document.querySelector('script[src*="mermaid"]')) {
+                            // ya está cargando, esperamos
+                            const wait = setInterval(() => { if (window.mermaid) { clearInterval(wait); res(); } }, 100);
+                            setTimeout(() => { clearInterval(wait); rej(new Error("timeout")); }, 10000);
+                            return;
+                        }
+                        const s = document.createElement("script");
+                        s.src = "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js";
+                        s.onload = res; s.onerror = rej;
+                        document.head.appendChild(s);
+                    });
+                    mermaid = window.mermaid;
+                }
+                mermaid.initialize({
+                    startOnLoad: false, theme: "dark",
+                    themeVariables: {
+                        primaryColor: "#1e3a5f", primaryTextColor: "#e2e8f0",
+                        primaryBorderColor: "#10a37f", lineColor: "#10a37f",
+                        secondaryColor: "#111827", tertiaryColor: "#0a0f1e",
+                        background: "#1a1a2e", mainBkg: "#1e1e3f",
+                        nodeBorder: "#10a37f", clusterBkg: "#1e2a3f",
+                        titleColor: "#ececec", edgeLabelBackground: "#1a1a2e",
+                    },
+                });
+                const { svg: rendered } = await mermaid.render(idRef.current, code);
+                if (!cancelled) setSvg(rendered);
+            } catch (e) {
+                if (!cancelled) setError(e.message);
+            }
+        };
+        render();
+        return () => { cancelled = true; };
+    }, [code]);
+
+    if (error) return (
+        <div style={{ padding: 12, color: "#ef4444", fontSize: 12, fontFamily: "'DM Mono',monospace" }}>
+            ❌ Error al renderizar diagrama: {error}
+        </div>
+    );
+    if (!svg) return (
+        <div style={{ padding: 20, textAlign: "center", color: "var(--text-muted)", fontSize: 13 }}>
+            <span style={{ animation: "spin 1s linear infinite", display: "inline-block", marginRight: 8 }}>⟳</span>
+            Renderizando diagrama...
+        </div>
+    );
+    return (
+        <div style={{ padding: 16, background: "#0d1117", overflow: "auto", maxHeight: 400 }}
+            dangerouslySetInnerHTML={{ __html: svg }} />
+    );
+}
+
+/* HTML/JS preview en iframe sandboxed */
+function HtmlPreview({ code }) {
+    const iframeRef = useRef(null);
+    const enhanced = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<style>*{box-sizing:border-box;margin:0;padding:0}body{background:#0a0f1e;color:#e2e8f0;font-family:'Segoe UI',system-ui,sans-serif;padding:16px}</style>
+</head><body>${code.includes("<html") ? code : code}</body></html>`;
+
+    useEffect(() => {
+        const iframe = iframeRef.current;
+        if (!iframe) return;
+        const doc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (!doc) return;
+        doc.open(); doc.write(enhanced); doc.close();
+    }, [enhanced]);
+
+    return (
+        <iframe ref={iframeRef} sandbox="allow-scripts allow-same-origin"
+            style={{ width: "100%", height: 300, border: "none", display: "block" }}
+            title="preview" />
+    );
+}
+
+/* ════════════════════════════════════════════════════════
+   ASSISTANT MESSAGE — con detección de artefactos
+═════════════════════════════════════════════════════════ */
+function AssistantMessage({ msg, isNew, onOpenCanvas }) {
     const { displayed, done } = useTypewriter(isNew ? msg.content : null, 8);
-    const text = isNew ? displayed : msg.content;
+    const text = isNew ? displayed : (msg.content || "");
     const isError = msg.role === "error";
+
+    // Detectar artefacto SOLO cuando hay contenido y no es error
+    const safeContent = (msg.content && !isError) ? msg.content : "";
+    const artifact = useArtifactDetector(safeContent);
+
+    // Texto limpio sin el bloque de código del artefacto
+    const cleanText = (() => {
+        if (!artifact || !artifact.code || !safeContent) return safeContent || msg.content || "";
+        try {
+            return artifact.raw
+                ? safeContent.replace(artifact.raw, "").trim()
+                : safeContent;
+        } catch {
+            return safeContent;
+        }
+    })();
+
+    // Durante el typewriter mostramos el texto parcial; al terminar usamos cleanText
+    const displayText = isNew && !done ? (text || "") : (cleanText || "");
+    const showArtifact = !!(artifact && artifact.code && typeof artifact.code === "string" && (!isNew || done));
+
     return (
         <div style={{ display: "flex", justifyContent: "flex-start", padding: "10px 28px", animation: isNew ? "fadeSlideUp 0.25s ease both" : "none" }}>
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 13, maxWidth: "80%" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 13, maxWidth: "82%" }}>
                 <div style={{ width: 32, height: 32, borderRadius: "50%", background: isError ? "#ef4444" : "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0, marginTop: 2, boxShadow: isError ? "0 0 0 3px rgba(239,68,68,0.2)" : "0 0 0 3px rgba(16,163,127,0.2)" }}>{isError ? "⚠" : "⚡"}</div>
-                <div style={{ minWidth: 0 }}>
+                <div style={{ minWidth: 0, flex: 1 }}>
                     {msg.bot && msg.bot !== "unknown" && !isError && <div style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "1px 8px", marginBottom: 5, background: "rgba(16,163,127,0.08)", border: "1px solid rgba(16,163,127,0.2)", borderRadius: 8, fontSize: 10, color: "var(--accent)", fontFamily: "'DM Mono',monospace" }}>⚙ {msg.bot}</div>}
                     {msg.correction && <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", marginBottom: 8, background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.25)", borderRadius: 8, fontSize: 11, color: "#f59e0b", fontFamily: "'DM Mono',monospace" }}>✏ Entendí: <em style={{ color: "#ececec", fontStyle: "normal", marginLeft: 4 }}>"{msg.correction}"</em></div>}
+
+                    {/* Texto de la respuesta */}
                     <div style={{ fontSize: isError ? 13 : 15, lineHeight: 1.75, color: isError ? "#f87171" : "var(--text-primary)", fontFamily: isError ? "'DM Mono',monospace" : "inherit", wordBreak: "break-word" }}>
-                        {isError ? text : renderMarkdown(text)}
+                        {isError ? displayText : renderMarkdown(displayText)}
                         {isNew && !done && !isError && <span style={{ display: "inline-block", width: 2, height: 16, background: "var(--accent)", marginLeft: 2, verticalAlign: "text-bottom", animation: "cursorBlink 0.7s step-end infinite" }} />}
                     </div>
+
+                    {/* Artefacto inline — aparece cuando termina el typewriter */}
+                    {showArtifact && (
+                        <InlineArtifact
+                            artifact={artifact}
+                            onExpand={() => onOpenCanvas?.(artifact)}
+                        />
+                    )}
+
                     {msg.showQR && (done || !isNew) && <InlineWhatsAppQR />}
-                    {msg.intent && !isError && <div style={{ marginTop: 7, fontFamily: "'DM Mono',monospace", fontSize: 11, color: "var(--text-muted)", opacity: done || !isNew ? 1 : 0, transition: "opacity 0.4s ease" }}><span style={{ color: "var(--accent)", opacity: 0.6 }}>↳ {msg.intent}</span></div>}
+                    {msg.intent && !isError && (
+                        <div style={{ marginTop: 7, fontFamily: "'DM Mono',monospace", fontSize: 11, color: "var(--text-muted)", opacity: done || !isNew ? 1 : 0, transition: "opacity 0.4s ease" }}>
+                            <span style={{ color: "var(--accent)", opacity: 0.6 }}>↳ {msg.intent}</span>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
@@ -328,83 +569,29 @@ function guessBot(msg) {
     if (l.includes("docs") || l.includes("documento") || l.includes("google")) return { botName: "ComputerBot", action: "📄 Trabajando en Google Docs..." };
     if (l.includes("screenshot") || l.includes("captura") || l.includes("volumen")) return { botName: "BatBot", action: "🖥️ Ejecutando en el sistema..." };
     if (l.includes("drive") || l.includes("subir") || l.includes("archivo")) return { botName: "DriveBot", action: "📁 Subiendo a Google Drive..." };
+    if (l.includes("diagrama") || l.includes("diagram") || l.includes("gráfico") || l.includes("grafico") || l.includes("chart") || l.includes("mermaid") || l.includes("flujo")) return { botName: "WebBot", action: "📊 Generando diagrama..." };
+    if (l.includes("diseñ") || l.includes("interfaz") || l.includes("ui") || l.includes("html") || l.includes("componente")) return { botName: "WebBot", action: "🎨 Diseñando interfaz..." };
     return { botName: null, action: null };
 }
-/**
- * correctPrompt — aplica el sistema completo de aliases y correcciones tipográficas.
- * Es la misma lógica que LanguageAliases.js en el backend, duplicada aquí
- * para corregir antes de enviar (sin round-trip al servidor).
- * Retorna { text, changed } — "changed" se usa para mostrar el hint de corrección.
- */
+
 function correctPrompt(text) {
     if (!text) return { text: "", changed: false };
-
-    // ── Aliases de aplicaciones ──────────────────────────────────────────────
     const APP = [
         [/\bwhastsapp\b/gi, "whatsapp"], [/\bwhatasapp\b/gi, "whatsapp"],
-        [/\bwhsatapp\b/gi, "whatsapp"],  [/\bwatssap\b/gi, "whatsapp"],
-        [/\bwatshap\b/gi, "whatsapp"],   [/\bwassap\b/gi, "whatsapp"],
-        [/\bwatsap\b/gi, "whatsapp"],    [/\bwtsap\b/gi, "whatsapp"],
-        [/\bwasap\b/gi, "whatsapp"],     [/\bwpp\b/gi, "whatsapp"],
-        [/\bwsp\b/gi, "whatsapp"],
-        [/\byuotube\b/gi, "youtube"],    [/\byoutuve\b/gi, "youtube"],
-        [/\byoutub\b/gi, "youtube"],     [/\byutube\b/gi, "youtube"],
-        [/\byou\s*tube\b/gi, "youtube"],
-        [/\bspotifay\b/gi, "spotify"],   [/\bspotfiy\b/gi, "spotify"],
-        [/\bspotifi\b/gi, "spotify"],
-        [/\bcrhome\b/gi, "chrome"],      [/\bchorme\b/gi, "chrome"],
-        [/\bchrom\b/gi, "chrome"],
-        [/\bdiscrod\b/gi, "discord"],    [/\bdiscrdo\b/gi, "discord"],
-        [/\bgoogle\s+driev\b/gi, "drive"], [/\bdirve\b/gi, "drive"],
-        [/\bla\s+nube\b/gi, "drive"],
-        [/\bvs\s*code\b/gi, "vscode"],  [/\bvisual\s+studio\b/gi, "vscode"],
-        [/\bforni\b/gi, "fortnite"],     [/\bfortni\b/gi, "fortnite"],
+        [/\bwatssap\b/gi, "whatsapp"], [/\bwsp\b/gi, "whatsapp"],
+        [/\byuotube\b/gi, "youtube"], [/\byoutub\b/gi, "youtube"],
+        [/\bspotifay\b/gi, "spotify"], [/\bspotfiy\b/gi, "spotify"],
+        [/\bcrhome\b/gi, "chrome"], [/\bchorme\b/gi, "chrome"],
+        [/\bdiscrod\b/gi, "discord"],
     ];
-
-    // ── Correcciones tipográficas ────────────────────────────────────────────
     const TYPOS = [
-        [/\binforamcion\b/gi, "información"], [/\bifromacion\b/gi, "información"],
-        [/\binfromacion\b/gi, "información"], [/\binfomacion\b/gi, "información"],
-        [/\binformacion\b/gi, "información"],
-        [/\bcuaando\b/gi, "cuando"],   [/\bciando\b/gi, "cuando"],
-        [/\bcuandp\b/gi, "cuando"],    [/\bqando\b/gi, "cuando"],
-        [/\bescritoroi\b/gi, "escritorio"], [/\bdesltop\b/gi, "desktop"],
-        [/\bdesctop\b/gi, "desktop"],
-        [/\bvolumne\b/gi, "volumen"],  [/\bvoluem\b/gi, "volumen"],
-        [/\bvolumn\b/gi, "volumen"],
-        [/\bmusica\b/gi, "música"],    [/\bcancion\b/gi, "canción"],
-        [/\bpantallla\b/gi, "pantalla"], [/\bpantala\b/gi, "pantalla"],
-        [/\baplicacion\b/gi, "aplicación"], [/\barchibo\b/gi, "archivo"],
+        [/\binforamcion\b/gi, "información"], [/\binfromacion\b/gi, "información"],
+        [/\bvolumne\b/gi, "volumen"], [/\bmusica\b/gi, "música"],
+        [/\bcancion\b/gi, "canción"], [/\bpantallla\b/gi, "pantalla"],
     ];
-
-    // ── Verbos rioplatenses ──────────────────────────────────────────────────
-    const VERBS = [
-        [/\babrir\b/gi, "abrí"],    [/\babre\b/gi, "abrí"],
-        [/\bcerrar\b/gi, "cerrá"],  [/\bcierra\b/gi, "cerrá"],
-        [/\bpausar\b/gi, "pausá"],  [/\bpause\b/gi, "pausá"],
-        [/\bsubir\b/gi, "subí"],    [/\bsube\b/gi, "subí"],
-        [/\bbajar\b/gi, "bajá"],    [/\bbaja\b/gi, "bajá"],
-        [/\bmutear\b/gi, "muteá"],  [/\bmute\b/gi, "muteá"],
-        [/\bmandar\b/gi, "mandá"],  [/\bmanda\b(?!\w)/gi, "mandá"],
-        [/\bbuscar\b/gi, "buscá"],  [/\bbusca\b(?!\w)/gi, "buscá"],
-        [/\bmover\b/gi, "mová"],    [/\bmueve\b/gi, "mové"],
-        [/\bponele\b/gi, "poné"],   [/\bponle\b/gi, "poné"],
-        [/\bpon\b(?!\w)/gi, "poné"],
-        [/\bpasar\b/gi, "pasá"],    [/\bpasa\b(?!\w)/gi, "pasá"],
-        [/\btomar\b/gi, "tomá"],    [/\btoma\b(?!\w)/gi, "tomá"],
-        [/\bactivar\b/gi, "activá"],
-    ];
-
     let result = text;
-    const run = (rules) => {
-        for (const [re, rep] of rules) {
-            try { result = result.replace(re, rep); } catch (_) { }
-        }
-    };
-    run(APP);
-    run(TYPOS);
-    run(VERBS);
-
+    const run = (rules) => { for (const [re, rep] of rules) { try { result = result.replace(re, rep); } catch (_) { } } };
+    run(APP); run(TYPOS);
     return { text: result, changed: result !== text };
 }
 
@@ -428,14 +615,44 @@ function ListeningOverlay({ state }) {
 }
 
 /* ════════════════════════════════════════════════════════
+   CANVAS MODAL — pantalla completa para artefactos
+═════════════════════════════════════════════════════════ */
+function CanvasModal({ artifact, onClose }) {
+    if (!artifact) return null;
+    return (
+        <div style={{
+            position: "fixed", inset: 0, zIndex: 9000,
+            background: "rgba(0,0,0,0.85)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: 24,
+            animation: "fadeSlideUp 0.2s ease",
+        }}
+            onClick={onClose}
+        >
+            <div
+                onClick={e => e.stopPropagation()}
+                style={{ width: "90vw", maxWidth: 1100, maxHeight: "90vh", overflow: "hidden", borderRadius: 16 }}
+            >
+                <ArtifactCanvas
+                    type={artifact.type}
+                    code={artifact.code}
+                    title={artifact.title}
+                    onClose={onClose}
+                />
+            </div>
+        </div>
+    );
+}
+
+/* ════════════════════════════════════════════════════════
    MAIN CHAT
 ═════════════════════════════════════════════════════════ */
 function Chat({
     propConvId = null,
-    onReady,                // (sendFn) → App.jsx guarda ref para WakeWord global
-    globalWakeWordState,    // viene de App.jsx
-    globalWakeWordEnabled,  // viene de App.jsx
-    onToggleWakeWord,       // viene de App.jsx
+    onReady,
+    globalWakeWordState,
+    globalWakeWordEnabled,
+    onToggleWakeWord,
 }) {
     const [conversationId, setConversationId] = useState(propConvId);
     const [messages, setMessages] = useState([WELCOME]);
@@ -447,10 +664,11 @@ function Chat({
     const [thinkingBot, setThinkingBot] = useState(null);
     const [thinkingAction, setThinkingAction] = useState(null);
     const [uploadLabel, setUploadLabel] = useState("");
+    // Canvas modal state
+    const [canvasArtifact, setCanvasArtifact] = useState(null);
     const bottomRef = useRef(null);
     const textareaRef = useRef(null);
 
-    // Sync wakeWordState desde App (global)
     useEffect(() => {
         if (globalWakeWordState !== undefined) setWakeWordState(globalWakeWordState);
     }, [globalWakeWordState]);
@@ -481,7 +699,7 @@ function Chat({
         setMessages(prev => { const next = [...prev, { role, content, ...extra }]; setNewMsgIdx(next.length - 1); return next; });
     };
 
-    /* ── sendMessage — se expone al padre via onReady ── */
+    /* ── sendMessage ── */
     const sendMessage = useCallback(async (text, extra = {}) => {
         const raw = (text || input).trim();
         if (!raw || loading) return;
@@ -511,7 +729,18 @@ function Chat({
             const historyForContext = messages.filter(m => m.role !== "thinking");
             const data = await sendMessageToBot(trimmed, conversationId, historyForContext);
             if (data.conversation_id && !conversationId) setConversationId(data.conversation_id);
-            addMessage(data.success === false ? "error" : "assistant", data.reply || "Sin respuesta.", {
+
+            let reply = data.reply || "Sin respuesta.";
+
+            // ── FILTRO: Si el modelo mandó JSON crudo de intents, mostrar mensaje amigable
+            if (isRawIntentJSON(reply)) {
+                reply = "Procesando tu solicitud... (si esto persiste, revisá la configuración del modelo en Ajustes)";
+            } else {
+                // Limpiar cualquier bloque JSON de intent que haya quedado en la respuesta
+                reply = stripIntentBlocks(reply);
+            }
+
+            addMessage(data.success === false ? "error" : "assistant", reply, {
                 intent: data.intent, bot: data.bot,
                 ...(wantsQR ? { showQR: true } : {}),
                 ...(wasCorrect ? { correction: trimmed } : {}),
@@ -524,7 +753,7 @@ function Chat({
         setTimeout(() => textareaRef.current?.focus(), 50);
     }, [input, loading, conversationId, messages]);
 
-    /* ── Exponer sendMessage al padre (App.jsx) ── */
+    /* ── Exponer sendMessage al padre ── */
     useEffect(() => {
         onReady?.(sendMessage);
     }, [sendMessage, onReady]);
@@ -537,7 +766,10 @@ function Chat({
             const fd = new FormData(); fd.append("file", file); fd.append("query", input.trim() || "Analizá este archivo detalladamente.");
             const res = await fetch(`${API}/api/upload`, { method: "POST", body: fd });
             const data = await res.json();
-            addMessage(data.success === false ? "error" : "assistant", data.reply || "No se pudo procesar.", { intent: data.intent, bot: data.bot });
+            let reply = data.reply || "No se pudo procesar.";
+            if (isRawIntentJSON(reply)) reply = "No pude analizar ese archivo.";
+            else reply = stripIntentBlocks(reply);
+            addMessage(data.success === false ? "error" : "assistant", reply, { intent: data.intent, bot: data.bot });
         } catch (err) { addMessage("error", `Error al procesar archivo: ${err.message}`); }
         setLoading(false); setThinkingBot(null); setThinkingAction(null); setUploadLabel("");
     };
@@ -582,7 +814,14 @@ function Chat({
                 {(!propConvId || historyLoaded) && messages.map((msg, i) => {
                     const isNew = i === newMsgIdx;
                     if (msg.role === "user") return <UserMessage key={i} msg={msg} isNew={isNew} />;
-                    return <AssistantMessage key={i} msg={msg} isNew={isNew} />;
+                    return (
+                        <AssistantMessage
+                            key={i}
+                            msg={msg}
+                            isNew={isNew}
+                            onOpenCanvas={setCanvasArtifact}
+                        />
+                    );
                 })}
                 {loading && <ThinkingIndicator botName={thinkingBot} action={thinkingAction} />}
                 <div ref={bottomRef} style={{ height: 1 }} />
@@ -613,7 +852,6 @@ function Chat({
                             disabled={loading}
                         />
 
-                        {/* Botón toggle wake word — controla el global en App.jsx */}
                         <button
                             onClick={() => onToggleWakeWord?.(!wakeWordEnabled)}
                             title={wakeWordEnabled ? "Jarvis escuchando — click para desactivar" : "Wake word inactivo"}
@@ -658,6 +896,9 @@ function Chat({
                     </div>
                 </div>
             </div>
+
+            {/* Canvas Modal — se abre al clicar "Abrir Canvas" */}
+            <CanvasModal artifact={canvasArtifact} onClose={() => setCanvasArtifact(null)} />
         </div>
     );
 }

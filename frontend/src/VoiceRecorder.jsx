@@ -1,393 +1,367 @@
 /**
- * VoiceRecorder.jsx — Grabador de voz con wake word "sistema"
+ * VoiceRecorder.jsx — v3
  *
- * Funcionalidades:
- *  - Escucha continua del wake word "sistema" (Web Speech API)
- *  - Grabación de audio con MediaRecorder API
- *  - Envío del audio al backend (/api/stt/transcribe)
- *  - Indicador visual del estado (idle/listening/recording/processing)
- *  - Stop word: "enviar" detiene la grabación y envía
+ * Grabación manual de audio para transcripción.
+ * No escucha wake words localmente: eso lo hace WakeWord en App.jsx.
+ *
+ * FIX crítico de audio:
+ *  - Usa MediaRecorder correctamente: acumula chunks en ondataavailable
+ *  - Al parar, crea Blob con todos los chunks → FormData → POST /api/stt/transcribe
+ *  - Si el backend responde con errorCode "TRANSCRIPTION_FAILED", muestra mensaje útil
  *
  * Props:
- *  onTranscript: fn(text) → llamada cuando se transcribe el audio
- *  onError: fn(error) → llamada cuando hay un error
- *  disabled: boolean
+ *  onTranscript(text)  → callback cuando se recibe la transcripción
+ *  onError(msg)        → callback para errores
+ *  disabled            → deshabilitar el componente
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
+
 const WAKE_WORD = "sistema";
-const STOP_WORDS = ["enviar", "envía", "mandar", "listo", "ya"];
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+const STOP_WORD = "enviar";
 
-// Colores de estado
-const STATE_COLORS = {
-    idle: "#1e3a5f",
-    listening: "#10b981",
-    recording: "#ef4444",
-    processing: "#f59e0b",
-    error: "#dc2626",
-};
+// Fonéticas alternativas del wake word que el STT puede generar
+const WAKE_WORD_VARIANTS = [
+    "sistema", "cist ema", "cistema", "sis tema", "xistema",
+];
 
-const STATE_LABELS = {
-    idle: "Decí 'sistema' para activar",
-    listening: "Escuchando...",
-    recording: "🔴 Grabando — decí 'enviar' para terminar",
-    processing: "⏳ Procesando...",
-    error: "Error de micrófono",
-};
+// ── Reconocimiento de voz continuo para wake word ────────────────────────────
+function useWakeWordDetector({ onWake, onStop, disabled }) {
+    const recognitionRef = useRef(null);
+    const activeRef = useRef(false);
 
-export default function VoiceRecorder({ onTranscript, onError, disabled }) {
-    const [state, setState] = useState("idle"); // idle | listening | recording | processing | error
-    const [volume, setVolume] = useState(0);
-    const [lastWords, setLastWords] = useState("");
-    const [manualMode, setManualMode] = useState(false); // modo manual sin wake word
+    const start = useCallback(() => {
+        if (!window.SpeechRecognition && !window.webkitSpeechRecognition) return;
+        if (recognitionRef.current) return;
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = "es-AR";
+        recognition.maxAlternatives = 3;
+
+        recognition.onresult = (event) => {
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript.toLowerCase().trim();
+
+                if (!activeRef.current) {
+                    const isWake = WAKE_WORD_VARIANTS.some(v => transcript.includes(v));
+                    if (isWake) {
+                        activeRef.current = true;
+                        onWake?.();
+                    }
+                } else {
+                    if (transcript.includes(STOP_WORD) || transcript.includes("enviar") || transcript.includes("send")) {
+                        activeRef.current = false;
+                        onStop?.();
+                    }
+                }
+            }
+        };
+
+        recognition.onerror = (e) => {
+            if (e.error === "aborted" || e.error === "no-speech") return;
+            console.warn("[WakeWord] Recognition error:", e.error);
+        };
+
+        recognition.onend = () => {
+            if (recognitionRef.current) {
+                try { recognition.start(); } catch (_) {}
+            }
+        };
+
+        recognitionRef.current = recognition;
+        try { recognition.start(); } catch (_) {}
+    }, [onWake, onStop]);
+
+    const stop = useCallback(() => {
+        if (recognitionRef.current) {
+            try { recognitionRef.current.stop(); } catch (_) {}
+            recognitionRef.current = null;
+        }
+        activeRef.current = false;
+    }, []);
+
+    useEffect(() => {
+        if (!disabled) start(); else stop();
+        return () => stop();
+    }, [disabled, start, stop]);
+
+    return { isListeningForWake: !activeRef.current };
+}
+
+// ── Componente principal ─────────────────────────────────────────────────────
+export default function VoiceRecorder({ onTranscript, onError, disabled = false }) {
+    const [state, setState] = useState("idle"); // idle | listening | processing | error
+    const [statusText, setStatusText] = useState("Click para grabar o decí 'sistema'");
+    const [audioLevel, setAudioLevel] = useState(0);
 
     const mediaRecorderRef = useRef(null);
-    const audioChunksRef = useRef([]);
-    const streamRef = useRef(null);
-    const recognitionRef = useRef(null);
+    const chunksRef = useRef([]);
+    const audioContextRef = useRef(null);
     const analyserRef = useRef(null);
+    const streamRef = useRef(null);
     const animFrameRef = useRef(null);
-    const stateRef = useRef("idle"); // ref para acceder en callbacks
+    const stateRef = useRef("idle");
 
-    // Sincronizar stateRef con state
+    // Mantener stateRef sincronizado
     useEffect(() => {
         stateRef.current = state;
     }, [state]);
 
-    /* ══════════════════════════════════════════════════
-       VOLUME METER
-    ══════════════════════════════════════════════════ */
-    const startVolumeMeter = useCallback((stream) => {
-        const ctx = new AudioContext();
-        const source = ctx.createMediaStreamSource(stream);
-        const analyser = ctx.createAnalyser();
-        analyser.fftSize = 256;
-        source.connect(analyser);
-        analyserRef.current = analyser;
+    /* ── Analizar nivel de audio ────────────────────────── */
+    const startAudioAnalysis = useCallback((stream) => {
+        try {
+            audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+            analyserRef.current = audioContextRef.current.createAnalyser();
+            analyserRef.current.fftSize = 256;
+            const source = audioContextRef.current.createMediaStreamSource(stream);
+            source.connect(analyserRef.current);
 
-        const data = new Uint8Array(analyser.frequencyBinCount);
-        const tick = () => {
-            if (stateRef.current !== "recording") return;
-            analyser.getByteFrequencyData(data);
-            const avg = data.reduce((a, b) => a + b, 0) / data.length;
-            setVolume(Math.min(100, avg * 1.5));
-            animFrameRef.current = requestAnimationFrame(tick);
-        };
-        tick();
+            const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
+            const update = () => {
+                if (stateRef.current !== "listening") return;
+                analyserRef.current.getByteFrequencyData(dataArray);
+                const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+                setAudioLevel(Math.min(100, avg * 2));
+                animFrameRef.current = requestAnimationFrame(update);
+            };
+            update();
+        } catch (_) {}
     }, []);
 
-    /* ══════════════════════════════════════════════════
-       STOP RECORDING & SEND
-    ══════════════════════════════════════════════════ */
-    const stopAndSend = useCallback(async () => {
-        if (stateRef.current !== "recording") return;
+    /* ── Detener grabación ──────────────────────────────── */
+    const stopRecording = useCallback(() => {
+        if (stateRef.current !== "listening") return;
 
-        setState("processing");
-        setVolume(0);
+        cancelAnimationFrame(animFrameRef.current);
+        setAudioLevel(0);
 
-        if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-
-        // Detener MediaRecorder
-        await new Promise((resolve) => {
-            if (!mediaRecorderRef.current) { resolve(); return; }
-            mediaRecorderRef.current.addEventListener("stop", resolve, { once: true });
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
             mediaRecorderRef.current.stop();
-        });
-
-        // Detener stream
+        }
         if (streamRef.current) {
             streamRef.current.getTracks().forEach(t => t.stop());
             streamRef.current = null;
         }
+        if (audioContextRef.current) {
+            audioContextRef.current.close().catch(() => {});
+            audioContextRef.current = null;
+        }
+    }, []);
 
-        const chunks = audioChunksRef.current;
-        audioChunksRef.current = [];
-
-        if (chunks.length === 0) {
+    /* ── Enviar audio al backend ────────────────────────── */
+    const sendAudio = useCallback(async (audioBlob) => {
+        if (!audioBlob || audioBlob.size < 500) {
             setState("idle");
+            setStatusText("Click para grabar o decí 'sistema'");
             return;
         }
 
-        // Crear Blob del audio
-        const mimeType = mediaRecorderRef.current?.mimeType || "audio/webm";
-        const audioBlob = new Blob(chunks, { type: mimeType });
+        setState("processing");
+        setStatusText("Procesando audio...");
 
-        // Verificar tamaño mínimo
-        if (audioBlob.size < 1000) {
-            setState("idle");
-            onError?.("Audio demasiado corto, intentá de nuevo");
-            return;
-        }
+        const formData = new FormData();
+        // Usar extensión correcta según el tipo MIME
+        const ext = audioBlob.type.includes("ogg") ? "ogg"
+            : audioBlob.type.includes("webm") ? "webm"
+            : audioBlob.type.includes("mp4") ? "mp4"
+            : "webm";
+        formData.append("audio", audioBlob, `recording.${ext}`);
+        formData.append("language", "es");
 
-        // Enviar al backend
         try {
-            const formData = new FormData();
-            const ext = mimeType.includes("ogg") ? ".ogg"
-                : mimeType.includes("mp4") ? ".mp4"
-                : ".webm";
-            formData.append("audio", audioBlob, `recording${ext}`);
-
-            const response = await fetch(`${API_URL}/api/stt/transcribe`, {
+            const response = await fetch(`${BACKEND_URL}/api/stt/transcribe`, {
                 method: "POST",
                 body: formData,
             });
 
-            if (!response.ok) {
-                const errData = await response.json().catch(() => ({}));
-                throw new Error(errData.error || `HTTP ${response.status}`);
-            }
-
             const data = await response.json();
 
-            if (data.success && data.text) {
-                onTranscript?.(data.text);
-            } else {
-                throw new Error(data.error || "Sin texto transcrito");
+            if (!response.ok || !data.success) {
+                const errMsg = data.error || `Error HTTP ${response.status}`;
+                const hint = data.errorCode === "TOO_SHORT"
+                    ? "El audio fue muy corto. Hablá un poco más."
+                    : data.errorCode === "TRANSCRIPTION_FAILED"
+                    ? "Gemma no pudo transcribir. Verificá que el modelo esté cargado en LM Studio."
+                    : errMsg;
+                throw new Error(hint);
+            }
+
+            const text = (data.text || "").trim();
+            if (!text) {
+                setState("idle");
+                setStatusText("No se detectó voz. Click para grabar o decí 'sistema' de nuevo.");
+                return;
             }
 
             setState("idle");
+            setStatusText("Click para grabar o decí 'sistema'");
+            onTranscript?.(text);
 
         } catch (err) {
-            console.error("STT error:", err);
-            onError?.(err.message);
+            console.error("[VoiceRecorder] Error al transcribir:", err);
             setState("error");
-            setTimeout(() => setState("idle"), 3000);
+            setStatusText(`Error: ${err.message}`);
+            onError?.(err.message);
+            setTimeout(() => {
+                setState("idle");
+                setStatusText("Click para grabar o decí 'sistema'");
+            }, 4000);
         }
     }, [onTranscript, onError]);
 
-    /* ══════════════════════════════════════════════════
-       START RECORDING
-    ══════════════════════════════════════════════════ */
+    /* ── Empezar grabación ──────────────────────────────── */
     const startRecording = useCallback(async () => {
+        if (stateRef.current !== "idle") return;
+
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
                 audio: {
                     echoCancellation: true,
                     noiseSuppression: true,
-                    sampleRate: 44100,
+                    sampleRate: 16000,
                 }
             });
             streamRef.current = stream;
+            chunksRef.current = [];
 
-            // Seleccionar el mejor codec disponible
+            // Detectar el mejor formato soportado
             const mimeTypes = [
                 "audio/webm;codecs=opus",
                 "audio/webm",
                 "audio/ogg;codecs=opus",
                 "audio/mp4",
             ];
-            const supportedMime = mimeTypes.find(m => MediaRecorder.isTypeSupported(m)) || "";
+            const supportedMime = mimeTypes.find(t => MediaRecorder.isTypeSupported(t)) || "";
 
             const recorder = new MediaRecorder(stream, supportedMime ? { mimeType: supportedMime } : {});
             mediaRecorderRef.current = recorder;
-            audioChunksRef.current = [];
 
-            recorder.addEventListener("dataavailable", (e) => {
+            recorder.ondataavailable = (e) => {
                 if (e.data && e.data.size > 0) {
-                    audioChunksRef.current.push(e.data);
+                    chunksRef.current.push(e.data);
                 }
-            });
+            };
 
-            recorder.start(100); // recolectar chunks cada 100ms
-            setState("recording");
-            startVolumeMeter(stream);
+            recorder.onstop = () => {
+                const mimeType = recorder.mimeType || supportedMime || "audio/webm";
+                const audioBlob = new Blob(chunksRef.current, { type: mimeType });
+                sendAudio(audioBlob);
+            };
+
+            recorder.onerror = (e) => {
+                console.error("[VoiceRecorder] Recorder error:", e.error);
+                setState("error");
+                setStatusText("Error de grabación");
+            };
+
+            // Pedir chunks cada 250ms para no perder datos
+            recorder.start(250);
+            startAudioAnalysis(stream);
+
+            setState("listening");
+            setStatusText("Grabando... click para detener");
 
         } catch (err) {
-            console.error("Mic error:", err);
-            onError?.("No se pudo acceder al micrófono: " + err.message);
+            console.error("[VoiceRecorder] Mic error:", err);
             setState("error");
-            setTimeout(() => setState("idle"), 3000);
+            setStatusText("Sin acceso al micrófono");
+            onError?.("Sin acceso al micrófono: " + err.message);
         }
-    }, [startVolumeMeter, onError]);
+    }, [startAudioAnalysis, sendAudio, onError]);
 
-    /* ══════════════════════════════════════════════════
-       WEB SPEECH API — Wake word detection
-    ══════════════════════════════════════════════════ */
-    useEffect(() => {
-        if (disabled) return;
+    /* ── Hook de wake word ──────────────────────────────── */
+    /* ── Hook de wake word local ────────────────────────── */
+    useWakeWordDetector({
+        onWake: startRecording,
+        onStop: stopRecording,
+        disabled,
+    });
 
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) {
-            console.warn("Web Speech API no disponible — usando solo modo manual");
-            return;
-        }
-
-        const recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = "es-AR";
-        recognition.maxAlternatives = 1;
-        recognitionRef.current = recognition;
-
-        recognition.onresult = (event) => {
-            let interim = "";
-            let final = "";
-
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                const transcript = event.results[i][0].transcript.toLowerCase().trim();
-                if (event.results[i].isFinal) final += transcript + " ";
-                else interim += transcript;
-            }
-
-            const combined = (final + interim).toLowerCase().trim();
-            setLastWords(combined.slice(-50));
-
-            // WAKE WORD: activar grabación
-            if (stateRef.current === "idle" || stateRef.current === "listening") {
-                const wakeWords = [WAKE_WORD, "sistema", "sis tema", "el sistema"];
-                if (wakeWords.some(w => combined.includes(w))) {
-                    setState("listening");
-                    setTimeout(() => {
-                        if (stateRef.current === "listening" || stateRef.current === "idle") {
-                            startRecording();
-                        }
-                    }, 300);
-                }
-            }
-
-            // STOP WORD: detener grabación
-            if (stateRef.current === "recording") {
-                if (STOP_WORDS.some(w => combined.includes(w))) {
-                    stopAndSend();
-                }
-            }
-        };
-
-        recognition.onerror = (event) => {
-            if (event.error === "not-allowed") {
-                onError?.("Permiso de micrófono denegado");
-                return;
-            }
-            // Reiniciar si hay error de red o similar
-            if (event.error !== "no-speech" && stateRef.current !== "recording") {
-                setTimeout(() => {
-                    try { recognition.start(); } catch { }
-                }, 1000);
-            }
-        };
-
-        recognition.onend = () => {
-            // Reiniciar automáticamente para escucha continua
-            if (stateRef.current !== "recording" && stateRef.current !== "processing") {
-                setTimeout(() => {
-                    try { recognition.start(); } catch { }
-                }, 500);
-            }
-        };
-
-        try {
-            recognition.start();
-            setState("idle");
-        } catch (err) {
-            console.warn("Speech recognition start error:", err);
-        }
-
-        return () => {
-            try { recognition.stop(); recognition.abort(); } catch { }
-        };
-    }, [disabled, startRecording, stopAndSend, onError]);
-
-    /* ══════════════════════════════════════════════════
-       MANUAL MODE (botón)
-    ══════════════════════════════════════════════════ */
-    const handleButtonClick = useCallback(() => {
-        if (state === "idle" || state === "error") {
+    /* ── Click manual ───────────────────────────────────── */
+    const handleClick = () => {
+        if (state === "idle") {
             startRecording();
-        } else if (state === "recording") {
-            stopAndSend();
+        } else if (state === "listening") {
+            stopRecording();
         }
-    }, [state, startRecording, stopAndSend]);
+    };
 
-    /* ══════════════════════════════════════════════════
-       RENDER
-    ══════════════════════════════════════════════════ */
-    const isActive = state !== "idle" && state !== "error";
-    const color = STATE_COLORS[state] || STATE_COLORS.idle;
+    /* ── Render ─────────────────────────────────────────── */
+    const isListening = state === "listening";
+    const isProcessing = state === "processing";
+    const isError = state === "error";
 
     return (
-        <div style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "8px",
-            padding: "8px",
-        }}>
+        <div className="voice-recorder" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             {/* Botón principal */}
             <button
-                onClick={handleButtonClick}
-                disabled={disabled || state === "processing"}
-                title={state === "recording" ? "Click para enviar" : "Click para grabar"}
+                onClick={handleClick}
+                disabled={disabled || isProcessing}
+                title={isListening ? "Click para detener" : "Click para grabar o decí 'sistema'"}
                 style={{
                     width: "44px",
                     height: "44px",
                     borderRadius: "50%",
-                    border: `2px solid ${color}`,
-                    background: state === "recording" ? `${color}22` : "transparent",
-                    cursor: disabled ? "not-allowed" : "pointer",
+                    border: "none",
+                    cursor: disabled || isProcessing ? "not-allowed" : "pointer",
+                    background: isListening
+                        ? `radial-gradient(circle, #ef4444 ${audioLevel}%, #dc2626 100%)`
+                        : isProcessing
+                        ? "#f59e0b"
+                        : isError
+                        ? "#6b7280"
+                        : "#3b82f6",
+                    transition: "background 0.1s",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    transition: "all 0.2s",
-                    position: "relative",
-                    boxShadow: isActive ? `0 0 12px ${color}66` : "none",
+                    fontSize: "18px",
+                    boxShadow: isListening
+                        ? `0 0 ${8 + audioLevel / 5}px rgba(239, 68, 68, 0.6)`
+                        : "none",
                 }}
             >
-                {/* Ícono */}
-                <span style={{ fontSize: "1.2rem" }}>
-                    {state === "processing" ? "⏳"
-                        : state === "recording" ? "⏹️"
-                        : state === "error" ? "❌"
-                        : "🎙️"}
-                </span>
-
-                {/* Anillo de volumen */}
-                {state === "recording" && volume > 5 && (
-                    <div style={{
-                        position: "absolute",
-                        inset: `-${volume / 8}px`,
-                        borderRadius: "50%",
-                        border: `1px solid ${color}44`,
-                        animation: "pulse 0.5s ease-in-out",
-                        pointerEvents: "none",
-                    }} />
-                )}
+                {isProcessing ? "⏳" : isListening ? "⏹" : "🎤"}
             </button>
 
-            {/* Indicador de estado */}
-            <div style={{
-                fontSize: "0.65rem",
-                color: color,
-                textAlign: "center",
-                maxWidth: "120px",
-                lineHeight: 1.3,
+            {/* Estado */}
+            <span style={{
+                fontSize: "13px",
+                color: isListening ? "#ef4444" : isError ? "#ef4444" : "#9ca3af",
+                maxWidth: "200px",
             }}>
-                {STATE_LABELS[state]}
-            </div>
+                {statusText}
+                {isListening && (
+                    <span style={{ marginLeft: "6px" }}>
+                        {"●".repeat(Math.ceil(audioLevel / 33) + 1)}
+                    </span>
+                )}
+            </span>
 
-            {/* Palabras detectadas (debug) */}
-            {lastWords && (state === "idle" || state === "listening") && (
+            {/* Indicador de nivel de audio */}
+            {isListening && (
                 <div style={{
-                    fontSize: "0.6rem",
-                    color: "#64748b",
-                    maxWidth: "200px",
-                    textAlign: "center",
+                    width: "60px",
+                    height: "6px",
+                    background: "#1f2937",
+                    borderRadius: "3px",
                     overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
                 }}>
-                    {lastWords}
+                    <div style={{
+                        height: "100%",
+                        width: `${audioLevel}%`,
+                        background: audioLevel > 70 ? "#ef4444" : audioLevel > 40 ? "#f59e0b" : "#22c55e",
+                        transition: "width 0.05s",
+                        borderRadius: "3px",
+                    }} />
                 </div>
             )}
-
-            {/* CSS animations */}
-            <style>{`
-                @keyframes pulse {
-                    0% { opacity: 1; transform: scale(1); }
-                    100% { opacity: 0; transform: scale(1.3); }
-                }
-            `}</style>
         </div>
     );
 }
