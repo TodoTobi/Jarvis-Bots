@@ -1,0 +1,7 @@
+frontend/node_modules/
+
+.wwebjs_auth/
+
+.wwebjs_auth/session/
+
+backend/node_modules/

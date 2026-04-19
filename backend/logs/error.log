@@ -288,3 +288,9 @@ Require stack:
 [2026-03-06T22:48:23.987Z] [ERROR] ModelService LLM error: 
 [2026-03-06T22:48:23.992Z] [ERROR] ModelService generateText: 
 [2026-03-06T22:48:23.993Z] [ERROR] [Error] WebBot: Error al generar respuesta: 
+[2026-03-07T00:04:45.110Z] [ERROR] ModelService: Cannot reach LM Studio — 
+[2026-03-07T00:04:55.936Z] [ERROR] ModelService LLM error: 
+[2026-03-07T00:04:55.944Z] [ERROR] ModelService generateText: 
+[2026-03-07T00:04:55.945Z] [ERROR] [Error] WebBot: Error al generar respuesta: 
+[2026-03-08T01:46:37.582Z] [ERROR] ModelService: Cannot reach LM Studio — 
+[2026-03-08T01:50:10.160Z] [ERROR] [Error] BatBot: Script file not found: pc/media/open_youtube.bat
