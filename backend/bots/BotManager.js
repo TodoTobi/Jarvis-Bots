@@ -1,10 +1,12 @@
 /**
- * BotManager.js — v5.0
+ * BotManager.js — v6.0
  *
- * CAMBIOS vs v4:
- *  - Self-awareness: handler para intent "self_explain" → llama a /api/self/explain
- *  - Self-awareness: candidatos de módulos expandidos con todos los bots y servicios
- *  - Canvas: intent "canvas_generate" → llama a /api/gemma/canvas
+ * CAMBIOS vs v5:
+ *  - TerminalBot agregado: ejecuta comandos de terminal, crea scripts, instala paquetes
+ *  - canvas_generate mejorado: detecta tipo y puede ejecutar scripts generados
+ *  - Intents nuevos: terminal_exec, create_script, install_package
+ *  - Gemini ELIMINADO — todo por Gemma 4 local
+ *  - wake word "sistema" correctamente manejado
  */
 
 const WebBot = require("./WebBot");
@@ -17,29 +19,27 @@ const ComputerBot = require("./ComputerBot");
 const VisionBot = require("./VisionBot");
 const SearchBot = require("./SearchBot");
 const DriveBot = require("./DriveBot");
+const TerminalBot = require("./TerminalBot");
 const logger = require("../logs/logger");
 
-// ── NLP / Contexto / Aliases ─────────────────────────────────────────────────
 let NLP, LangAliases;
 try {
     NLP = require("../services/NLPService");
     LangAliases = require("../services/LanguageAliases");
-    logger.info("BotManager: NLPService cargado — contexto y aliases habilitados");
+    logger.info("BotManager: NLPService cargado");
 } catch (e) {
     NLP = null;
     LangAliases = null;
     logger.warn("BotManager: NLPService no disponible:", e.message);
 }
 
-/* ══════════════════════════════════════════════════════
-   AUTO-DESACTIVACIÓN (ms de inactividad)
-   null = nunca se desactiva
-══════════════════════════════════════════════════════ */
+/* ── AUTO-DESACTIVACIÓN ──────────────────────────────────── */
 const AUTO_DEACTIVATE_CONFIG = {
     WebBot: null,
     BatBot: null,
     SearchBot: null,
     DriveBot: null,
+    TerminalBot: null,
     ComputerBot: 15 * 60000,
     VisionBot: 10 * 60000,
     MediaBot: 20 * 60000,
@@ -72,6 +72,11 @@ const INTENT_MAP = {
     "folder_": "DriveBot",
     "archivo_": "DriveBot",
     "carpeta_": "DriveBot",
+    "terminal_": "TerminalBot",
+    "script_": "TerminalBot",
+    "exec_": "TerminalBot",
+    "create_script": "TerminalBot",
+    "install_": "TerminalBot",
 };
 
 const NET_ACTION_MAP = {
@@ -131,35 +136,36 @@ const BAT_SCRIPT_ALIASES = {
 
 const ANTIGRAVITY_KEYWORDS = ["antigravity", "antigraviti", "anti gravity", "abre antigravity", "abrir antigravity"];
 
-// ── Mapa de módulos para self-awareness ──────────────────────────────────────
 const SELF_AWARENESS_MODULE_MAP = {
-    BotManager:       "backend/bots/BotManager.js",
-    ModelService:     "backend/services/ModelService.js",
-    NLPService:       "backend/services/NLPService.js",
-    LanguageAliases:  "backend/services/LanguageAliases.js",
-    SupabaseService:  "backend/services/SupabaseService.js",
-    InstructionLoader:"backend/utils/InstructionLoader.js",
-    DriveBot:         "backend/bots/DriveBot.js",
-    WebBot:           "backend/bots/WebBot.js",
-    BatBot:           "backend/bots/BatBot.js",
-    ComputerBot:      "backend/bots/ComputerBot.js",
-    VisionBot:        "backend/bots/VisionBot.js",
-    SearchBot:        "backend/bots/SearchBot.js",
-    MediaBot:         "backend/bots/MediaBot.js",
-    NetBot:           "backend/bots/NetBot.js",
-    WhatsAppBot:      "backend/bots/WhatsAppBot.js",
-    DoctorBot:        "backend/bots/DoctorBot.js",
-    GoogleDocsBot:    "backend/bots/GoogleDocsBot.js",
-    Bot:              "backend/bots/Bot.js",
-    chatController:   "backend/controllers/chatController.js",
+    BotManager: "backend/bots/BotManager.js",
+    ModelService: "backend/services/ModelService.js",
+    NLPService: "backend/services/NLPService.js",
+    LanguageAliases: "backend/services/LanguageAliases.js",
+    SupabaseService: "backend/services/SupabaseService.js",
+    InstructionLoader: "backend/utils/InstructionLoader.js",
+    DriveBot: "backend/bots/DriveBot.js",
+    WebBot: "backend/bots/WebBot.js",
+    BatBot: "backend/bots/BatBot.js",
+    TerminalBot: "backend/bots/TerminalBot.js",
+    ComputerBot: "backend/bots/ComputerBot.js",
+    VisionBot: "backend/bots/VisionBot.js",
+    SearchBot: "backend/bots/SearchBot.js",
+    MediaBot: "backend/bots/MediaBot.js",
+    NetBot: "backend/bots/NetBot.js",
+    WhatsAppBot: "backend/bots/WhatsAppBot.js",
+    DoctorBot: "backend/bots/DoctorBot.js",
+    GoogleDocsBot: "backend/bots/GoogleDocsBot.js",
+    Bot: "backend/bots/Bot.js",
+    chatController: "backend/controllers/chatController.js",
     deviceController: "backend/controllers/deviceController.js",
-    server:           "backend/server.js",
+    server: "backend/server.js",
 };
 
 class BotManager {
     constructor() {
         const batBot = new BatBot();
         const doctorBot = new DoctorBot();
+        const terminalBot = new TerminalBot();
 
         let GoogleDocsBot = null;
         try {
@@ -179,6 +185,7 @@ class BotManager {
             VisionBot: new VisionBot(),
             SearchBot: new SearchBot(),
             DriveBot: new DriveBot(),
+            TerminalBot: terminalBot,
             GoogleDocsBot: GoogleDocsBot ? new GoogleDocsBot() : null,
         };
 
@@ -193,7 +200,8 @@ class BotManager {
             };
         }
 
-        ["WebBot", "BatBot", "SearchBot", "DriveBot"].forEach(n => {
+        // Bots activos por defecto
+        ["WebBot", "BatBot", "SearchBot", "DriveBot", "TerminalBot"].forEach(n => {
             this.states[n].active = true;
         });
 
@@ -201,11 +209,10 @@ class BotManager {
             this._checkAutoDeactivate();
         }, 2 * 60 * 1000);
 
-        logger.info(`BotManager v5 initialized. Bots: ${Object.keys(this.bots).join(", ")}`);
+        logger.info(`BotManager v6 initialized. Bots: ${Object.keys(this.bots).join(", ")}`);
     }
 
-    /* ── AUTO-DESACTIVACIÓN ───────────────────────── */
-
+    /* ── AUTO-DESACTIVACIÓN ─────────────────────────────── */
     _checkAutoDeactivate() {
         const now = Date.now();
         for (const [name, state] of Object.entries(this.states)) {
@@ -221,8 +228,7 @@ class BotManager {
         }
     }
 
-    /* ── Activate / Deactivate ────────────────────── */
-
+    /* ── Activate / Deactivate ──────────────────────────── */
     activateBot(name) {
         this._assertExists(name);
         this.states[name].active = true;
@@ -238,7 +244,7 @@ class BotManager {
         this.states[name].active = false;
         this.states[name].status = "idle";
         if (name === "WhatsAppBot" && this.bots.WhatsAppBot) {
-            this.bots.WhatsAppBot.deactivate().catch(() => { });
+            this.bots.WhatsAppBot.deactivate().catch(() => {});
         }
         logger.info(`Bot deactivated: ${name}`);
     }
@@ -277,14 +283,13 @@ class BotManager {
     /* ══════════════════════════════════════════════════
        EXECUTE INTENT — PUNTO CENTRAL
     ══════════════════════════════════════════════════ */
-
     async executeIntent(intentObject) {
         const normalized = this._normalizeIntent(intentObject);
         const rawMessage = normalized.parameters?._originalMessage || "";
 
         let processedMessage = rawMessage;
         if (LangAliases && rawMessage) {
-            const { text, changed, corrections } = LangAliases.applyAliases(rawMessage);
+            const { text, changed } = LangAliases.applyAliases(rawMessage);
             if (changed) {
                 processedMessage = text;
                 logger.info(`[Aliases] Corregido: "${rawMessage}" → "${processedMessage}"`);
@@ -315,33 +320,46 @@ class BotManager {
             return this._handleWhatsAppQR();
         }
 
-        // ── SELF-AWARENESS ────────────────────────────────────────────────────
+        // ── SELF-AWARENESS ─────────────────────────────────
         if (normalized.intent === "self_explain") {
             return await this._handleSelfExplain(normalized.parameters);
         }
 
-        // ── CANVAS ────────────────────────────────────────────────────────────
+        // ── CANVAS ─────────────────────────────────────────
         if (normalized.intent === "canvas_generate" || normalized.intent === "canvas_create") {
             return await this._handleCanvas(normalized.parameters);
         }
 
-        // ── DriveBot ──────────────────────────────────
+        // ── TERMINAL ───────────────────────────────────────
+        if (
+            normalized.intent === "terminal_exec" ||
+            normalized.intent === "create_script" ||
+            normalized.intent === "install_package" ||
+            normalized.intent === "terminal_run" ||
+            normalized.intent.startsWith("terminal_") ||
+            normalized.intent.startsWith("script_") ||
+            normalized.intent.startsWith("install_")
+        ) {
+            return await this._handleTerminalIntent(normalized);
+        }
+
+        // ── DriveBot ───────────────────────────────────────
         const driveResult = await this._handleDriveIntent(normalized);
         if (driveResult) return driveResult;
 
-        // ── Google Docs ────────────────────────────────
+        // ── Google Docs ────────────────────────────────────
         const gdocsResult = await this._handleGoogleDocsIntent(normalized);
         if (gdocsResult) return gdocsResult;
 
-        // ── Antigravity ───────────────────────────────
+        // ── Antigravity ────────────────────────────────────
         const antigravityResult = await this._handleAntigravityIntent(normalized);
         if (antigravityResult) return antigravityResult;
 
-        // ── Cerrar apps ───────────────────────────────
+        // ── Cerrar apps ────────────────────────────────────
         const closeResult = await this._handleCloseIntent(normalized);
         if (closeResult) return closeResult;
 
-        // ── Volumen exacto ────────────────────────────
+        // ── Volumen exacto ─────────────────────────────────
         if (["volume", "set_volume", "volume_set"].includes(normalized.intent)) {
             const level = normalized.parameters.level ?? normalized.parameters.value ?? null;
             if (level !== null) {
@@ -355,14 +373,14 @@ class BotManager {
             return this._runSafe("BatBot", { script, args: [] });
         }
 
-        // ── Búsqueda web ──────────────────────────────
+        // ── Búsqueda web ───────────────────────────────────
         if (["search_web", "web_search", "buscar_web", "google_search"].includes(normalized.intent)) {
             const q = normalized.parameters.query || normalized.parameters.search || "";
             if (!this.isBotActive("SearchBot")) this.activateBot("SearchBot");
             return this._runSafe("SearchBot", { query: q });
         }
 
-        // ── Routing general ───────────────────────────
+        // ── Routing general ────────────────────────────────
         const targetBot = this._mapIntent(normalized.intent);
 
         if (targetBot === "NetBot" && !normalized.parameters.action) {
@@ -387,6 +405,9 @@ class BotManager {
             if (!this.isBotActive("SearchBot")) this.activateBot("SearchBot");
             return this._runSafe("SearchBot", { query: q });
         }
+        if (targetBot === "TerminalBot") {
+            return await this._handleTerminalIntent(normalized);
+        }
 
         const effectiveBot = targetBot || "WebBot";
         if (effectiveBot === "WebBot") {
@@ -410,103 +431,88 @@ class BotManager {
     }
 
     /* ══════════════════════════════════════════════════
+       TERMINAL INTENT HANDLER
+    ══════════════════════════════════════════════════ */
+    async _handleTerminalIntent(normalized) {
+        const intent = normalized.intent;
+        const params = normalized.parameters;
+
+        if (!this.isBotActive("TerminalBot")) this.activateBot("TerminalBot");
+
+        let action = params.action || "";
+
+        if (!action) {
+            if (intent.includes("create_and_run") || intent.includes("create_script")) {
+                action = params.content ? "create_and_run" : "exec";
+            } else if (intent.includes("create_file") || intent.includes("write_file")) {
+                action = "create_file";
+            } else if (intent.includes("install")) {
+                action = params.package?.includes("pip") ? "install_pip" : "install_npm";
+            } else if (intent.includes("list")) {
+                action = "list_dir";
+            } else {
+                action = "exec";
+            }
+        }
+
+        const terminalParams = {
+            action,
+            command: params.command || params.task || params.query || null,
+            filepath: params.filepath || params.path || null,
+            filename: params.filename || params.name || null,
+            content: params.content || params.code || null,
+            workdir: params.workdir || params.directory || null,
+            package: params.package || null,
+        };
+
+        logger.info(`TerminalBot: action="${action}" command="${terminalParams.command || ""}"`);
+        return this._runSafe("TerminalBot", terminalParams);
+    }
+
+    /* ══════════════════════════════════════════════════
        SELF-AWARENESS HANDLER
     ══════════════════════════════════════════════════ */
-
     async _handleSelfExplain({ filePath, question, module: moduleName }) {
         const axios = require("axios");
         const port = process.env.PORT || 3001;
 
-        // Resolver ruta del módulo si no vino filePath directo
         let resolvedPath = filePath;
         if (!resolvedPath && moduleName) {
-            // Buscar en el mapa de candidatos
             resolvedPath = SELF_AWARENESS_MODULE_MAP[moduleName] || null;
-
-            // Si no está en el mapa, intentar inferir por nombre
             if (!resolvedPath) {
-                if (moduleName.endsWith(".js")) {
-                    // buscar en bots, services, routes, controllers
-                    const candidates = [
-                        `backend/bots/${moduleName}`,
-                        `backend/services/${moduleName}`,
-                        `backend/routes/${moduleName}`,
-                        `backend/controllers/${moduleName}`,
-                        `backend/utils/${moduleName}`,
-                    ];
-                    resolvedPath = candidates[0]; // el más probable
-                } else if (/Bot$/.test(moduleName)) {
-                    resolvedPath = `backend/bots/${moduleName}.js`;
-                } else if (/Service$/.test(moduleName)) {
-                    resolvedPath = `backend/services/${moduleName}.js`;
-                } else if (/Route[s]?$/.test(moduleName)) {
-                    resolvedPath = `backend/routes/${moduleName}.js`;
-                } else if (/Controller$/.test(moduleName)) {
-                    resolvedPath = `backend/controllers/${moduleName}.js`;
-                }
+                if (/Bot$/.test(moduleName)) resolvedPath = `backend/bots/${moduleName}.js`;
+                else if (/Service$/.test(moduleName)) resolvedPath = `backend/services/${moduleName}.js`;
+                else if (/Controller$/.test(moduleName)) resolvedPath = `backend/controllers/${moduleName}.js`;
             }
         }
-
-        logger.info(`[SelfAwareness] filePath="${resolvedPath}" question="${(question || "").substring(0, 80)}"`);
 
         try {
             const response = await axios.post(
                 `http://localhost:${port}/api/self/explain`,
                 {
                     filePath: resolvedPath,
-                    question: question || `Explicá qué hace ${resolvedPath || moduleName} y cómo se integra con el sistema`,
-                    context: moduleName ? `El usuario preguntó sobre el módulo: ${moduleName}` : null,
+                    question: question || `Explicá qué hace ${resolvedPath || moduleName} y cómo se integra`,
+                    context: moduleName ? `El usuario preguntó sobre: ${moduleName}` : null,
                 },
                 { timeout: 90000 }
             );
-
-            const explanation = response.data?.explanation || "No pude generar una explicación.";
-            return this._response(explanation, false);
+            return this._response(response.data?.explanation || "No pude generar una explicación.", false);
         } catch (err) {
             logger.error(`[SelfAwareness] Error: ${err.message}`);
-
-            // Fallback: responder con info de arquitectura hardcodeada
-            const fallback = this._selfAwarenessFallback(resolvedPath, question, moduleName);
-            if (fallback) return this._response(fallback, false);
-
-            return this._response(
-                `❌ No pude leer mi propio código en este momento.\n\n` +
-                `Error: ${err.message}\n\n` +
-                `💡 Asegurate que el servidor tenga montado /api/self/explain (selfAwarenessRoutes.js)`,
-                true
-            );
+            return this._response(`❌ Error de self-awareness: ${err.message}`, true);
         }
-    }
-
-    _selfAwarenessFallback(filePath, question, moduleName) {
-        // Respuesta básica desde el mapa hardcodeado si falla el endpoint
-        const MODULE_DESCRIPTIONS = {
-            "backend/server.js": "Punto de entrada del backend Express. Registra todas las rutas, configura CORS y maneja errores globales.",
-            "backend/bots/BotManager.js": "Orquestador central. Recibe intents del ModelService y los enruta al bot correcto.",
-            "backend/services/ModelService.js": "Cerebro NLP. Tiene QUICK_RULES (clasificador por regex) y fallback al LLM local (Gemma 4).",
-            "backend/services/NLPService.js": "Motor de NLP: Levenshtein, similitud de strings, scoring de archivos, búsqueda fuzzy.",
-            "backend/bots/DriveBot.js": "Gestión de archivos locales y sync con Google Drive Sync.",
-            "backend/bots/SearchBot.js": "Búsqueda web real via DuckDuckGo HTML scraping.",
-        };
-
-        const key = filePath || (moduleName ? `backend/bots/${moduleName}.js` : null);
-        if (key && MODULE_DESCRIPTIONS[key]) {
-            return `📄 **${key}**\n\n${MODULE_DESCRIPTIONS[key]}\n\n*Para más detalles, el endpoint /api/self/explain debe estar disponible.*`;
-        }
-        return null;
     }
 
     /* ══════════════════════════════════════════════════
        CANVAS HANDLER
     ══════════════════════════════════════════════════ */
-
-    async _handleCanvas({ prompt, type, question }) {
+    async _handleCanvas({ prompt, type, question, execute }) {
         const axios = require("axios");
         const port = process.env.PORT || 3001;
         const canvasPrompt = prompt || question || "";
 
         if (!canvasPrompt) {
-            return this._response("❌ Indicame qué querés que genere en el canvas. Ej: 'haceme un diagrama de flujo del login'", true);
+            return this._response("❌ Indicame qué querés que genere. Ej: 'haceme un diagrama de flujo del login'", true);
         }
 
         try {
@@ -522,19 +528,33 @@ class BotManager {
 
             const { code, type: detectedType } = response.data;
 
-            // Formatear respuesta con marcadores que el frontend detecta
             const typeLabel = {
                 mermaid: "diagrama Mermaid",
                 html: "diseño HTML",
                 svg: "ilustración SVG",
                 react: "componente React",
                 javascript: "gráfico JavaScript",
-            }[detectedType] || "contenido visual";
+                python: "script Python",
+                bash: "script Bash",
+                powershell: "script PowerShell",
+            }[detectedType] || "contenido generado";
 
-            return this._response(
-                `🎨 Generé un ${typeLabel}:\n\n\`\`\`${detectedType}\n${code}\n\`\`\``,
-                false
-            );
+            let result = `🎨 Generé un ${typeLabel}:\n\n\`\`\`${detectedType}\n${code}\n\`\`\``;
+
+            // Si es un script y el usuario quiere ejecutarlo
+            if (execute && ["python", "bash", "powershell", "javascript"].includes(detectedType)) {
+                if (!this.isBotActive("TerminalBot")) this.activateBot("TerminalBot");
+                const ext = { python: ".py", bash: ".sh", powershell: ".ps1", javascript: ".js" }[detectedType];
+                const execResult = await this._runSafe("TerminalBot", {
+                    action: "create_and_run",
+                    filename: `jarvis_script${ext}`,
+                    content: code,
+                });
+                result += `\n\n**Ejecución:**\n${execResult.reply}`;
+            }
+
+            return this._response(result, false);
+
         } catch (err) {
             logger.error(`[Canvas] Error: ${err.message}`);
             return this._response(`❌ Error generando canvas: ${err.message}`, true);
@@ -544,7 +564,6 @@ class BotManager {
     /* ══════════════════════════════════════════════════
        DRIVE INTENT HANDLER
     ══════════════════════════════════════════════════ */
-
     async _handleDriveIntent(normalized) {
         const intent = normalized.intent;
         const params = normalized.parameters;
@@ -594,14 +613,12 @@ class BotManager {
             skipShortcuts: params.skip_shortcuts !== false,
         };
 
-        logger.info(`DriveBot: action="${action}" filename="${driveParams.filename}" source="${driveParams.source}"`);
         return this._runSafe("DriveBot", driveParams);
     }
 
     /* ══════════════════════════════════════════════════
        GOOGLE DOCS HANDLER
     ══════════════════════════════════════════════════ */
-
     async _handleGoogleDocsIntent(normalized) {
         const intent = normalized.intent;
         const params = normalized.parameters;
@@ -631,10 +648,6 @@ class BotManager {
             else action = "list_docs";
         }
 
-        if (action === "duplicate_and_write" || intent === "google_docs_duplicate_and_write") {
-            return await this._handleDuplicateAndWrite(params);
-        }
-
         const docsParams = {
             action,
             docId: params.doc_id || params.docId || params.id || null,
@@ -651,39 +664,9 @@ class BotManager {
         return this._runSafe("GoogleDocsBot", docsParams);
     }
 
-    async _handleDuplicateAndWrite(params) {
-        if (!this.bots.GoogleDocsBot) return this._response("❌ GoogleDocsBot no disponible.", true);
-        if (!this.isBotActive("GoogleDocsBot")) this.activateBot("GoogleDocsBot");
-
-        const dupResult = await this._runSafe("GoogleDocsBot", {
-            action: "duplicate_doc",
-            docName: params.docName,
-            newName: params.newName || null,
-        });
-        if (dupResult.error) return dupResult;
-
-        const replyText = dupResult.reply || "";
-        const idMatch = replyText.match(/ID[:\s]+`?([a-zA-Z0-9_-]{20,})`?/);
-        const newDocId = idMatch?.[1] || null;
-
-        if (!newDocId || !params.content) {
-            return this._response(`${dupResult.reply}\n\n${params.content ? "⚠ No pude extraer el ID." : "✅ Documento duplicado."}`, false);
-        }
-
-        const writeResult = await this._runSafe("GoogleDocsBot", {
-            action: "write_doc",
-            docId: newDocId,
-            content: params.content,
-            replaceAll: false,
-        });
-
-        return this._response(`${dupResult.reply}\n\n✏️ **Contenido escrito:**\n${writeResult.reply}`, false);
-    }
-
     /* ══════════════════════════════════════════════════
        ANTIGRAVITY HANDLER
     ══════════════════════════════════════════════════ */
-
     async _handleAntigravityIntent(normalized) {
         const intent = normalized.intent;
         const params = normalized.parameters;
@@ -710,12 +693,11 @@ class BotManager {
         await this._runSafe("BatBot", { script: "open_antigravity", args: [] });
         await new Promise(r => setTimeout(r, 3000));
 
-        const task = `Estás en Antigravity AI. ${message}\nEncontrá el campo de texto, escribí: "${message}", presioná Enter. Transcribí la respuesta.`;
-        return this._runSafe("ComputerBot", { task, url: process.env.ANTIGRAVITY_URL || "https://antigravity.ai" });
+        const task = `Estás en Antigravity AI. ${message}\nEncontrá el campo de texto, escribí: "${message}", presioná Enter.`;
+        return this._runSafe("ComputerBot", { task });
     }
 
-    /* ── CLOSE INTENT ─────────────────────────────── */
-
+    /* ── CLOSE INTENT ───────────────────────────────── */
     async _handleCloseIntent(normalized) {
         const closeMap = {
             "close_youtube": "close_youtube", "cerrar_youtube": "close_youtube",
@@ -731,8 +713,7 @@ class BotManager {
         return this._runSafe("BatBot", { script, args: [] });
     }
 
-    /* ── CAPACIDADES ──────────────────────────────── */
-
+    /* ── CAPACIDADES ────────────────────────────────── */
     getCapabilities() {
         const batBot = this.bots["BatBot"];
         const scripts = batBot ? batBot.getAvailableScripts() : [];
@@ -748,40 +729,22 @@ class BotManager {
             `${icons[cat] || "🔧"} **${names[cat] || cat}**\n${items.join("\n")}`
         ).join("\n\n");
 
-        return `🤖 **JarvisCore v5 — Capacidades:**
+        return `🤖 **JarvisCore v6 — Capacidades:**
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🧠 **Self-Awareness** — Conocimiento de mi propio código
-• "¿Cómo funcionás?" → Explico mi arquitectura
-• "¿Qué hace DriveBot?" → Leo y explico mi código
-• "¿De qué estás hecho?" → Muestro mi estructura
-
-🎨 **Canvas/Artifacts** — Contenido visual generado por IA
-• Diagramas Mermaid, flujos, ER, secuencia
-• Interfaces HTML/CSS/JS interactivas
-• Gráficos con Chart.js
-• Componentes SVG e ilustraciones
-
+🎤 **Voz:** wake words "sistema" o "jarvis", di "enviar" para enviar
+🧠 **Self-Awareness** — Conoce su propio código
+🎨 **Canvas/Artifacts** — Diagramas Mermaid, HTML, SVG, scripts
+💻 **TerminalBot** — Ejecuta comandos, crea y corre scripts
 📁 **DriveBot** — Archivos y Google Drive Sync
-• Mover/copiar archivos al Drive
-• Buscar archivos en la PC
-• Listar, crear, eliminar
-
 🖥️ **ComputerBot** — Control del PC con visión IA
-
 📄 **GoogleDocsBot** — Google Docs
-
 🌐 **SearchBot** — Búsqueda web real
-
 💬 **WebBot** — Conversación con Gemma 4
-
 📱 **WhatsAppBot** — Control remoto
-
 📷 **VisionBot** — Análisis de imágenes y PDFs
-
 🤖 **NetBot** — Dispositivos Android (ADB)
-
 🩺 **DoctorBot** — Diagnóstico automático
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -790,11 +753,13 @@ ${scriptLines}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🗣️ **Voz:** wake word "sistema [comando]", di "enviar" para detener`;
+💡 Ejemplos de terminal:
+• "ejecutá 'ls -la' en el Desktop"
+• "crea un script Python que liste los archivos y ejecutalo"
+• "instalá el paquete requests con pip"`;
     }
 
-    /* ── WhatsApp QR ──────────────────────────────── */
-
+    /* ── WhatsApp QR ────────────────────────────────── */
     async _handleWhatsAppQR() {
         try {
             if (!this.isBotActive("WhatsAppBot") || !this.bots.WhatsAppBot) {
@@ -810,14 +775,13 @@ ${scriptLines}
                 const qrSrc = qrData.qr.startsWith("data:") ? qrData.qr : `data:image/png;base64,${qrData.qr}`;
                 return this._response(`📱 Escaneá este QR con WhatsApp:\n[WHATSAPP_QR:${qrSrc}]`, false);
             }
-            return this._response("⏳ WhatsApp iniciando... El QR se genera en ~15 segundos. Pedilo nuevamente.", false);
+            return this._response("⏳ WhatsApp iniciando... El QR se genera en ~15 segundos.", false);
         } catch (err) {
             return this._response(`Error al obtener QR: ${err.message}`, true);
         }
     }
 
-    /* ── Run safe ─────────────────────────────────── */
-
+    /* ── Run safe ───────────────────────────────────── */
     async _runSafe(botName, parameters) {
         const bot = this.bots[botName];
         if (!bot) return this._response(`Bot "${botName}" no disponible`, true);
@@ -849,7 +813,7 @@ ${scriptLines}
             this.states[botName].status = "error";
             this.states[botName].lastError = err.message;
             logger.error(`[Error] ${botName}: ${err.message}`);
-            this._triggerDoctor(botName, err).catch(() => { });
+            this._triggerDoctor(botName, err).catch(() => {});
             return this._response(`Error en ${botName}: ${err.message}`, true);
         }
     }

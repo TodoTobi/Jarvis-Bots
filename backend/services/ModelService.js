@@ -44,6 +44,163 @@ const QUICK_RULES = [
  * Esto le permite a Jarvis detectar preguntas sobre su propio código sin usar el LLM.
  */
 
+/**
+ * QUICK_RULES ADICIONALES — Terminal, Canvas y correcciones de wake word
+ * 
+ * INSTRUCCIONES:
+ * Abrí backend/services/ModelService.js
+ * Pegá estas reglas AL INICIO del array QUICK_RULES
+ * (antes de las reglas de SELF-AWARENESS que ya están)
+ * 
+ * ─────────────────────────────────────────────────────────
+ */
+
+// ════════════════════════════════════════════════════
+// REGLAS DE TERMINAL — pegar AL INICIO de QUICK_RULES
+// ════════════════════════════════════════════════════
+
+// ── CREAR Y EJECUTAR SCRIPT ──────────────────────────────────────────────────
+{
+    patterns: [
+        /cre[aá][r]?\s+(?:un[ao]?\s+)?script\s+(?:de\s+)?(?:python|js|bash|powershell|shell)\s+.+/i,
+        /hace[r]?\s+(?:un[ao]?\s+)?script\s+(?:que|para)\s+.+/i,
+        /escrib[ií][r]?\s+(?:un[ao]?\s+)?(?:script|programa|código)\s+(?:en\s+\w+\s+)?(?:que|para)\s+.+/i,
+        /cre[aá][r]?\s+(?:un[ao]?\s+)?(?:script|archivo|programa)\s+.+\s+y\s+ejecut[aá][r]?(?:lo)?/i,
+        /genera[r]?\s+(?:un[ao]?\s+)?script\s+.+/i,
+    ],
+    result: (m) => {
+        const langMatch = m.match(/(?:de|en)\s+(python|javascript|js|bash|shell|powershell|ps1)/i);
+        const lang = langMatch ? langMatch[1].toLowerCase() : "python";
+        const shouldExec = /ejecut[aá][r]?(?:lo)?/i.test(m) || /y\s+corr[eé][r]?(?:lo)?/i.test(m);
+        return {
+            intent: "canvas_generate",
+            parameters: {
+                prompt: m,
+                type: "script",
+                question: m,
+                execute: shouldExec,
+            }
+        };
+    }
+},
+
+// ── EJECUTAR COMANDO EN TERMINAL ─────────────────────────────────────────────
+{
+    patterns: [
+        /ejecut[aá][r]?\s+(?:el\s+)?(?:comando|command)\s+["']?(.+?)["']?(?:\s+en\s+(.+))?$/i,
+        /corr[eé][r]?\s+["'](.+?)["']\s+(?:en\s+la\s+terminal)?/i,
+        /en\s+la\s+(?:terminal|consola|cmd)\s+(?:ejecut[aá]|corr[eé]|poneme)\s+["']?(.+?)["']?$/i,
+        /(?:terminal|cmd|consola):\s*(.+)/i,
+    ],
+    result: (m) => {
+        const match =
+            m.match(/(?:comando|command)\s+["']?(.+?)["']?(?:\s+en\s+(.+))?$/i) ||
+            m.match(/corr[eé][r]?\s+["'](.+?)["']/i) ||
+            m.match(/(?:ejecut[aá]|corr[eé]|poneme)\s+["']?(.+?)["']?$/i) ||
+            m.match(/(?:terminal|cmd|consola):\s*(.+)/i);
+        const command = match ? match[1].trim() : m;
+        const workdir = match ? match[2]?.trim() : null;
+        return {
+            intent: "terminal_exec",
+            parameters: { action: "exec", command, workdir }
+        };
+    }
+},
+
+// ── INSTALAR PAQUETE ─────────────────────────────────────────────────────────
+{
+    patterns: [
+        /instal[aá][r]?\s+(?:el\s+)?paquete\s+(\S+)\s+(?:con\s+)?(pip|npm)/i,
+        /instal[aá][r]?\s+(\S+)\s+con\s+(pip|npm)/i,
+        /pip\s+install\s+(\S+)/i,
+        /npm\s+install\s+(\S+)/i,
+    ],
+    result: (m) => {
+        const pipMatch = m.match(/pip(?:\s+install)?\s+(\S+)/i);
+        const npmMatch = m.match(/npm(?:\s+install)?\s+(\S+)/i);
+        const pkgMatch = m.match(/paquete\s+(\S+)\s+(?:con\s+)?(pip|npm)/i) ||
+                         m.match(/(\S+)\s+con\s+(pip|npm)/i);
+
+        if (pipMatch) {
+            return { intent: "install_package", parameters: { action: "install_pip", package: pipMatch[1] } };
+        }
+        if (npmMatch) {
+            return { intent: "install_package", parameters: { action: "install_npm", package: npmMatch[1] } };
+        }
+        if (pkgMatch) {
+            const isPip = pkgMatch[2]?.toLowerCase() === "pip";
+            return {
+                intent: "install_package",
+                parameters: {
+                    action: isPip ? "install_pip" : "install_npm",
+                    package: pkgMatch[1]
+                }
+            };
+        }
+        return null;
+    }
+},
+
+// ── CREAR ARCHIVO Y PONERLO EN CARPETA ───────────────────────────────────────
+{
+    patterns: [
+        /cre[aá][r]?\s+(?:un[ao]?\s+)?(?:archivo|fichero)\s+(?:llamado?\s+)?(\S+\.\w{1,5})\s+(?:en|dentro\s+de|en\s+la\s+carpeta)\s+(.+)/i,
+        /pone[r]?\s+(?:el\s+)?(?:archivo|script)\s+(\S+\.\w{1,5})\s+en\s+(.+)/i,
+    ],
+    result: (m) => {
+        const match =
+            m.match(/(?:archivo|fichero|script)\s+(?:llamado?\s+)?(\S+\.\w{1,5})\s+(?:en|dentro\s+de|en\s+la\s+carpeta)\s+(.+)/i) ||
+            m.match(/pone[r]?\s+(?:el\s+)?(?:archivo|script)\s+(\S+\.\w{1,5})\s+en\s+(.+)/i);
+        return {
+            intent: "terminal_create_file",
+            parameters: {
+                action: "create_file",
+                filename: match ? match[1] : null,
+                workdir: match ? match[2].trim() : null,
+            }
+        };
+    }
+},
+
+// ── CANVAS — DIAGRAMA ────────────────────────────────────────────────────────
+{
+    patterns: [
+        /(?:hac[eé][r]?|cre[aá][r]?|genera[r]?|dibuj[aá][r]?)\s+(?:un[ao]?\s+)?(?:diagrama|flowchart|mermaid|mapa|esquema)\s+(?:de\s+|del?\s+|para\s+)?(.+)/i,
+        /(?:diagrama|flowchart)\s+(?:de\s+|del?\s+)?(.+)/i,
+    ],
+    result: (m) => ({
+        intent: "canvas_generate",
+        parameters: { prompt: m, type: "diagram", question: m }
+    })
+},
+
+// ── CANVAS — HTML/INTERFAZ ───────────────────────────────────────────────────
+{
+    patterns: [
+        /(?:hac[eé][r]?|cre[aá][r]?|genera[r]?)\s+(?:una?\s+)?(?:interfaz|ui|página|pagina|formulario|form|componente|widget)\s+(?:de\s+|del?\s+|para\s+)?(.+)/i,
+        /(?:diseñ[aá][r]?|dise[nñ][oó])\s+(?:una?\s+)?(.+)\s+(?:en\s+)?html/i,
+    ],
+    result: (m) => ({
+        intent: "canvas_generate",
+        parameters: { prompt: m, type: "html", question: m }
+    })
+},
+
+// ── CANVAS — GRÁFICO ─────────────────────────────────────────────────────────
+{
+    patterns: [
+        /(?:hac[eé][r]?|cre[aá][r]?|genera[r]?|mostr[aá][r]?)\s+(?:un[ao]?\s+)?(?:gráfico|grafico|chart|tabla)\s+(?:de\s+|del?\s+|con\s+)?(.+)/i,
+    ],
+    result: (m) => ({
+        intent: "canvas_generate",
+        parameters: { prompt: m, type: "chart", question: m }
+    })
+},
+
+// ═════════════════════════════════════════════════════════════════════
+// FIN DE REGLAS ADICIONALES
+// ═════════════════════════════════════════════════════════════════════
+
 // ── SELF-AWARENESS RULES — pegar al INICIO de QUICK_RULES ────────────────────
 {
     patterns: [

@@ -314,3 +314,20 @@ Require stack:
 [2026-04-19T16:35:22.127Z] [ERROR] STT error: Invalid API Key
 [2026-04-19T16:37:08.690Z] [ERROR] STT error: Invalid API Key
 [2026-04-19T18:01:08.190Z] [ERROR] Gemma analyze error: Request failed with status code 400
+[2026-04-19T19:02:07.736Z] [ERROR] [Error] VisionBot: Request failed with status code 401
+[2026-04-19T19:17:54.398Z] [ERROR] Gemma analyze error: Request failed with status code 400
+[2026-04-19T19:17:54.402Z] [ERROR] Gemma upload analyze failed: Request failed with status code 500
+[2026-04-19T19:24:38.127Z] [ERROR] Gemma analyze error: Request failed with status code 400
+[2026-04-19T19:24:38.130Z] [ERROR] Gemma upload analyze failed: Request failed with status code 500
+[2026-04-19T19:31:09.925Z] [ERROR] [Error] TerminalBot: TerminalBot: 'command' es requerido
+[2026-04-19T19:31:18.320Z] [ERROR] [Error] TerminalBot: TerminalBot: 'command' es requerido
+[2026-04-19T19:31:28.053Z] [ERROR] [Error] TerminalBot: TerminalBot: 'command' es requerido
+[2026-04-19T19:31:32.754Z] [ERROR] [Error] TerminalBot: TerminalBot: 'command' es requerido
+[2026-04-19T19:31:50.221Z] [ERROR] [Error] TerminalBot: TerminalBot: 'command' es requerido
+[2026-04-19T19:34:55.190Z] [ERROR] Gemma analyze error: Request failed with status code 400
+[2026-04-19T19:34:55.192Z] [ERROR] Gemma upload analyze failed: Request failed with status code 500
+[2026-04-19T20:36:08.569Z] [ERROR] Gemma analyze error: Request failed with status code 400
+[2026-04-19T20:36:08.572Z] [ERROR] Gemma upload analyze failed: Request failed with status code 500
+[2026-04-19T20:36:53.878Z] [ERROR] Gemma analyze error: Request failed with status code 400
+[2026-04-19T20:36:53.880Z] [ERROR] Gemma upload analyze failed: Request failed with status code 500
+[2026-04-19T21:03:28.623Z] [ERROR] Gemma analyze error: Request failed with status code 400

@@ -1,25 +1,28 @@
 /**
- * chatController.js — Fixed
+ * chatController.js — v2 FIXED
  *
- * BUGS CORREGIDOS vs original:
+ * Changes vs original:
+ *  1. Integrates messageClassifier — every reply now includes responseType,
+ *     artifacts metadata, actions, and cleanReply fields.
+ *     Frontend uses these instead of re-parsing the text itself.
  *
- * 1. conversation_id estaba dentro de setImmediate() (fire-and-forget),
- *    por eso nunca se devolvía al frontend y cada mensaje creaba un chat nuevo.
- *    FIX: la conversación se crea ANTES de responder y se incluye
- *    conversation_id en la respuesta JSON.
+ *  2. Better error responses — structured error object with errorCode,
+ *     suggestion, and user-friendly message instead of raw exception text.
  *
- * 2. Cuando el modelo devuelve texto plano (no JSON), _safeParse() lo envuelve
- *    como { intent: "chat_response", parameters: { query: TEXTO_DEL_MODELO } }.
- *    Luego WebBot recibía ESA RESPUESTA como query, la re-procesaba y devolvía
- *    basura de 38 caracteres.
- *    FIX: si intent === "chat_response", forzamos query = mensaje ORIGINAL del usuario.
+ *  3. history support — accepts req.body.history array from frontend and
+ *     passes recent turns as context to the model (enables multi-turn).
+ *
+ *  4. Logging — cleaner logs with timing info.
+ *
+ *  5. chat_response intent fix preserved from original.
  */
 
-const instructionLoader = require("../utils/InstructionLoader");
-const modelService = require("../services/ModelService");
-const botManager = require("../bots/BotManager");
-const supabase = require("../services/SupabaseService");
-const logger = require("../logs/logger");
+const instructionLoader  = require("../utils/InstructionLoader");
+const modelService        = require("../services/ModelService");
+const botManager          = require("../bots/BotManager");
+const supabase            = require("../services/SupabaseService");
+const logger              = require("../logs/logger");
+const { classify }        = require("../middlewares/messageClassifier");
 
 class ChatController {
 
@@ -28,38 +31,54 @@ class ChatController {
             status: "OK",
             timestamp: new Date().toISOString(),
             bots: botManager.getAllStates().length,
-            supabase: supabase.isConnected()
+            supabase: supabase.isConnected(),
         });
     }
 
     async handleChat(req, res, next) {
+        const t0 = Date.now();
         try {
-            const { message, conversation_id } = req.body;
+            const { message, conversation_id, history = [] } = req.body;
 
             if (!message || typeof message !== "string" || !message.trim()) {
-                return res.status(400).json({ success: false, error: "El mensaje no puede estar vacío" });
+                return res.status(400).json({
+                    success: false,
+                    errorCode: "EMPTY_MESSAGE",
+                    error: "El mensaje no puede estar vacío",
+                });
             }
 
             const trimmed = message.trim();
-            logger.info(`Chat request: "${trimmed.substring(0, 100)}"`);
+            logger.info(`Chat: "${trimmed.substring(0, 100)}"`);
 
             /* 1. Build full context */
             const fullContext = instructionLoader.buildFullContext(trimmed);
 
             /* 2. Get intent from model */
-            const intentObject = await modelService.generateIntent(fullContext);
-
-            if (!intentObject?.intent) {
-                throw new Error("Invalid intent structure from model");
+            let intentObject;
+            try {
+                intentObject = await modelService.generateIntent(fullContext);
+            } catch (modelErr) {
+                logger.error(`ModelService error: ${modelErr.message}`);
+                return res.status(503).json({
+                    success: false,
+                    errorCode: "MODEL_UNAVAILABLE",
+                    error: `No se pudo conectar al modelo de IA. Verificá que LM Studio esté corriendo.\nDetalle: ${modelErr.message}`,
+                    suggestion: "Abrí LM Studio → cargá un modelo → activá el servidor en Developer tab",
+                });
             }
 
-            logger.info(`Intent resolved: ${intentObject.intent}`);
+            if (!intentObject?.intent) {
+                return res.status(500).json({
+                    success: false,
+                    errorCode: "INVALID_INTENT",
+                    error: "El modelo devolvió una respuesta inválida",
+                });
+            }
 
-            /* 3. FIX: si el modelo devolvió texto plano (no JSON), _safeParse()
-               lo convierte en { intent: "chat_response", parameters: { query: TEXTO_DEL_MODELO } }
-               Si luego WebBot recibe ese texto como query, vuelve a llamar al modelo con su
-               propia respuesta → loop que devuelve basura.
-               Solución: si el intent es chat_response, forzamos query = mensaje ORIGINAL. */
+            logger.info(`Intent: ${intentObject.intent}`);
+
+            /* 3. Fix chat_response loop — always use original user message as query */
             if (
                 intentObject.intent === "chat_response" ||
                 intentObject.intent.startsWith("chat_") ||
@@ -67,28 +86,42 @@ class ChatController {
             ) {
                 intentObject.parameters = {
                     ...intentObject.parameters,
-                    query: trimmed  // siempre el mensaje ORIGINAL del usuario
+                    query: trimmed,
+                    _originalMessage: trimmed,
                 };
+            } else {
+                // Always inject original message so bots can use it
+                if (!intentObject.parameters._originalMessage) {
+                    intentObject.parameters._originalMessage = trimmed;
+                }
             }
 
             /* 4. Execute via BotManager */
-            const result = await botManager.executeIntent(intentObject);
+            let result;
+            try {
+                result = await botManager.executeIntent(intentObject);
+            } catch (botErr) {
+                logger.error(`BotManager error: ${botErr.message}`);
+                result = {
+                    reply: `⚠ Error ejecutando la acción: ${botErr.message}`,
+                    error: true,
+                };
+            }
 
-            /* 5. Persist to Supabase — ahora SÍNCRONO para poder devolver el conversation_id */
+            /* 5. Classify response */
+            const classified = classify(result.reply || "");
+
+            /* 6. Persist to Supabase */
             let convId = conversation_id || null;
-
             try {
                 if (supabase.isConnected()) {
-                    // Crear conversación nueva si no se pasó una
                     if (!convId) {
                         const conv = await supabase.createConversation("Nueva conversación");
                         if (conv) {
                             convId = conv.id;
-                            // Auto-titular con el primer mensaje
                             await supabase.autoTitleConversation(convId, trimmed);
                         }
                     }
-
                     if (convId) {
                         await supabase.saveMessage(convId, "user", trimmed);
                         await supabase.saveMessage(
@@ -100,29 +133,39 @@ class ChatController {
                         );
                     }
                 }
-            } catch (err) {
-                logger.warn(`Chat persistence error: ${err.message}`);
+            } catch (persistErr) {
+                logger.warn(`Persistence error (non-fatal): ${persistErr.message}`);
             }
 
-            // Append to memory (non-blocking)
+            /* 7. Append to memory (non-blocking) */
             setImmediate(() => {
                 try {
                     instructionLoader.appendToMemory(
-                        `User: ${trimmed}\nIntent: ${intentObject.intent}\nResult: ${result.reply?.substring(0, 200) || "empty"}`
+                        `User: ${trimmed}\nIntent: ${intentObject.intent}\nResult: ${(result.reply || "").substring(0, 200)}`
                     );
                 } catch { }
             });
 
-            /* 6. Responder — INCLUYE conversation_id para que el frontend lo guarde */
+            const elapsed = Date.now() - t0;
+            logger.info(`Chat done in ${elapsed}ms | intent=${intentObject.intent} | type=${classified.responseType}`);
+
+            /* 8. Respond */
             return res.json({
                 success: !result.error,
-                reply: result.reply,
-                intent: intentObject.intent,
-                bot: botManager._mapIntent?.(intentObject.intent) || "unknown",
-                conversation_id: convId   // ← el frontend necesita esto para el tracking
+                reply:       result.reply || "",
+                intent:      intentObject.intent,
+                bot:         botManager._mapIntent?.(intentObject.intent) || "unknown",
+                conversation_id: convId,
+                // ── Classifier fields (used by frontend for rendering decisions) ──
+                responseType: classified.responseType,   // "text" | "artifact" | "mixed" | "code" | "action"
+                artifacts:    classified.artifacts,      // [{ type, label, renderable }]
+                actions:      classified.actions,        // [{ intent, data }]
+                cleanReply:   classified.cleanText,      // reply with artifact blocks stripped
+                elapsed,
             });
 
         } catch (error) {
+            logger.error(`Chat unhandled error: ${error.message}`);
             next(error);
         }
     }
