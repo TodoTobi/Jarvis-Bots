@@ -59,6 +59,39 @@ const QUICK_RULES = [
 // REGLAS DE TERMINAL — pegar AL INICIO de QUICK_RULES
 // ════════════════════════════════════════════════════
 
+// Pegá esto AL INICIO de QUICK_RULES, antes de las reglas de terminal:
+
+// ── LLM DIRECTO: código, explicaciones, conversación ──────────────────────
+{
+    patterns: [
+        /(?:escrib[ií]|genera[r]?|cre[aá]|hacé|dame)\s+(?:un[ao]?\s+)?(?:función|función|class|clase|método|algoritmo|código|script\s+de\s+(?!bat|ps1|powershell))/i,
+        /(?:explicá|explica[r]?|qué\s+es|cómo\s+funciona|definí)\s+.{3,}/i,
+        /(?:traducí|traduc[ei][r]?)\s+.+\s+(?:al?\s+\w+|a\s+inglés|a\s+español)/i,
+        /^(?:hola|buenas|hey|hi|hello|qué\s+tal|cómo\s+estás)[!?\s]*$/i,
+    ],
+    result: (m) => ({
+        intent: "chat_response",
+        parameters: {
+            query: m,
+            _directLLM: true,  // flag para chatController: ir directo al LLM
+        }
+    })
+},
+
+// ── PLAY MUSIC con query ──────────────────────────────────────────────────
+{
+    patterns: [
+        /(?:pon[eé]m[eé]?|reproducí|play|escuchar?)\s+(?!spotif|vlc|youtube\s*$)(.{3,})\s+(?:en\s+)?(?:spotify|música)/i,
+    ],
+    result: (m) => {
+        const match = m.match(/(?:pon[eé]m[eé]?|reproducí|play|escuchar?)\s+(.+?)\s+(?:en\s+)?(?:spotify|música)/i);
+        return {
+            intent: "bat_exec",
+            parameters: { script: "media_spotify", args: match ? [match[1]] : [] }
+        };
+    }
+},
+
 // ── CREAR Y EJECUTAR SCRIPT ──────────────────────────────────────────────────
 {
     patterns: [
@@ -987,49 +1020,113 @@ class ModelService {
         return body;
     }
 
-    async generateIntent(fullContext) {
-        const userMsgMatch = fullContext.match(/\[MENSAJE DEL USUARIO\]\s*([\s\S]+?)(?:\[|$)/);
-        const userMsg = (userMsgMatch ? userMsgMatch[1].trim() : fullContext.trim()).substring(0, 1000);
+    // En ModelService.js — reemplazá SOLO el método generateIntent:
 
-        // 1. Clasificador rápido por keywords
-        const quick = quickClassify(userMsg);
-        if (quick) return this._validateIntent(quick);
+async generateIntent(fullContext) {
+    const userMsgMatch = fullContext.match(/\[MENSAJE DEL USUARIO\]\s*([\s\S]+?)(?:\[|$)/);
+    const userMsg = (userMsgMatch ? userMsgMatch[1].trim() : fullContext.trim()).substring(0, 1000);
 
-        // 2. Fallback LLM
-        logger.info(`ModelService: no quick match, querying LLM: "${userMsg.substring(0, 60)}"`);
-        const systemPrompt = `You are a JSON-only intent classifier for a voice assistant. Output ONLY valid JSON.
-The user may make typos — infer the closest real intent.
-Format: {"intent":"chat_response","parameters":{"query":"text"},"priority":"normal"}
-No markdown, no explanation. Only JSON.`;
+    // 1. Clasificador rápido por keywords (sin LLM) — sin cambios
+    const quick = quickClassify(userMsg);
+    if (quick) return this._validateIntent(quick);
 
-        try {
-            const response = await axios.post(
-                `${this.baseURL}/chat/completions`,
-                this._buildBody(
-                    [
-                        { role: "system", content: systemPrompt },
-                        { role: "user", content: userMsg.substring(0, 200) }
-                    ],
-                    { temperature: 0.0, max_tokens: 80 }
-                ),
-                this._axiosConfig
-            );
-            const raw = response.data?.choices?.[0]?.message?.content || "";
-            logger.info(`ModelService raw: ${raw.substring(0, 100)}`);
-            return this._validateIntent(this._safeParse(raw, userMsg));
-        } catch (err) {
-            logger.error(`ModelService LLM error: ${err.message}`);
-            // Fallback inteligente: si el mensaje menciona docs, forzar Google Docs
-            if (/(?:docs|google\s+docs|documento|crea[r]?\s+\w+\s+en)/i.test(userMsg)) {
-                const titleM = userMsg.match(/(?:sobre|de|acerca\s+de)\s+(.+)/i);
-                return { intent: "google_docs_create", parameters: { action: "create_doc", title: titleM ? titleM[1].trim() : "Nuevo documento" }, priority: "normal" };
-            }
-            return { intent: "chat_response", parameters: { query: userMsg }, priority: "normal" };
-        }
+    // 2. LLM con nuevo schema
+    logger.info(`ModelService: querying LLM: "${userMsg.substring(0, 60)}"`);
+
+    try {
+        const response = await axios.post(
+            `${this.baseURL}/chat/completions`,
+            this._buildBody(
+                [{ role: "user", content: fullContext }],
+                { temperature: 0.0, max_tokens: 200 }
+            ),
+            this._axiosConfig
+        );
+        const raw = response.data?.choices?.[0]?.message?.content || "";
+        logger.info(`ModelService raw: ${raw.substring(0, 150)}`);
+        
+        const parsed = this._safeParse(raw, userMsg);
+        
+        // Convertir nuevo schema → intent legacy que BotManager entiende
+        return this._convertToLegacyIntent(parsed, userMsg);
+    } catch (err) {
+        logger.error(`ModelService LLM error: ${err.message}`);
+        return { intent: "chat_response", parameters: { query: userMsg }, priority: "normal" };
+    }
+}
+
+// Añadí este método nuevo en la clase ModelService:
+_convertToLegacyIntent(parsed, fallbackQuery) {
+    const { type, intent, target, content, format, artifact_type } = parsed;
+
+    // Guardar el schema completo en parameters para que chatController lo use
+    const parameters = {
+        _structured: parsed,      // schema completo
+        _originalMessage: fallbackQuery,
+        query: content || fallbackQuery,
+        target: target || null,
+        format: format || "text",
+    };
+
+    if (type === "artifact") {
+        // Canvas/diagrama/HTML
+        return {
+            intent: "canvas_generate",
+            parameters: {
+                ...parameters,
+                prompt: fallbackQuery,
+                type: artifact_type || format || "auto",
+                question: fallbackQuery,
+                execute: false,
+            },
+            priority: "normal"
+        };
     }
 
+    if (type === "action" && intent) {
+        // Acciones reales — el intent ya viene en snake_case
+        if (intent === "open_app" && target) {
+            // Mapear open_app → bat_exec con el script correspondiente
+            const scriptKey = this._resolveAppScript(target);
+            return {
+                intent: "bat_exec",
+                parameters: { ...parameters, script: scriptKey, args: [] },
+                priority: "normal"
+            };
+        }
+        // Para otros intents de acción, devolver tal cual
+        return {
+            intent,
+            parameters,
+            priority: "normal"
+        };
+    }
+
+    // type === "response" → chat
+    return {
+        intent: "chat_response",
+        parameters: { ...parameters, query: content || fallbackQuery },
+        priority: "normal"
+    };
+}
+
+// Añadí este método helper:
+_resolveAppScript(target) {
+    const MAP = {
+        brave: "app_brave", chrome: "app_chrome", firefox: "app_firefox",
+        discord: "app_discord", spotify: "media_spotify", youtube: "media_youtube",
+        vlc: "media_vlc", vscode: "app_vscode", code: "app_vscode",
+        cursor: "app_cursor", terminal: "app_terminal", cmd: "app_terminal",
+        powershell: "app_powershell", fortnite: "app_fortnite",
+        postman: "app_postman", github: "app_github_desktop",
+        chatgpt: "app_chatgpt", navegador: "app_browser", browser: "app_browser",
+    };
+    const key = (target || "").toLowerCase().trim();
+    return MAP[key] || `app_${key}`;
+}
+
     async generateText(prompt, opts = {}) {
-        const baseInstructions = `Sos Jarvis, asistente IA local de Tobías. Respondé SIEMPRE en español rioplatense. Sé directo y conciso.
+        const baseInstructions = `Sos Jarvis, asistente IA local de Tobías. Respondé SIEMPRE en español latinoamericano. Sé directo y conciso.
 IMPORTANTE: El usuario a veces escribe con errores de tipeo por escribir rápido. Intentá siempre entender lo que quiso decir aunque esté mal escrito. No comentes sobre los errores.
 NUNCA empieces tu respuesta con saludos como "Hola", "¡Hola!", "Buenas", "¿En qué puedo ayudarte?", "Claro" o similares. Respondé directamente al pedido sin preámbulos ni cortesías.`;
 

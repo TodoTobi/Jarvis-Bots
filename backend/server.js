@@ -117,87 +117,7 @@ app.post("/api/settings", (req, res) => {
     }
 });
 
-/* ── Upload fallback (INLINE) ─────────────────────────────
-   Este queda como fallback.
-   uploadRoutes va a interceptar primero.
-   Podés eliminarlo después si todo funciona.
-*/
-const uploadDir = path.resolve(__dirname, "../tmp/uploads");
-fs.mkdirSync(uploadDir, { recursive: true });
 
-let multerMiddleware = null;
-
-try {
-    const multer = require("multer");
-    const upload = multer({
-        dest: uploadDir,
-        limits: { fileSize: 25 * 1024 * 1024 }
-    });
-
-    multerMiddleware = upload.single("file");
-    logger.info("Upload fallback enabled (Gemma 4 only)");
-
-} catch {
-    logger.warn("multer not found — run: npm install multer");
-}
-
-app.post("/api/upload", (req, res, next) => {
-    if (!multerMiddleware) {
-        return res.status(503).json({
-            success: false,
-            error: "Run: npm install multer"
-        });
-    }
-
-    multerMiddleware(req, res, async (err) => {
-        if (err) return next(err);
-        if (!req.file) return res.status(400).json({ error: "No file provided" });
-
-        const mimeType = req.file.mimetype;
-        const filePath = req.file.path;
-        const query = req.body.query || "Analizá este archivo detalladamente";
-
-        if (!process.env.LM_API_URL) {
-            try { fs.unlinkSync(filePath); } catch {}
-            return res.status(503).json({
-                success: false,
-                error: "LM_API_URL no configurado."
-            });
-        }
-
-        try {
-            const axios = require("axios");
-            const FormData = require("form-data");
-
-            const form = new FormData();
-            form.append("file", fs.createReadStream(filePath), {
-                filename: req.file.originalname || "file",
-                contentType: mimeType,
-            });
-            form.append("query", query);
-
-            const gemmaRes = await axios.post(
-                `http://localhost:${process.env.PORT || 3001}/api/gemma/analyze`,
-                form,
-                { headers: form.getHeaders(), timeout: 120000 }
-            );
-
-            try { fs.unlinkSync(filePath); } catch {}
-
-            return res.json(gemmaRes.data);
-
-        } catch (gemmaErr) {
-            logger.error(`Gemma upload analyze failed: ${gemmaErr.message}`);
-
-            try { fs.unlinkSync(filePath); } catch {}
-
-            return res.status(500).json({
-                success: false,
-                error: gemmaErr.message
-            });
-        }
-    });
-});
 
 /* ── 404 ─────────────────────────────────────────────── */
 app.use((req, res) => {
@@ -230,4 +150,4 @@ process.on("SIGTERM", () => {
 
 process.on("SIGINT", () => {
     server.close(() => process.exit(0));
-});
+});   

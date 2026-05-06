@@ -1,12 +1,14 @@
 /**
- * sttGemmaRoutes.js — STT y análisis multimodal via Gemma 4 (LM Studio)
+ * sttGemmaRoutes.js — v3 UNIFIED
  *
- * FIXES v2:
- *  - Wake words "jarvis" y "sistema" correctamente detectadas y eliminadas del texto
- *  - STT usa Gemma 4 local (multimodal) en vez de Groq
- *  - Imágenes y PDFs procesados por Gemma 4, NO por Gemini (eliminado)
- *  - Canvas/diagramas mejorados
- *  - Nuevo endpoint /api/terminal/exec para ejecutar comandos desde el chat
+ * CAMBIOS vs v2:
+ *  - STT: Gemma 4 NO soporta audio via llama.cpp GGUF todavía (error 500).
+ *    Estrategia: Groq Whisper (si hay key real) → Web Speech API (browser-side)
+ *  - Imágenes: Gemma 4 local via image_url (funciona ✅)
+ *  - PDFs: extraer texto con pdf-parse → texto plano a Gemma (funciona ✅)
+ *  - Audio: usar Groq o devolver instrucción para Web Speech
+ *  - Canvas/diagramas: mejorado con sanitización automática
+ *  - DoctorBot integration: Gemma puede analizarse a sí mismo
  */
 
 const express = require("express");
@@ -17,65 +19,35 @@ const axios = require("axios");
 const { exec } = require("child_process");
 const logger = require("../logs/logger");
 
-const GEMMA_MODEL = process.env.LM_MODEL || "gemma-3-4b-it";
+const GEMMA_MODEL = process.env.LM_MODEL || "google/gemma-4-e4b";
 const LM_BASE = (process.env.LM_API_URL || "http://localhost:1234/v1").replace(/\/$/, "");
 const MAX_SIZE_MB = 25;
 
-// ── Wake words soportadas ────────────────────────────────────────────────────
 const WAKE_WORDS = [
-    // "sistema" (wake word principal)
-    "sistema", "système", "cistema", "sistima", "sisthema",
-    // "jarvis" y variantes STT
-    "jarvis", "jarviz", "jarvi", "jarves", "jarvist",
-    "llarvis", "llarvi", "yarvis", "yarvi",
-    "harvis", "garvis", "marvis",
-    // Con activadores
-    "hey jarvis", "oye jarvis", "hei jarvis",
-    "hey sistema", "oye sistema",
-    "ey jarvis", "ey sistema",
-    "a ver jarvis", "a ver sistema",
+    "sistema", "cistema", "sistima",
+    "jarvis", "jarviz", "jarvi", "yarvis", "llarvis",
+    "hey jarvis", "oye jarvis", "hey sistema",
 ];
 
-// ── Palabra de envío (termina la grabación) ──────────────────────────────────
-const SEND_WORDS = ["enviar", "envía", "manda", "listo", "ok enviar", "send"];
+const SEND_WORDS = ["enviar", "envía", "manda", "listo", "send"];
 
-/**
- * Elimina el wake word del inicio del texto transcripto.
- * Retorna { text, hadWakeWord, hadSendWord }
- */
 function processTranscription(raw) {
     if (!raw) return { text: "", hadWakeWord: false, hadSendWord: false };
-
     let text = raw.trim();
-
-    // Detectar y eliminar palabra de envío al final
     let hadSendWord = false;
     for (const sw of SEND_WORDS) {
         const re = new RegExp(`[,\\.\\s]*${sw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}[,\\.\\s!]*$`, "i");
-        if (re.test(text)) {
-            text = text.replace(re, "").trim();
-            hadSendWord = true;
-            break;
-        }
+        if (re.test(text)) { text = text.replace(re, "").trim(); hadSendWord = true; break; }
     }
-
-    // Detectar y eliminar wake word al inicio
     let hadWakeWord = false;
     const sorted = [...WAKE_WORDS].sort((a, b) => b.length - a.length);
     for (const ww of sorted) {
         const escaped = ww.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         const re = new RegExp(`^${escaped}[,\\.\\s!¡\\?]*`, "i");
-        if (re.test(text)) {
-            text = text.replace(re, "").trim();
-            hadWakeWord = true;
-            break;
-        }
+        if (re.test(text)) { text = text.replace(re, "").trim(); hadWakeWord = true; break; }
     }
-
     return { text, hadWakeWord, hadSendWord };
 }
-
-/* ── HELPERS ────────────────────────────────────────────────────────────────── */
 
 function getAuthHeaders() {
     const h = { "Content-Type": "application/json" };
@@ -84,12 +56,12 @@ function getAuthHeaders() {
 }
 
 /**
- * Llama a Gemma 4 con contenido multimodal via LM Studio
+ * Llama a Gemma 4 con contenido multimodal (texto + imágenes)
+ * NO enviar audio — llama.cpp GGUF no lo soporta aún
  */
 async function callGemmaMultimodal(parts, systemPrompt, maxTokens) {
     const messages = [];
     if (systemPrompt) messages.push({ role: "system", content: systemPrompt });
-
     const userContent = Array.isArray(parts) ? parts : [{ type: "text", text: parts }];
     messages.push({ role: "user", content: userContent });
 
@@ -105,7 +77,6 @@ async function callGemmaMultimodal(parts, systemPrompt, maxTokens) {
         body,
         { headers: getAuthHeaders(), timeout: 120000 }
     );
-
     return response.data?.choices?.[0]?.message?.content || "";
 }
 
@@ -115,8 +86,7 @@ async function callGemmaMultimodal(parts, systemPrompt, maxTokens) {
 router.get("/gemma/status", async (req, res) => {
     try {
         const response = await axios.get(`${LM_BASE}/models`, {
-            headers: getAuthHeaders(),
-            timeout: 5000,
+            headers: getAuthHeaders(), timeout: 5000,
         });
         const models = response.data?.data || [];
         const gemmaModel = models.find(m =>
@@ -127,7 +97,9 @@ router.get("/gemma/status", async (req, res) => {
             model: gemmaModel?.id || GEMMA_MODEL,
             available: !!gemmaModel,
             allModels: models.map(m => m.id),
-            supportsMultimodal: true,
+            supportsImages: true,
+            supportsAudio: false, // llama.cpp GGUF no lo soporta aún
+            supportsPDF: true,    // via pdf-parse → texto
         });
     } catch (err) {
         res.json({ ok: false, error: err.message, model: GEMMA_MODEL });
@@ -138,20 +110,24 @@ router.get("/gemma/status", async (req, res) => {
    GET /api/stt/status
 ══════════════════════════════════════════════════ */
 router.get("/stt/status", (req, res) => {
+    const groqKey = process.env.GROQ_API_KEY;
+    const hasRealGroq = groqKey && !groqKey.startsWith("sk-lm-") && !groqKey.includes(":");
+
     res.json({
         configured: true,
-        model: GEMMA_MODEL,
-        provider: "gemma_local",
+        model: hasRealGroq ? "whisper-large-v3 (Groq)" : "Web Speech API (browser)",
+        provider: hasRealGroq ? "groq" : "browser",
         maxSizeMB: MAX_SIZE_MB,
-        formats: ["webm", "mp3", "wav", "ogg", "m4a", "flac", "mp4"],
+        formats: ["webm", "mp3", "wav", "ogg", "m4a"],
         wakeWords: ["sistema", "jarvis"],
         sendWord: "enviar",
+        note: "Gemma 4 E4B soporta audio pero llama.cpp GGUF aún no lo implementa. Usando Groq/browser.",
     });
 });
 
 /* ══════════════════════════════════════════════════
    POST /api/stt/transcribe
-   Recibe audio y lo transcribe con Gemma 4
+   STT: Groq Whisper (si hay key real) → error claro con fallback info
 ══════════════════════════════════════════════════ */
 router.post("/stt/transcribe", async (req, res) => {
     let multer;
@@ -172,76 +148,103 @@ router.post("/stt/transcribe", async (req, res) => {
     upload(req, res, async (uploadErr) => {
         if (uploadErr) return res.status(400).json({ success: false, error: uploadErr.message });
         if (!req.file) {
-            return res.status(400).json({
-                success: false,
-                errorCode: "NO_FILE",
-                error: "No se recibió archivo de audio",
-            });
+            return res.status(400).json({ success: false, errorCode: "NO_FILE", error: "No se recibió archivo de audio" });
         }
 
         const filePath = req.file.path;
 
         if (req.file.size < 500) {
             try { fs.unlinkSync(filePath); } catch {}
-            return res.status(400).json({
+            return res.status(400).json({ success: false, errorCode: "TOO_SHORT", error: "Audio demasiado corto" });
+        }
+
+        const groqKey = process.env.GROQ_API_KEY;
+        const hasRealGroq = groqKey && !groqKey.startsWith("sk-lm-") && !groqKey.includes(":");
+
+        if (!hasRealGroq) {
+            try { fs.unlinkSync(filePath); } catch {}
+            // Informar al frontend que use Web Speech API
+            return res.json({
                 success: false,
-                errorCode: "TOO_SHORT",
-                error: "Audio demasiado corto o vacío",
+                errorCode: "USE_BROWSER_STT",
+                error: "STT backend no disponible. El micrófono del chat usa Web Speech API del browser directamente.",
+                useBrowserFallback: true,
             });
         }
 
+        // Usar Groq Whisper
         try {
+            const FormData = require("form-data");
+            const https = require("https");
             const audioData = fs.readFileSync(filePath);
-            const base64Audio = audioData.toString("base64");
             const mimeType = req.file.mimetype || "audio/webm";
 
-            logger.info(`STT Gemma: procesando audio ${req.file.size} bytes, tipo ${mimeType}`);
+            const transcription = await new Promise((resolve, reject) => {
+                const form = new FormData();
+                form.append("file", audioData, {
+                    filename: path.basename(filePath),
+                    contentType: mimeType,
+                });
+                form.append("model", "whisper-large-v3");
+                form.append("response_format", "verbose_json");
+                form.append("temperature", "0");
 
-            const parts = [
-                {
-                    type: "image_url",
-                    image_url: {
-                        url: `data:${mimeType};base64,${base64Audio}`,
+                const lang = req.body?.language;
+                if (lang) form.append("language", lang);
+
+                const url = new URL("https://api.groq.com/openai/v1/audio/transcriptions");
+                const reqHttp = https.request({
+                    hostname: url.hostname,
+                    path: url.pathname,
+                    method: "POST",
+                    headers: {
+                        ...form.getHeaders(),
+                        "Authorization": `Bearer ${groqKey}`,
                     },
-                },
-                {
-                    type: "text",
-                    text: "Transcribe exactamente lo que se dice en este audio en español. Responde SOLO con el texto transcrito, sin explicaciones, sin comillas, sin comentarios adicionales.",
-                },
-            ];
-
-            const rawTranscription = await callGemmaMultimodal(
-                parts,
-                "Eres un sistema de transcripción de audio preciso. Transcribes exactamente lo que escuchas en español. Solo devuelves el texto transcrito.",
-                512
-            );
+                }, (httpRes) => {
+                    let data = "";
+                    httpRes.on("data", (c) => data += c);
+                    httpRes.on("end", () => {
+                        try {
+                            const parsed = JSON.parse(data);
+                            if (httpRes.statusCode >= 400) {
+                                reject(new Error(parsed.error?.message || `Groq ${httpRes.statusCode}`));
+                            } else {
+                                resolve(parsed);
+                            }
+                        } catch { reject(new Error(`Parse error: ${data.substring(0, 200)}`)); }
+                    });
+                });
+                reqHttp.on("error", reject);
+                reqHttp.setTimeout(60000, () => { reqHttp.destroy(); reject(new Error("Groq timeout")); });
+                form.pipe(reqHttp);
+            });
 
             try { fs.unlinkSync(filePath); } catch {}
 
-            // Procesar wake words y palabra de envío
-            const { text, hadWakeWord, hadSendWord } = processTranscription(rawTranscription.trim());
+            const rawText = (transcription.text || "").trim();
+            const { text, hadWakeWord, hadSendWord } = processTranscription(rawText);
 
-            logger.info(`STT Gemma: transcripción "${text.substring(0, 80)}" | wakeWord=${hadWakeWord} | sendWord=${hadSendWord}`);
+            logger.info(`STT Groq: "${text.substring(0, 80)}" | wake=${hadWakeWord} | send=${hadSendWord}`);
 
             return res.json({
                 success: true,
                 text,
-                rawText: rawTranscription.trim(),
+                rawText,
                 hadWakeWord,
                 hadSendWord,
-                model: GEMMA_MODEL,
-                provider: "gemma_local",
+                language: transcription.language,
+                model: "whisper-large-v3",
+                provider: "groq",
             });
 
         } catch (err) {
             try { fs.unlinkSync(filePath); } catch {}
-            logger.error(`STT Gemma error: ${err.message}`);
-
+            logger.error(`STT Groq error: ${err.message}`);
             return res.status(500).json({
                 success: false,
                 errorCode: "TRANSCRIPTION_FAILED",
-                error: `Gemma no pudo transcribir: ${err.message}`,
-                fallbackSuggestion: "Verificá que el modelo en LM Studio soporte audio/multimodal.",
+                error: `STT falló: ${err.message}`,
             });
         }
     });
@@ -249,8 +252,10 @@ router.post("/stt/transcribe", async (req, res) => {
 
 /* ══════════════════════════════════════════════════
    POST /api/gemma/analyze
-   Análisis multimodal: imagen, PDF, audio, video
-   SIN GEMINI — todo por Gemma 4 local
+   Análisis multimodal via Gemma 4 local
+   - Imágenes: ✅ image_url con base64
+   - PDFs: ✅ extraer texto → texto plano (NO como imagen)
+   - Audio: ❌ no soportado en llama.cpp GGUF aún
 ══════════════════════════════════════════════════ */
 router.post("/gemma/analyze", async (req, res) => {
     let multer;
@@ -275,86 +280,124 @@ router.post("/gemma/analyze", async (req, res) => {
         const filePath = req.file.path;
         const mimeType = req.file.mimetype || "application/octet-stream";
         const query = req.body?.query || "Describí el contenido de este archivo detalladamente en español.";
+        const cleanup = () => { try { fs.unlinkSync(filePath); } catch {} };
+
+        logger.info(`Gemma analyze: ${mimeType} (${(req.file.size / 1024).toFixed(0)}KB)`);
 
         try {
-            const fileData = fs.readFileSync(filePath);
-            const base64Data = fileData.toString("base64");
+            // ── IMÁGENES → image_url base64 (funciona con Gemma 4 en LM Studio) ──
+            if (mimeType.startsWith("image/")) {
+                const fileData = fs.readFileSync(filePath);
+                const base64Data = fileData.toString("base64");
+                // Normalizar MIME a formatos seguros
+                const safeMime = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"].includes(mimeType)
+                    ? mimeType : "image/jpeg";
 
-            logger.info(`Gemma analyze: ${mimeType} (${(fileData.length / 1024).toFixed(0)}KB)`);
+                const parts = [
+                    {
+                        type: "image_url",
+                        image_url: { url: `data:${safeMime};base64,${base64Data}` },
+                    },
+                    { type: "text", text: query },
+                ];
 
-            let systemPrompt = "Eres Jarvis, un asistente que analiza archivos. Respondés en español rioplatense.";
+                const responseText = await callGemmaMultimodal(
+                    parts,
+                    "Eres Jarvis, un analizador de imágenes. Describís todo lo que ves con detalle. Respondés en español rioplatense.",
+                    2048
+                );
 
-            if (mimeType.startsWith("audio/")) {
-                systemPrompt = "Eres un analizador de audio. Transcribe y describe el contenido. Respondés en español rioplatense.";
-            } else if (mimeType === "application/pdf") {
-                systemPrompt = "Eres un analizador de documentos PDF. Extraés y resumís el contenido. Respondés en español rioplatense.";
-            } else if (mimeType.startsWith("video/")) {
-                systemPrompt = "Eres un analizador de video. Describís el contenido visual. Respondés en español rioplatense.";
-            } else if (mimeType.startsWith("image/")) {
-                systemPrompt = "Eres un analizador de imágenes. Describís todo lo que ves con detalle. Respondés en español rioplatense.";
+                cleanup();
+                logger.info(`Gemma analyze imagen: ${responseText.length} chars`);
+                return res.json({ success: true, reply: responseText, model: GEMMA_MODEL, fileType: mimeType, intent: "image_analysis", bot: "GemmaBot" });
             }
 
-            const parts = [
-                {
-                    type: "image_url",
-                    image_url: {
-                        url: `data:${mimeType};base64,${base64Data}`,
-                    },
-                },
-                { type: "text", text: query },
-            ];
+            // ── PDFs → extraer texto → enviar como texto plano a Gemma ──
+            if (mimeType === "application/pdf" || filePath.endsWith(".pdf")) {
+                let extractedText = null;
 
-            const responseText = await callGemmaMultimodal(parts, systemPrompt, 2048);
+                // Método 1: pdf-parse
+                try {
+                    const pdfParse = require("pdf-parse");
+                    const buffer = fs.readFileSync(filePath);
+                    const data = await pdfParse(buffer);
+                    extractedText = (data.text || "").trim().substring(0, 8000);
+                    logger.info(`PDF text extracted: ${extractedText.length} chars via pdf-parse`);
+                } catch (pdfErr) {
+                    if (!pdfErr.message.includes("Cannot find module")) {
+                        logger.warn(`pdf-parse error: ${pdfErr.message}`);
+                    }
+                }
 
-            try { fs.unlinkSync(filePath); } catch {}
+                // Método 2: pdftotext CLI
+                if (!extractedText || extractedText.length < 20) {
+                    const tmpTxt = filePath + "_text.txt";
+                    try {
+                        await new Promise((resolve, reject) => {
+                            exec(`pdftotext "${filePath}" "${tmpTxt}"`, { timeout: 15000 }, (err) => {
+                                if (err) reject(err); else resolve();
+                            });
+                        });
+                        if (fs.existsSync(tmpTxt)) {
+                            extractedText = fs.readFileSync(tmpTxt, "utf-8").trim().substring(0, 8000);
+                            try { fs.unlinkSync(tmpTxt); } catch {}
+                        }
+                    } catch {}
+                }
 
-            logger.info(`Gemma analyze: respuesta ${responseText.length} chars`);
+                if (!extractedText || extractedText.length < 20) {
+                    cleanup();
+                    return res.status(422).json({
+                        success: false,
+                        error: "No se pudo extraer texto del PDF. Instalá pdf-parse:\n  npm install pdf-parse\nO poppler:\n  apt install poppler-utils",
+                    });
+                }
 
-            res.json({
-                success: true,
-                reply: responseText,
-                model: GEMMA_MODEL,
-                fileType: mimeType,
-                intent: mimeType.startsWith("audio/") ? "audio_analysis"
-                    : mimeType === "application/pdf" ? "document_analysis"
-                    : mimeType.startsWith("video/") ? "video_analysis"
-                    : "image_analysis",
-                bot: "GemmaBot",
+                const prompt = `${query}\n\n---\nCONTENIDO DEL PDF:\n${extractedText}\n---\n\nRespondé en español. Sé detallado y estructurado.`;
+                const responseText = await callGemmaMultimodal(
+                    prompt,
+                    "Eres Jarvis, analizador de documentos. Respondés en español rioplatense con análisis detallado.",
+                    2048
+                );
+
+                cleanup();
+                logger.info(`Gemma analyze PDF: ${responseText.length} chars`);
+                return res.json({ success: true, reply: responseText, model: GEMMA_MODEL, fileType: "application/pdf", intent: "document_analysis", bot: "GemmaBot" });
+            }
+
+            // ── AUDIO → no soportado en llama.cpp GGUF aún ──
+            if (mimeType.startsWith("audio/")) {
+                cleanup();
+                return res.status(422).json({
+                    success: false,
+                    errorCode: "AUDIO_NOT_SUPPORTED",
+                    error: "Gemma 4 soporta audio pero llama.cpp GGUF aún no lo implementa. Usá el micrófono del chat que usa Web Speech API del browser.",
+                    suggestion: "Para STT: activá el micrófono 🎤 en el chat y el browser transcribe directamente.",
+                });
+            }
+
+            cleanup();
+            return res.status(400).json({
+                success: false,
+                error: `Tipo de archivo no soportado: ${mimeType}. Usá imágenes (PNG, JPG, WEBP) o PDF.`,
             });
 
         } catch (err) {
-            try { fs.unlinkSync(filePath); } catch {}
+            cleanup();
             logger.error(`Gemma analyze error: ${err.message}`);
             res.status(500).json({ success: false, error: err.message });
         }
     });
 });
 
-/**
- * PATCH — sttGemmaRoutes.js → función /api/gemma/canvas
- *
- * CAMBIOS vs original:
- *   1. Importar mermaidSanitizer al inicio del archivo (agregá esta línea)
- *   2. Reemplazar router.post("/gemma/canvas"...) con esta versión
- *
- * ─────────────────────────────────────────────────────
- * PASO 1: Al inicio de sttGemmaRoutes.js, después de los requires, agregá:
- *
- *   const { sanitizeMermaid } = require("../utils/mermaidSanitizer");
- *
- * PASO 2: Reemplazá TODO el bloque router.post("/gemma/canvas"...) con esto:
- * ─────────────────────────────────────────────────────
- */
-
 /* ══════════════════════════════════════════════════
-   POST /api/gemma/canvas  — VERSIÓN CORREGIDA
+   POST /api/gemma/canvas
    Genera código para el Canvas con sanitización Mermaid
 ══════════════════════════════════════════════════ */
 router.post("/gemma/canvas", async (req, res) => {
     const { prompt, type } = req.body;
     if (!prompt) return res.status(400).json({ success: false, error: "prompt requerido" });
 
-    // Prompts más estrictos para evitar errores de sintaxis
     const typeInstructions = {
         diagram: `Genera código Mermaid VÁLIDO para un diagrama de flujo.
 REGLAS CRÍTICAS:
@@ -373,33 +416,45 @@ flowchart TD
     C -->|"No"| E["Mostrar error"]
     D --> F["Fin"]
 \`\`\``,
-
-        html: `Genera código HTML/CSS/JS completo y funcional. Responde SOLO con el código entre \`\`\`html y \`\`\`. Sin explicaciones.`,
+        html: `Genera código HTML/CSS/JS completo y funcional para una landing page o interfaz.
+REGLAS:
+- HTML completo con DOCTYPE, head, body
+- CSS inline o en <style>
+- JavaScript funcional si es necesario
+- Diseño responsivo y moderno
+- Responde SOLO con código entre \`\`\`html y \`\`\`. Sin explicaciones.`,
+        landing: `Genera una landing page HTML completa, moderna y atractiva.
+REGLAS:
+- HTML completo con DOCTYPE, head, body
+- CSS moderno con gradientes, sombras, animaciones CSS
+- Navbar, hero section, features, footer
+- JavaScript para interactividad básica (scroll suave, animaciones)
+- Colores modernos y tipografía limpia
+- COMPLETAMENTE funcional y visualmente impresionante
+- Responde SOLO con código entre \`\`\`html y \`\`\`.`,
         chart: `Genera código HTML completo con Chart.js para un gráfico. Incluye el HTML completo con el canvas. Responde SOLO con código entre \`\`\`html y \`\`\`.`,
         react: `Genera un componente React funcional. Responde SOLO con código entre \`\`\`jsx y \`\`\`. Sin imports externos excepto React.`,
         svg: `Genera código SVG inline. Responde SOLO con el código SVG entre \`\`\`svg y \`\`\`. Sin explicaciones.`,
         script: `Genera un script ejecutable. Si es Python entre \`\`\`python y \`\`\`, si es bash entre \`\`\`bash y \`\`\`, si es PowerShell entre \`\`\`powershell y \`\`\`. Sin explicaciones extra.`,
-        code: `Genera código funcional en el lenguaje más apropiado. Usa los bloques de código correspondientes.`,
-        auto: `Analiza el pedido y genera el tipo más apropiado.
-- Para diagramas/flows/esquemas: usa Mermaid CON LABELS ENTRE COMILLAS DOBLES si tienen espacios
-- Para interfaces/formularios/páginas: usa HTML
+        auto: `Analiza el pedido y genera el tipo más apropiado:
+- Para diagramas/flows/esquemas: usa Mermaid con labels entre comillas dobles si tienen espacios
+- Para landing pages/websites: usa HTML completo y moderno
+- Para interfaces/formularios: usa HTML
 - Para ilustraciones: usa SVG
 - Para scripts/programas: usa Python o bash
-
-Si usas Mermaid, SIEMPRE envuelve labels con espacios en comillas dobles: A["Mi nodo"]
+Si es una landing page, generá HTML completo e impresionante.
 Usa el bloque de código apropiado.`,
     };
 
-    const systemPrompt = `Eres Jarvis, un generador de contenido visual y código para el canvas.
+    const systemPrompt = `Eres Jarvis, un generador de contenido visual y código.
 ${typeInstructions[type] || typeInstructions.auto}
-Responde SIEMPRE en español cuando hay texto visible en el resultado.
-El código debe ser funcional y auto-contenido.
-IMPORTANTE para Mermaid: labels con espacios SIEMPRE entre comillas dobles.`;
+El código debe ser funcional, auto-contenido y visualmente impresionante.
+IMPORTANTE para Mermaid: labels con espacios SIEMPRE entre comillas dobles.
+Para HTML: genera código COMPLETO con DOCTYPE, head y body.`;
 
     try {
-        const result = await callGemmaMultimodal(prompt, systemPrompt, 4096);
+        const result = await callGemmaMultimodal(prompt, systemPrompt, 6000);
 
-        // Detectar tipo de contenido generado
         let detectedType = type || "unknown";
         let code = result;
 
@@ -412,18 +467,17 @@ IMPORTANTE para Mermaid: labels con espacios SIEMPRE entre comillas dobles.`;
         const bashMatch    = result.match(/```bash\n([\s\S]+?)\n?```/);
         const psMatch      = result.match(/```(?:powershell|ps1)\n([\s\S]+?)\n?```/);
 
-        if (mermaidMatch)  { detectedType = "mermaid";     code = mermaidMatch[1]; }
-        else if (htmlMatch){ detectedType = "html";         code = htmlMatch[1]; }
-        else if (svgMatch) { detectedType = "svg";          code = svgMatch[1]; }
-        else if (jsxMatch) { detectedType = "react";        code = jsxMatch[1]; }
-        else if (pyMatch)  { detectedType = "python";       code = pyMatch[1]; }
-        else if (bashMatch){ detectedType = "bash";         code = bashMatch[1]; }
-        else if (psMatch)  { detectedType = "powershell";   code = psMatch[1]; }
-        else if (jsMatch)  { detectedType = "javascript";   code = jsMatch[1]; }
+        if (mermaidMatch)   { detectedType = "mermaid";     code = mermaidMatch[1]; }
+        else if (htmlMatch) { detectedType = "html";        code = htmlMatch[1]; }
+        else if (svgMatch)  { detectedType = "svg";         code = svgMatch[1]; }
+        else if (jsxMatch)  { detectedType = "react";       code = jsxMatch[1]; }
+        else if (pyMatch)   { detectedType = "python";      code = pyMatch[1]; }
+        else if (bashMatch) { detectedType = "bash";        code = bashMatch[1]; }
+        else if (psMatch)   { detectedType = "powershell";  code = psMatch[1]; }
+        else if (jsMatch)   { detectedType = "javascript";  code = jsMatch[1]; }
 
-        // ── SANITIZAR MERMAID antes de devolver ──────────────────────────────
+        // Sanitizar Mermaid
         if (detectedType === "mermaid") {
-            // Importar sanitizer (agregá el require al inicio del archivo)
             try {
                 const { sanitizeMermaid } = require("../utils/mermaidSanitizer");
                 const cleaned = sanitizeMermaid(code);
@@ -436,13 +490,7 @@ IMPORTANTE para Mermaid: labels con espacios SIEMPRE entre comillas dobles.`;
             }
         }
 
-        res.json({
-            success: true,
-            code,
-            type: detectedType,
-            rawResponse: result,
-            model: GEMMA_MODEL,
-        });
+        res.json({ success: true, code, type: detectedType, rawResponse: result, model: GEMMA_MODEL });
 
     } catch (err) {
         logger.error(`Gemma canvas error: ${err.message}`);
@@ -452,66 +500,88 @@ IMPORTANTE para Mermaid: labels con espacios SIEMPRE entre comillas dobles.`;
 
 /* ══════════════════════════════════════════════════
    POST /api/terminal/exec
-   Ejecuta comandos en la terminal del sistema
-   SEGURIDAD: solo se ejecutan si COMPUTER_CONTROL_ENABLED=true
 ══════════════════════════════════════════════════ */
 router.post("/terminal/exec", async (req, res) => {
     if (process.env.COMPUTER_CONTROL_ENABLED !== "true") {
-        return res.status(403).json({
-            success: false,
-            error: "Ejecución de terminal desactivada. Activá COMPUTER_CONTROL_ENABLED=true en .env",
-        });
+        return res.status(403).json({ success: false, error: "Ejecución de terminal desactivada. Activá COMPUTER_CONTROL_ENABLED=true en .env" });
     }
-
-    const { command, workdir, shell: useShell } = req.body;
+    const { command, workdir } = req.body;
     if (!command) return res.status(400).json({ success: false, error: "command requerido" });
-
-    // Comandos bloqueados por seguridad
-    const BLOCKED = [
-        /^rm\s+-rf\s+\//, /format\s+c:/i, /del\s+\/[sq].*system/i,
-        /rd\s+\/s\s+\/q\s+[a-z]:\\/i, /shutdown\s+\/[srf]/i,
-    ];
+    const BLOCKED = [/^rm\s+-rf\s+\//, /format\s+c:/i, /del\s+\/[sq].*system/i, /rd\s+\/s\s+\/q\s+[a-z]:\\/i, /shutdown\s+\/[srf]/i];
     for (const pattern of BLOCKED) {
-        if (pattern.test(command)) {
-            return res.status(403).json({ success: false, error: "Comando bloqueado por seguridad" });
-        }
+        if (pattern.test(command)) return res.status(403).json({ success: false, error: "Comando bloqueado por seguridad" });
     }
-
     const cwd = workdir || process.cwd();
     logger.info(`Terminal exec: "${command}" en "${cwd}"`);
-
     exec(command, { cwd, shell: true, timeout: 30000 }, (err, stdout, stderr) => {
         if (err) {
-            return res.json({
-                success: false,
-                error: err.message,
-                stderr: stderr?.trim() || "",
-                stdout: stdout?.trim() || "",
-            });
+            return res.json({ success: false, error: err.message, stderr: stderr?.trim() || "", stdout: stdout?.trim() || "" });
         }
-        res.json({
-            success: true,
-            stdout: stdout?.trim() || "",
-            stderr: stderr?.trim() || "",
-            command,
-        });
+        res.json({ success: true, stdout: stdout?.trim() || "", stderr: stderr?.trim() || "", command });
     });
 });
 
 /* ══════════════════════════════════════════════════
-   GET /api/gemma/chat  (chat de texto simple)
-   Para cuando el usuario manda texto a Gemma directamente
+   POST /api/gemma/chat
 ══════════════════════════════════════════════════ */
 router.post("/gemma/chat", async (req, res) => {
     const { message, context } = req.body;
     if (!message) return res.status(400).json({ success: false, error: "message requerido" });
-
     try {
         const systemPrompt = context || "Eres Jarvis, asistente IA de Tobías. Respondés en español rioplatense, de forma directa y útil.";
         const reply = await callGemmaMultimodal(message, systemPrompt, 1024);
         res.json({ success: true, reply, model: GEMMA_MODEL });
     } catch (err) {
         logger.error(`Gemma chat error: ${err.message}`);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+/* ══════════════════════════════════════════════════
+   POST /api/gemma/self-diagnose
+   DoctorBot: Gemma analiza su propio código
+══════════════════════════════════════════════════ */
+router.post("/gemma/self-diagnose", async (req, res) => {
+    const { targetFile, question } = req.body;
+    const projectRoot = path.resolve(__dirname, "../..");
+
+    let codeContext = "";
+    if (targetFile) {
+        const fullPath = path.resolve(projectRoot, targetFile);
+        if (fs.existsSync(fullPath) && fullPath.startsWith(projectRoot)) {
+            try {
+                codeContext = fs.readFileSync(fullPath, "utf-8").substring(0, 5000);
+            } catch {}
+        }
+    }
+
+    // Leer los últimos errores del log
+    let recentErrors = "";
+    const errorLogPath = path.resolve(__dirname, "../logs/error.log");
+    if (fs.existsSync(errorLogPath)) {
+        const lines = fs.readFileSync(errorLogPath, "utf-8").split("\n").filter(Boolean).slice(-20);
+        recentErrors = lines.join("\n");
+    }
+
+    const prompt = `Eres Jarvis, un asistente IA que puede analizarse a sí mismo.
+
+${codeContext ? `CÓDIGO A ANALIZAR (${targetFile}):\n\`\`\`javascript\n${codeContext}\n\`\`\`\n` : ""}
+${recentErrors ? `ERRORES RECIENTES:\n\`\`\`\n${recentErrors}\n\`\`\`\n` : ""}
+
+PREGUNTA: ${question || "¿Cuáles son los errores actuales y cómo se pueden solucionar?"}
+
+Respondé en español rioplatense. Sé específico sobre qué está fallando y cómo arreglarlo.
+Si detectás errores en el log, explicá qué los causa y dá el fix exacto.`;
+
+    try {
+        const reply = await callGemmaMultimodal(
+            prompt,
+            "Eres Jarvis, un sistema de IA con capacidad de autodiagnóstico. Analizás tu propio código y logs para detectar y solucionar problemas.",
+            2048
+        );
+        res.json({ success: true, reply, model: GEMMA_MODEL });
+    } catch (err) {
+        logger.error(`Gemma self-diagnose error: ${err.message}`);
         res.status(500).json({ success: false, error: err.message });
     }
 });

@@ -320,6 +320,31 @@ class BotManager {
             return this._handleWhatsAppQR();
         }
 
+        // En BotManager.js — añadí este bloque dentro de executeIntent(),
+// después del check de "capabilities" y antes de "self_explain":
+
+// ── OPEN_APP dinámico (del schema estructurado) ──────────────
+if (normalized.intent === "open_app") {
+    const target = normalized.parameters?.target || "";
+    const scriptKey = this._resolveAppScript(target);
+    if (!this.isBotActive("BatBot")) this.activateBot("BatBot");
+    return this._runSafe("BatBot", { script: scriptKey, args: [] });
+}
+
+// ── VOLUME desde schema estructurado ────────────────────────
+if (normalized.intent === "volume_up") {
+    if (!this.isBotActive("BatBot")) this.activateBot("BatBot");
+    return this._runSafe("BatBot", { script: "volume_up", args: [] });
+}
+if (normalized.intent === "volume_down") {
+    if (!this.isBotActive("BatBot")) this.activateBot("BatBot");
+    return this._runSafe("BatBot", { script: "volume_down", args: [] });
+}
+if (normalized.intent === "volume_mute") {
+    if (!this.isBotActive("BatBot")) this.activateBot("BatBot");
+    return this._runSafe("BatBot", { script: "volume_mute", args: [] });
+}
+
         // ── SELF-AWARENESS ─────────────────────────────────
         if (normalized.intent === "self_explain") {
             return await this._handleSelfExplain(normalized.parameters);
@@ -406,8 +431,14 @@ class BotManager {
             return this._runSafe("SearchBot", { query: q });
         }
         if (targetBot === "TerminalBot") {
-            return await this._handleTerminalIntent(normalized);
-        }
+    // Solo ir a TerminalBot si el intent realmente es de terminal
+    // bat_exec debe ir a BatBot, no a TerminalBot
+    if (normalized.intent === "bat_exec") {
+        // dejar que siga al routing normal (BatBot)
+    } else {
+        return await this._handleTerminalIntent(normalized);
+    }
+}
 
         const effectiveBot = targetBot || "WebBot";
         if (effectiveBot === "WebBot") {
@@ -433,42 +464,77 @@ class BotManager {
     /* ══════════════════════════════════════════════════
        TERMINAL INTENT HANDLER
     ══════════════════════════════════════════════════ */
-    async _handleTerminalIntent(normalized) {
-        const intent = normalized.intent;
-        const params = normalized.parameters;
+    // En BotManager.js — REEMPLAZÁ _handleTerminalIntent completo:
 
-        if (!this.isBotActive("TerminalBot")) this.activateBot("TerminalBot");
+async _handleTerminalIntent(normalized) {
+    const intent = normalized.intent;
+    const params = normalized.parameters;
 
-        let action = params.action || "";
+    if (!this.isBotActive("TerminalBot")) this.activateBot("TerminalBot");
 
-        if (!action) {
-            if (intent.includes("create_and_run") || intent.includes("create_script")) {
-                action = params.content ? "create_and_run" : "exec";
-            } else if (intent.includes("create_file") || intent.includes("write_file")) {
-                action = "create_file";
-            } else if (intent.includes("install")) {
-                action = params.package?.includes("pip") ? "install_pip" : "install_npm";
-            } else if (intent.includes("list")) {
-                action = "list_dir";
-            } else {
-                action = "exec";
-            }
+    // ── Resolver acción ───────────────────────────────────────────────────────
+    let action = params.action || "exec";
+    let command = params.command || params.task || params.query || null;
+
+    // Si no hay command pero hay un mensaje original, intentar resolverlo
+    if (!command && params._originalMessage) {
+        const msg = params._originalMessage;
+        
+        // ¿Es una instalación?
+        const installMatch = msg.match(/(?:instal[aá][r]?|pip install|npm install)\s+(\S+)/i);
+        if (installMatch) {
+            const pkg = installMatch[1];
+            const isPip = /pip|python/i.test(msg);
+            return this._runSafe("TerminalBot", {
+                action: isPip ? "install_pip" : "install_npm",
+                package: pkg,
+            });
         }
 
-        const terminalParams = {
-            action,
-            command: params.command || params.task || params.query || null,
-            filepath: params.filepath || params.path || null,
-            filename: params.filename || params.name || null,
-            content: params.content || params.code || null,
-            workdir: params.workdir || params.directory || null,
-            package: params.package || null,
-        };
+        // ¿Es un listado de directorio?
+        if (/\b(lista[r]?|ls|dir|mostrar?\s+archivos?)\b/i.test(msg)) {
+            const dirMatch = msg.match(/(?:en|de|del?)\s+(.+?)(?:\s*$)/i);
+            return this._runSafe("TerminalBot", {
+                action: "list_dir",
+                directory: dirMatch?.[1]?.trim() || null,
+            });
+        }
 
-        logger.info(`TerminalBot: action="${action}" command="${terminalParams.command || ""}"`);
-        return this._runSafe("TerminalBot", terminalParams);
+        // ¿Es un comando directo entre comillas?
+        const quotedCmd = msg.match(/["']([^"']+)["']/);
+        if (quotedCmd) {
+            command = quotedCmd[1];
+            action = "exec";
+        } else {
+            // Fallback: usar el mensaje como comando si no es muy largo
+            command = msg.length < 100 ? msg : null;
+        }
     }
 
+    if (!command && action === "exec") {
+        logger.warn(`TerminalBot: no se pudo resolver command para: ${JSON.stringify(params)}`);
+        return this._response(
+            "❓ No entendí qué comando ejecutar. Ejemplos:\n" +
+            "• \"ejecutá 'ls -la'\"\n" +
+            "• \"instalá requests con pip\"\n" +
+            "• \"listar archivos del Desktop\"",
+            false
+        );
+    }
+
+    const terminalParams = {
+        action,
+        command,
+        filepath: params.filepath || params.path || null,
+        filename: params.filename || params.name || null,
+        content: params.content || params.code || null,
+        workdir: params.workdir || params.directory || null,
+        package: params.package || null,
+    };
+
+    logger.info(`TerminalBot: action="${action}" command="${command || ""}"`);
+    return this._runSafe("TerminalBot", terminalParams);
+}
     /* ══════════════════════════════════════════════════
        SELF-AWARENESS HANDLER
     ══════════════════════════════════════════════════ */
@@ -859,6 +925,20 @@ ${scriptLines}
     }
 
     _response(reply, error) { return { reply, error }; }
+
+    // En BotManager.js — añadí este método helper:
+_resolveAppScript(target) {
+    const MAP = {
+        brave: "app_brave", chrome: "app_chrome", firefox: "app_firefox",
+        discord: "app_discord", spotify: "media_spotify", youtube: "media_youtube",
+        vlc: "media_vlc", vscode: "app_vscode", code: "app_vscode",
+        cursor: "app_cursor", terminal: "app_terminal", cmd: "app_terminal",
+        powershell: "app_powershell", fortnite: "app_fortnite",
+        postman: "app_postman", github: "app_github_desktop",
+        chatgpt: "app_chatgpt", browser: "app_browser", navegador: "app_browser",
+    };
+    return MAP[(target || "").toLowerCase()] || `app_${(target || "").toLowerCase()}`;
+}
 
     destroy() {
         if (this._autoDeactivateInterval) clearInterval(this._autoDeactivateInterval);

@@ -1,85 +1,67 @@
 # Memory
 
-iled: Request failed with status code 500: 2026-04-19T20:36:53.880Z — Gemma upload analyze failed: Request failed with status code 500
+d API Key: 2026-04-20T01:58:07.803Z — STT Groq error: Invalid API Key
+- STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type: 2026-04-19T23:09:44.427Z — STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+- WhatsAppBot: error generando QR:: 2026-04-19T22:59:19.570Z — WhatsAppBot: error generando QR:
 
 
-## 2026-04-19T21:22:34.791Z
-## DoctorBot Scan [2026-04-19T21:22:34.791Z]
-- [Error] TerminalBot: TerminalBot: 'command' es requerido: 2026-04-19T21:12:32.097Z — [Error] TerminalBot: TerminalBot: 'command' es requerido
-- Gemma analyze error: Request failed with status code 400: 2026-04-19T21:03:28.623Z — Gemma analyze error: Request failed with status code 400
-- Gemma upload analyze failed: Request failed with status code 500: 2026-04-19T20:36:53.880Z — Gemma upload analyze failed: Request failed with status code 500
+## 2026-04-20T02:57:27.772Z
+## DoctorBot Scan [2026-04-20T02:57:27.772Z]
+- TerminalBot: Error: TerminalBot: 'command' es requerido
+- [Error] TerminalBot: TerminalBot: 'command' es requerido: 2026-04-20T02:53:38.684Z — [Error] TerminalBot: TerminalBot: 'command' es requerido
+- STT Groq error: Invalid API Key: 2026-04-20T01:58:07.803Z — STT Groq error: Invalid API Key
+- STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type: 2026-04-19T23:09:44.427Z — STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+- WhatsAppBot: error generando QR:: 2026-04-19T22:59:19.570Z — WhatsAppBot: error generando QR:
 
 
-## 2026-04-19T21:22:37.066Z
-## DoctorBot Scan [2026-04-19T21:22:37.066Z]
-- [Error] TerminalBot: TerminalBot: 'command' es requerido: 2026-04-19T21:12:32.097Z — [Error] TerminalBot: TerminalBot: 'command' es requerido
-- Gemma analyze error: Request failed with status code 400: 2026-04-19T21:03:28.623Z — Gemma analyze error: Request failed with status code 400
-- Gemma upload analyze failed: Request failed with status code 500: 2026-04-19T20:36:53.880Z — Gemma upload analyze failed: Request failed with status code 500
+## 2026-04-20T02:57:57.762Z
+## DoctorBot Scan [2026-04-20T02:57:57.762Z]
+- TerminalBot: Error: TerminalBot: 'command' es requerido
+- [Error] TerminalBot: TerminalBot: 'command' es requerido: 2026-04-20T02:53:38.684Z — [Error] TerminalBot: TerminalBot: 'command' es requerido
+- STT Groq error: Invalid API Key: 2026-04-20T01:58:07.803Z — STT Groq error: Invalid API Key
+- STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type: 2026-04-19T23:09:44.427Z — STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+- WhatsAppBot: error generando QR:: 2026-04-19T22:59:19.570Z — WhatsAppBot: error generando QR:
 
 
-## 2026-04-19T21:22:38.138Z
-## DoctorBot Scan [2026-04-19T21:22:38.138Z]
-- [Error] TerminalBot: TerminalBot: 'command' es requerido: 2026-04-19T21:12:32.097Z — [Error] TerminalBot: TerminalBot: 'command' es requerido
-- Gemma analyze error: Request failed with status code 400: 2026-04-19T21:03:28.623Z — Gemma analyze error: Request failed with status code 400
-- Gemma upload analyze failed: Request failed with status code 500: 2026-04-19T20:36:53.880Z — Gemma upload analyze failed: Request failed with status code 500
+## 2026-04-20T02:58:27.769Z
+## DoctorBot Scan [2026-04-20T02:58:27.769Z]
+- TerminalBot: Error: TerminalBot: 'command' es requerido
+- [Error] TerminalBot: TerminalBot: 'command' es requerido: 2026-04-20T02:53:38.684Z — [Error] TerminalBot: TerminalBot: 'command' es requerido
+- STT Groq error: Invalid API Key: 2026-04-20T01:58:07.803Z — STT Groq error: Invalid API Key
+- STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type: 2026-04-19T23:09:44.427Z — STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+- WhatsAppBot: error generando QR:: 2026-04-19T22:59:19.570Z — WhatsAppBot: error generando QR:
 
 
-## 2026-04-19T21:22:48.535Z
-## DoctorBot Scan [2026-04-19T21:22:48.535Z]
-- [Error] TerminalBot: TerminalBot: 'command' es requerido: 2026-04-19T21:12:32.097Z — [Error] TerminalBot: TerminalBot: 'command' es requerido
-- Gemma analyze error: Request failed with status code 400: 2026-04-19T21:03:28.623Z — Gemma analyze error: Request failed with status code 400
-- Gemma upload analyze failed: Request failed with status code 500: 2026-04-19T20:36:53.880Z — Gemma upload analyze failed: Request failed with status code 500
+## 2026-04-20T02:58:44.219Z
+User: pero que tenga vista previa el codigo de la landing apge
+Intent: chat_response
+Result: Para incluir la vista previa del código de la landing page, puedo proporcionarte los tres componentes (HTML, CSS y JavaScript) separados en bloques distintos.
+
+Ten en cuenta que mi interfaz actual no 
 
 
-## 2026-04-19T21:23:06.622Z
-User: hazme un diagrama explciandome el funcionamiento de google drive
-Intent: canvas_generate
-Result: 🎨 Generé un diagrama Mermaid:
-
-```mermaid
-flowchart TD
-    A["Inicio: Acceder a Google Drive"] --> B["Crear o Subir Archivos"]
-
-    B --> C1["Subir desde Computadora"]
-    B --> C2["Compartir/Generar
+## 2026-04-20T02:58:58.227Z
+## DoctorBot Scan [2026-04-20T02:58:58.227Z]
+- TerminalBot: Error: TerminalBot: 'command' es requerido
+- [Error] TerminalBot: TerminalBot: 'command' es requerido: 2026-04-20T02:53:38.684Z — [Error] TerminalBot: TerminalBot: 'command' es requerido
+- STT Groq error: Invalid API Key: 2026-04-20T01:58:07.803Z — STT Groq error: Invalid API Key
+- STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type: 2026-04-19T23:09:44.427Z — STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+- WhatsAppBot: error generando QR:: 2026-04-19T22:59:19.570Z — WhatsAppBot: error generando QR:
 
 
-## 2026-04-19T21:23:18.508Z
-## DoctorBot Scan [2026-04-19T21:23:18.508Z]
-- [Error] TerminalBot: TerminalBot: 'command' es requerido: 2026-04-19T21:12:32.097Z — [Error] TerminalBot: TerminalBot: 'command' es requerido
-- Gemma analyze error: Request failed with status code 400: 2026-04-19T21:03:28.623Z — Gemma analyze error: Request failed with status code 400
-- Gemma upload analyze failed: Request failed with status code 500: 2026-04-19T20:36:53.880Z — Gemma upload analyze failed: Request failed with status code 500
+## 2026-04-20T02:59:13.485Z
+## DoctorBot Scan [2026-04-20T02:59:13.485Z]
+- TerminalBot: Error: TerminalBot: 'command' es requerido
+- [Error] TerminalBot: TerminalBot: 'command' es requerido: 2026-04-20T02:53:38.684Z — [Error] TerminalBot: TerminalBot: 'command' es requerido
+- STT Groq error: Invalid API Key: 2026-04-20T01:58:07.803Z — STT Groq error: Invalid API Key
+- STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type: 2026-04-19T23:09:44.427Z — STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+- WhatsAppBot: error generando QR:: 2026-04-19T22:59:19.570Z — WhatsAppBot: error generando QR:
 
 
-## 2026-04-19T21:23:48.765Z
-## DoctorBot Scan [2026-04-19T21:23:48.765Z]
-- [Error] TerminalBot: TerminalBot: 'command' es requerido: 2026-04-19T21:12:32.097Z — [Error] TerminalBot: TerminalBot: 'command' es requerido
-- Gemma analyze error: Request failed with status code 400: 2026-04-19T21:03:28.623Z — Gemma analyze error: Request failed with status code 400
-- Gemma upload analyze failed: Request failed with status code 500: 2026-04-19T20:36:53.880Z — Gemma upload analyze failed: Request failed with status code 500
-
-
-## 2026-04-19T21:24:18.512Z
-## DoctorBot Scan [2026-04-19T21:24:18.511Z]
-- [Error] TerminalBot: TerminalBot: 'command' es requerido: 2026-04-19T21:12:32.097Z — [Error] TerminalBot: TerminalBot: 'command' es requerido
-- Gemma analyze error: Request failed with status code 400: 2026-04-19T21:03:28.623Z — Gemma analyze error: Request failed with status code 400
-- Gemma upload analyze failed: Request failed with status code 500: 2026-04-19T20:36:53.880Z — Gemma upload analyze failed: Request failed with status code 500
-
-
-## 2026-04-19T21:24:48.512Z
-## DoctorBot Scan [2026-04-19T21:24:48.512Z]
-- [Error] TerminalBot: TerminalBot: 'command' es requerido: 2026-04-19T21:12:32.097Z — [Error] TerminalBot: TerminalBot: 'command' es requerido
-- Gemma analyze error: Request failed with status code 400: 2026-04-19T21:03:28.623Z — Gemma analyze error: Request failed with status code 400
-- Gemma upload analyze failed: Request failed with status code 500: 2026-04-19T20:36:53.880Z — Gemma upload analyze failed: Request failed with status code 500
-
-## ERROR [2026-04-19T21:24:54.855Z]
-**Bot:** TerminalBot
-**Error:** TerminalBot: 'command' es requerido
-**Diagnóstico:** Error desconocido
-**Sugerencia:** Revisá los logs en backend/logs/error.log
-**Auto-fix:** No
-
-
-## 2026-04-19T21:24:55.776Z
-User: abre youtube
-Intent: bat_exec
-Result: Error en TerminalBot: TerminalBot: 'command' es requerido
+## 2026-04-20T02:59:27.768Z
+## DoctorBot Scan [2026-04-20T02:59:27.768Z]
+- TerminalBot: Error: TerminalBot: 'command' es requerido
+- [Error] TerminalBot: TerminalBot: 'command' es requerido: 2026-04-20T02:53:38.684Z — [Error] TerminalBot: TerminalBot: 'command' es requerido
+- STT Groq error: Invalid API Key: 2026-04-20T01:58:07.803Z — STT Groq error: Invalid API Key
+- STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type: 2026-04-19T23:09:44.427Z — STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
+- WhatsAppBot: error generando QR:: 2026-04-19T22:59:19.570Z — WhatsAppBot: error generando QR:

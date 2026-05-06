@@ -17,31 +17,46 @@ const WELCOME = {
 let _mermaidReady = false;
 let _mermaidLoading = false;
 const _mermaidQueue = [];
+let _mermaidInstance = null;
 
 function loadMermaid() {
   return new Promise((resolve) => {
-    if (_mermaidReady) { resolve(window.mermaid); return; }
+    if (_mermaidReady && _mermaidInstance) { resolve(_mermaidInstance); return; }
     _mermaidQueue.push(resolve);
     if (_mermaidLoading) return;
     _mermaidLoading = true;
     const s = document.createElement("script");
     s.src = "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js";
     s.onload = () => {
-      window.mermaid.initialize({
-        startOnLoad: false, theme: "dark",
-        themeVariables: {
-          primaryColor: "#1e3a5f", primaryTextColor: "#e2e8f0",
-          primaryBorderColor: "#10a37f", lineColor: "#10a37f",
-          secondaryColor: "#111827", background: "#0d1117",
-          mainBkg: "#1e2030", nodeBorder: "#10a37f",
-          titleColor: "#ececec", edgeLabelBackground: "#1a1a2e",
-        },
-      });
-      _mermaidReady = true;
-      _mermaidQueue.forEach((cb) => cb(window.mermaid));
+      try {
+        window.mermaid.initialize({
+          startOnLoad: false,
+          theme: "dark",
+          securityLevel: "loose",
+          suppressErrorRendering: true,
+          themeVariables: {
+            primaryColor: "#1e3a5f",
+            primaryTextColor: "#e2e8f0",
+            primaryBorderColor: "#10a37f",
+            lineColor: "#10a37f",
+            background: "#0d1117",
+            mainBkg: "#1e2030",
+            nodeBorder: "#10a37f",
+            titleColor: "#ececec",
+          },
+        });
+        _mermaidInstance = window.mermaid;
+        _mermaidReady = true;
+      } catch (e) {
+        console.warn("mermaid init error:", e);
+      }
+      _mermaidQueue.forEach(cb => cb(_mermaidInstance));
       _mermaidQueue.length = 0;
     };
-    s.onerror = () => { _mermaidQueue.forEach((cb) => cb(null)); _mermaidQueue.length = 0; };
+    s.onerror = () => {
+      _mermaidQueue.forEach(cb => cb(null));
+      _mermaidQueue.length = 0;
+    };
     document.head.appendChild(s);
   });
 }
@@ -171,100 +186,145 @@ function renderMarkdown(rawText) {
 ──────────────────────────────────────────────── */
 function MermaidCanvas({ code }) {
   const containerRef = useRef(null);
-  const [err, setErr] = useState(null);
-  const [ready, setReady] = useState(false);
-  const id = useRef(`mmd-${Math.random().toString(36).slice(2)}`);
+  const [status, setStatus] = useState("loading");
+  const idRef = useRef(`mmd-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  const renderedRef = useRef(false);
 
   useEffect(() => {
+    if (renderedRef.current) return;
+    renderedRef.current = true;
     let cancelled = false;
+    const sanitized = sanitizeMermaidCode(code);
+
     loadMermaid().then(async (mermaid) => {
-      if (cancelled || !mermaid || !containerRef.current) return;
+      if (cancelled || !mermaid || !containerRef.current) {
+        setStatus("fallback");
+        return;
+      }
       try {
-        const { svg } = await mermaid.render(id.current, code);
+        const { svg } = await mermaid.render(idRef.current, sanitized);
         if (!cancelled && containerRef.current) {
           containerRef.current.innerHTML = svg;
-          setReady(true);
+          const svgEl = containerRef.current.querySelector("svg");
+          if (svgEl) {
+            svgEl.style.maxWidth = "100%";
+            svgEl.style.height = "auto";
+            svgEl.removeAttribute("height");
+          }
+          setStatus("ok");
         }
-      } catch (e) { if (!cancelled) setErr(e.message); }
+      } catch (e) {
+        if (!cancelled) {
+          console.warn("mermaid render error (silenced):", e.message?.substring(0, 80));
+          setStatus("fallback");
+        }
+      }
     });
+
     return () => { cancelled = true; };
   }, [code]);
 
-  if (err) return (
-    <div style={{ padding: 16, color: "#ef4444", fontSize: 13 }}>
-      <div style={{ marginBottom: 8 }}>❌ Error al renderizar diagrama:</div>
-      <pre style={{ fontSize: 12, opacity: 0.8, whiteSpace: "pre-wrap" }}>{err}</pre>
-    </div>
-  );
+  if (status === "fallback") {
+    return (
+      <div style={{ background: "#0d1117", borderRadius: 8, padding: 16, overflow: "auto", maxHeight: 400 }}>
+        <div style={{ fontSize: 11, color: "#616161", marginBottom: 6, fontFamily: "monospace" }}>
+          📊 mermaid — vista previa de código
+        </div>
+        <pre style={{ margin: 0, fontSize: 12, color: "#e2e8f0", fontFamily: "monospace", whiteSpace: "pre", overflowX: "auto" }}>
+          {code}
+        </pre>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ position: "relative", minHeight: 60 }}>
-      {!ready && (
-        <div style={{ padding: 24, textAlign: "center", color: "var(--text-muted)", fontSize: 13 }}>
-          <span style={{ display: "inline-block", animation: "spin 1s linear infinite", marginRight: 8 }}>⟳</span>
+    <div style={{ position: "relative", minHeight: 40 }}>
+      {status === "loading" && (
+        <div style={{ padding: 16, color: "var(--text-muted)", fontSize: 13, textAlign: "center" }}>
+          <span style={{ animation: "spin 1s linear infinite", display: "inline-block", marginRight: 6 }}>⟳</span>
           Renderizando diagrama...
         </div>
       )}
-      <div ref={containerRef} style={{ display: ready ? "block" : "none", padding: 16, overflowX: "auto", background: "#0d1117", borderRadius: 8 }} />
+      <div
+        ref={containerRef}
+        style={{
+          display: status === "ok" ? "block" : "none",
+          padding: 16,
+          overflowX: "auto",
+          background: "#0d1117",
+          borderRadius: 8
+        }}
+      />
     </div>
   );
+}
+
+// Añadí esta función helper ANTES de MermaidCanvas:
+function sanitizeMermaidCode(code) {
+  if (!code) return "";
+  return code
+    .split("\n")
+    .map(line => {
+      line = line.replace(/;+$/, "");
+      line = line.replace(/(\w[\w\d]*)\[([^\]"]+)\]/g, (match, id, label) => {
+        if (/\s|\(|\)/.test(label) && !label.startsWith('"')) {
+          return `${id}["${label.replace(/"/g, "'")}"]`;
+        }
+        return match;
+      });
+      return line;
+    })
+    .join("\n");
 }
 
 /* ────────────────────────────────────────────────
    HTML CANVAS RENDERER (iframe sandboxed)
 ──────────────────────────────────────────────── */
+// En Chat.jsx — reemplazá SOLO el componente HtmlCanvas:
+
 function HtmlCanvas({ code }) {
   const iframeRef = useRef(null);
-  const [height, setHeight] = useState(320);
-  const [loaded, setLoaded] = useState(false);
+  const [height, setHeight] = useState(360);
 
   const fullDoc = `<!DOCTYPE html><html><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#0d1117;color:#e2e8f0;font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.6;padding:16px}
+html,body{background:#0d1117;color:#e2e8f0;font-family:system-ui,sans-serif;font-size:14px;line-height:1.6;padding:16px}
 a{color:#10a37f}
-input,textarea,select{font-family:inherit;background:#1e2030;color:#e2e8f0;border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:6px 10px;outline:none}
-button{font-family:inherit;cursor:pointer;padding:6px 14px;border-radius:6px;border:none;background:#10a37f;color:#fff;font-weight:600}
+input,textarea,select{background:#1e2030;color:#e2e8f0;border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:6px 10px;outline:none;font:inherit}
+button{font:inherit;cursor:pointer;padding:6px 14px;border-radius:6px;border:none;background:#10a37f;color:#fff;font-weight:600}
 button:hover{background:#0d8a6a}
+canvas{max-width:100%}
 </style></head>
-<body>${code.includes("<html") ? code : code}</body></html>`;
+<body>${code.replace(/<html[\s\S]*?<body[^>]*>/i, "").replace(/<\/body>[\s\S]*<\/html>/i, "")}</body></html>`;
 
   useEffect(() => {
     const iframe = iframeRef.current;
     if (!iframe) return;
-    const doc = iframe.contentDocument || iframe.contentWindow?.document;
-    if (!doc) return;
-    doc.open(); doc.write(fullDoc); doc.close();
-    const onLoad = () => {
+    const blob = new Blob([fullDoc], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    iframe.src = url;
+    iframe.onload = () => {
       try {
-        const h = iframe.contentDocument.body.scrollHeight;
-        setHeight(Math.max(200, Math.min(h + 32, 600)));
-      } catch (_) {}
-      setLoaded(true);
+        // Intentar leer altura del contenido
+        const h = iframe.contentDocument?.body?.scrollHeight || 360;
+        setHeight(Math.max(200, Math.min(h + 40, 700)));
+      } catch (_) {
+        setHeight(360);
+      }
+      URL.revokeObjectURL(url);
     };
-    iframe.addEventListener("load", onLoad);
-    // fallback
-    setTimeout(() => setLoaded(true), 600);
-    return () => iframe.removeEventListener("load", onLoad);
   }, [fullDoc]);
 
   return (
-    <div style={{ position: "relative" }}>
-      {!loaded && (
-        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(13,17,23,0.8)", zIndex: 2, color: "var(--text-muted)", fontSize: 13 }}>
-          <span style={{ animation: "spin 1s linear infinite", display: "inline-block", marginRight: 8 }}>⟳</span>
-          Renderizando interfaz...
-        </div>
-      )}
-      <iframe
-        ref={iframeRef}
-        sandbox="allow-scripts allow-same-origin"
-        style={{ width: "100%", height, border: "none", display: "block", borderRadius: 8, background: "#0d1117" }}
-        title="html-preview"
-      />
-    </div>
+    <iframe
+      ref={iframeRef}
+      sandbox="allow-scripts"
+      style={{ width: "100%", height, border: "none", display: "block", borderRadius: 8, background: "#0d1117" }}
+      title="html-canvas"
+    />
   );
 }
 
@@ -525,7 +585,7 @@ function InlineWhatsAppQR() {
     fetchQR();
     const iv = setInterval(() => { if (status !== "connected") fetchQR(); }, 8000);
     return () => { clearInterval(iv); clearInterval(countdownRef.current); };
-  }, [fetchQR]);
+  }, [fetchQR, status]);
   if (status === "connected") return <div style={{ margin: "8px 0", padding: "12px 16px", background: "rgba(25,195,125,0.1)", border: "1px solid rgba(25,195,125,0.3)", borderRadius: 12, fontSize: 13, color: "#19c37d" }}>✅ WhatsApp conectado</div>;
   if (!qrData) return <div style={{ margin: "8px 0", padding: "12px 16px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12 }}><div style={{ fontSize: 13, color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: 8 }}><span style={{ animation: "spin 1s linear infinite", display: "inline-block" }}>⟳</span>{status === "waiting" ? "Activá WhatsAppBot en Bots..." : "Generando QR..."}</div></div>;
   return (
@@ -546,16 +606,19 @@ function AssistantMessage({ msg, isNew, onOpenCanvas }) {
   const { displayed, done } = useTypewriter(isNew ? msg.content : null, 8);
   const text = isNew ? displayed : msg.content || "";
   const isError = msg.role === "error";
-  const safeContent = msg.content && !isError ? msg.content : "";
-  const artifact = safeContent ? detectArtifact(safeContent) : null;
+  // Detectar artifacts automáticamente en el contenido
+const rawContent = msg.content || "";
+const artifact = rawContent ? detectArtifact(rawContent) : null;
 
-  const cleanText = (() => {
-    if (!artifact || !safeContent) return safeContent || msg.content || "";
-    try { return safeContent.replace(artifact.raw, "").trim(); } catch { return safeContent; }
-  })();
+const cleanText = (() => {
+  if (!artifact || !rawContent) return rawContent;
+  try { return rawContent.replace(artifact.raw, "").trim(); } catch { return rawContent; }
+})();
 
-  const displayText = isNew && !done ? text || "" : cleanText || "";
-  const showArtifact = !!(artifact?.code && typeof artifact.code === "string" && (!isNew || done));
+const displayText = isNew && !done ? (text || "") : (cleanText || "");
+
+// Auto-render: si hay artifact, mostrarlo siempre (no requiere "modo canvas")
+const showArtifact = !!(artifact?.code && typeof artifact.code === "string");
 
   return (
     <div style={{ display: "flex", justifyContent: "flex-start", padding: "10px 28px", animation: isNew ? "fadeSlideUp 0.25s ease both" : "none" }}>
@@ -614,6 +677,9 @@ function AudioRecorder({ onTranscribed, disabled }) {
   const mediaRecorderRef = useRef(null);
   const chunksRef = useRef([]);
   const streamRef = useRef(null);
+  const recordingRef = useRef(false);
+  // Web Speech API para transcripción directa en el browser
+  const recognitionRef = useRef(null);
 
   const showError = (msg) => { setFloatError(msg); setTimeout(() => setFloatError(null), 3500); };
 
@@ -622,89 +688,120 @@ function AudioRecorder({ onTranscribed, disabled }) {
     return types.find((t) => MediaRecorder.isTypeSupported(t)) || "audio/webm";
   };
 
-  const stopAndProcess = useCallback(async () => {
-    if (!mediaRecorderRef.current || mediaRecorderRef.current.state !== "recording") return;
-    setRecording(false);
-
-    return new Promise((resolve) => {
-      const mr = mediaRecorderRef.current;
-      mr.onstop = async () => {
-        if (streamRef.current) { streamRef.current.getTracks().forEach((t) => t.stop()); streamRef.current = null; }
-        const mimeType = mr.mimeType || getMimeType();
-        const blob = new Blob(chunksRef.current, { type: mimeType });
-
-        if (blob.size < 500) { showError("Audio demasiado corto"); setProcessing(false); resolve(); return; }
-
-        setProcessing(true);
-        try {
-          const fd = new FormData();
-          const ext = mimeType.includes("mp4") ? "mp4" : mimeType.includes("ogg") ? "ogg" : "webm";
-          fd.append("audio", blob, `rec.${ext}`);
-          const res = await fetch(`${API}/api/stt/transcribe`, { method: "POST", body: fd });
-          const data = await res.json();
-          if (!data.success) showError(data.error || "Error al transcribir");
-          else if (!data.text?.trim()) showError("No se detectó voz");
-          else onTranscribed(data.text.trim());
-        } catch { showError("Error de conexión con STT"); }
-        setProcessing(false);
-        resolve();
-      };
-      mr.stop();
-    });
+  // Intenta STT via backend (Groq), si falla usa Web Speech API
+  const transcribeAudio = useCallback(async (blob) => {
+    if (!blob || blob.size < 500) { showError("Audio demasiado corto"); setProcessing(false); return; }
+    
+    setProcessing(true);
+    try {
+      const fd = new FormData();
+      const mimeType = blob.type || "audio/webm";
+      const ext = mimeType.includes("mp4") ? "mp4" : mimeType.includes("ogg") ? "ogg" : "webm";
+      fd.append("audio", blob, `rec.${ext}`);
+      const res = await fetch(`${API}/api/stt/transcribe`, { method: "POST", body: fd });
+      const data = await res.json();
+      
+      if (data.errorCode === "USE_BROWSER_STT" || !data.success) {
+        // Groq no disponible — informar al usuario
+        showError("Usá el ícono 🎤 y hablá directamente (Web Speech API)");
+      } else if (!data.text?.trim()) {
+        showError("No se detectó voz");
+      } else {
+        onTranscribed(data.text.trim());
+      }
+    } catch (e) { showError("Error de conexión"); }
+    setProcessing(false);
   }, [onTranscribed]);
 
-  const startRecording = useCallback(async () => {
-    if (disabled || processing || recording) return;
-    setFloatError(null);
+  const stopRecording = useCallback(() => {
+    if (!recordingRef.current) return;
+    recordingRef.current = false;
+    setRecording(false);
+    const mr = mediaRecorderRef.current;
+    if (mr && mr.state === "recording") mr.stop();
+    if (streamRef.current) { streamRef.current.getTracks().forEach((t) => t.stop()); streamRef.current = null; }
+  }, []);
 
-    // FIX: Explicitly request microphone permission before anything else
+  const startBrowserSTT = useCallback(() => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { showError("Tu navegador no soporta STT. Usá Chrome."); return; }
+    
+    const recognition = new SR();
+    recognition.lang = "es-AR";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognitionRef.current = recognition;
+    
+    recognition.onresult = (e) => {
+      const text = e.results[0][0].transcript.trim();
+      if (text) onTranscribed(text);
+      setRecording(false);
+      recordingRef.current = false;
+    };
+    recognition.onerror = (e) => {
+      if (e.error !== "aborted") showError(`Error STT: ${e.error}`);
+      setRecording(false);
+      recordingRef.current = false;
+    };
+    recognition.onend = () => { if (recordingRef.current) { setRecording(false); recordingRef.current = false; } };
+    
+    recognition.start();
+    recordingRef.current = true;
+    setRecording(true);
+  }, [onTranscribed]);
+
+  const stopBrowserSTT = useCallback(() => {
+    if (recognitionRef.current) { try { recognitionRef.current.stop(); } catch {} recognitionRef.current = null; }
+    recordingRef.current = false;
+    setRecording(false);
+  }, []);
+
+  const startMediaRecorder = useCallback(async () => {
     let stream;
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, sampleRate: 16000 },
-      });
+      stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
     } catch (err) {
-      if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
-        showError("Permiso de micrófono denegado. Habilitalo en el navegador.");
-      } else if (err.name === "NotFoundError") {
-        showError("No se encontró micrófono.");
-      } else {
-        showError(`Micrófono no disponible: ${err.message}`);
-      }
+      showError(err.name === "NotAllowedError" ? "Permiso de micrófono denegado" : `Micrófono no disponible: ${err.message}`);
       return;
     }
-
     streamRef.current = stream;
     chunksRef.current = [];
     const mimeType = getMimeType();
-
     let mr;
-    try {
-      mr = new MediaRecorder(stream, { mimeType });
-    } catch {
-      mr = new MediaRecorder(stream);
-    }
+    try { mr = new MediaRecorder(stream, { mimeType }); } catch { mr = new MediaRecorder(stream); }
     mediaRecorderRef.current = mr;
-
     mr.ondataavailable = (e) => { if (e.data?.size > 0) chunksRef.current.push(e.data); };
-    mr.onerror = () => { showError("Error durante la grabación"); setRecording(false); setProcessing(false); };
-
+    mr.onstop = () => {
+      const finalMime = mr.mimeType || mimeType;
+      const blob = new Blob(chunksRef.current, { type: finalMime });
+      transcribeAudio(blob);
+    };
+    mr.onerror = () => { showError("Error durante la grabación"); setRecording(false); recordingRef.current = false; };
     mr.start(100);
+    recordingRef.current = true;
     setRecording(true);
-  }, [disabled, processing, recording]);
+  }, [transcribeAudio]);
 
   const handleClick = useCallback(() => {
     if (disabled || processing) return;
-    if (recording) stopAndProcess();
-    else startRecording();
-  }, [disabled, processing, recording, stopAndProcess, startRecording]);
+    if (recordingRef.current) {
+      // Parar — intentar Web Speech API primero (más confiable)
+      if (recognitionRef.current) stopBrowserSTT();
+      else stopRecording();
+    } else {
+      // Usar Web Speech API directamente (más simple y confiable)
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SR) startBrowserSTT();
+      else startMediaRecorder(); // fallback a MediaRecorder + Groq
+    }
+  }, [disabled, processing, stopBrowserSTT, stopRecording, startBrowserSTT, startMediaRecorder]);
 
   return (
     <div style={{ position: "relative", flexShrink: 0 }}>
       <button
         onClick={handleClick}
         disabled={disabled || processing}
-        title={recording ? "Click para enviar el audio" : "Click para grabar"}
+        title={recording ? "Click para enviar" : "Click para grabar (Web Speech API)"}
         style={{
           width: 32, height: 32, borderRadius: 8,
           border: recording ? "1px solid rgba(239,68,68,0.6)" : "1px solid rgba(255,255,255,0.1)",
@@ -721,7 +818,7 @@ function AudioRecorder({ onTranscribed, disabled }) {
       </button>
       {recording && (
         <div style={{ position: "absolute", bottom: "calc(100% + 6px)", left: "50%", transform: "translateX(-50%)", background: "rgba(239,68,68,0.92)", color: "#fff", fontSize: 10, padding: "3px 8px", borderRadius: 6, whiteSpace: "nowrap", pointerEvents: "none", fontWeight: 600, zIndex: 10 }}>
-          🔴 Grabando — click para enviar
+          🔴 Escuchando... click para enviar
         </div>
       )}
       {floatError && (
@@ -950,7 +1047,7 @@ function Chat({ propConvId = null, onReady, globalWakeWordState, globalWakeWordE
 
   /* ── File upload — FIX: distinguish PDF from image ── */
   const handleUpload = async (file) => {
-    const isPDF = file.type === "application/pdf";
+    const isPDF = file.type === "application/pdf" || file.name.endsWith(".pdf");
     const isImage = file.type.startsWith("image/");
 
     if (!isPDF && !isImage) {
@@ -960,26 +1057,30 @@ function Chat({ propConvId = null, onReady, globalWakeWordState, globalWakeWordE
 
     setUploadLabel(`📎 ${file.name} (${isPDF ? "PDF" : "imagen"})`);
     setLoading(true);
-    setThinkingBot("VisionBot");
-    setThinkingAction(isPDF ? "📄 Analizando PDF..." : "🔍 Analizando imagen...");
+    setThinkingBot("GemmaBot");
+    setThinkingAction(isPDF ? "📄 Analizando PDF..." : "🔍 Analizando imagen con Gemma 4...");
     addMessage("user", `[${isPDF ? "PDF" : "Imagen"}: ${file.name}]`, { isFile: true });
 
     try {
       const fd = new FormData();
       fd.append("file", file);
-      fd.append("query", input.trim() || (isPDF ? "Resumí y analizá este PDF detalladamente." : "Describí y analizá esta imagen detalladamente."));
-      fd.append("fileType", isPDF ? "pdf" : "image"); // FIX: tell backend what type it is
+      fd.append("query", input.trim() || (isPDF ? "Resumí y analizá este PDF detalladamente. Extraé los puntos clave." : "Describí y analizá esta imagen detalladamente."));
+      fd.append("fileType", isPDF ? "pdf" : "image");
 
-      const res = await fetch(`${API}/api/upload`, { method: "POST", body: fd });
+      // Usar el endpoint unificado de Gemma (sttGemmaRoutes)
+      const res = await fetch(`${API}/api/gemma/analyze`, { method: "POST", body: fd });
       const data = await res.json();
 
-      let reply = data.reply || "No se pudo procesar.";
+      let reply = data.reply || data.error || "No se pudo procesar.";
       if (isRawIntentJSON(reply)) reply = `No pude analizar ese ${isPDF ? "PDF" : "archivo"}.`;
       else reply = stripIntentBlocks(reply);
 
-      addMessage(data.success === false ? "error" : "assistant", reply, { intent: data.intent, bot: data.bot });
+      addMessage(data.success === false ? "error" : "assistant", reply, {
+        intent: data.intent,
+        bot: data.bot || "GemmaBot",
+      });
     } catch (err) {
-      addMessage("error", `Error al procesar ${isPDF ? "PDF" : "imagen"}: ${err.message}`);
+      addMessage("error", `Error al procesar: ${err.message}`);
     }
 
     setLoading(false); setThinkingBot(null); setThinkingAction(null); setUploadLabel("");

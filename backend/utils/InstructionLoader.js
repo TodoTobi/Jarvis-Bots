@@ -12,6 +12,18 @@ const fs = require("fs");
 const path = require("path");
 const logger = require("../logs/logger");
 
+// Load SkillLoader with fallback paths
+let skillLoader;
+try {
+    skillLoader = require("./SkillLoader");
+} catch {
+    try {
+        skillLoader = require("../skills/SkillLoader");
+    } catch {
+        skillLoader = null;
+    }
+}
+
 const CONTEXT_ORDER = ["identity", "soul", "user", "tools", "bots", "memory"];
 const MAX_MEMORY_SIZE = 5000;     // bytes — auto-trim if bigger
 const MAX_SECTION_CHARS = 800;    // ← was 300, now 800 so AI reads the full .md instructions
@@ -82,35 +94,65 @@ class InstructionLoader {
         return this.cache[key] || "";
     }
 
-    buildFullContext(userMessage) {
-        const parts = [];
+   // En InstructionLoader.js — reemplazá SOLO este método:
 
-        // Add each section — now with larger limit so AI reads full instructions
-        CONTEXT_ORDER.forEach(key => {
-            if (key === "memory") return; // memory handled separately below
-            const content = this.get(key).trim();
-            if (content) {
-                const trimmed = content.length > MAX_SECTION_CHARS
-                    ? content.substring(0, MAX_SECTION_CHARS) + "..."
-                    : content;
-                parts.push(`[${key.toUpperCase()}]\n${trimmed}`);
-            }
-        });
+// Reemplazá buildFullContext completo:
+buildFullContext(userMessage) {
+    const parts = [];
 
-        // Memory — only last N chars to avoid overflow
-        const mem = this.get("memory");
-        if (mem.trim()) {
-            parts.push(`[MEMORIA RECIENTE]\n${mem.slice(-MAX_MEMORY_CHARS)}`);
+    CONTEXT_ORDER.forEach(key => {
+        if (key === "memory") return;
+        const content = this.get(key).trim();
+        if (content) {
+            const trimmed = content.length > MAX_SECTION_CHARS
+                ? content.substring(0, MAX_SECTION_CHARS) + "..."
+                : content;
+            parts.push(`[${key.toUpperCase()}]\n${trimmed}`);
         }
+    });
 
-        // User message
-        parts.push(`[MENSAJE DEL USUARIO]\n${userMessage}`);
-
-        // Compact instruction
-        parts.push(`[INSTRUCCIÓN]\nAnaliza el MENSAJE DEL USUARIO y responde SOLO con JSON válido:\n{"intent":"nombre","parameters":{},"priority":"normal"}\n\nEjemplos:\n- "poneme youtube" → {"intent":"bat_exec","parameters":{"script":"media_youtube","query":""},"priority":"normal"}\n- "subi el volumen" → {"intent":"bat_exec","parameters":{"script":"volume_up"},"priority":"normal"}\n- "hola" → {"intent":"chat_response","parameters":{"query":"hola"},"priority":"normal"}`);
-
-        return parts.join("\n\n");
+    const mem = this.get("memory");
+    if (mem.trim()) {
+        parts.push(`[MEMORIA RECIENTE]\n${mem.slice(-MAX_MEMORY_CHARS)}`);
     }
+
+    // ── Skills reales ────────────────────────────────────────────────────────
+    if (skillLoader) {
+        parts.push(`[CAPACIDADES REALES]\n${skillLoader.getCapabilitiesPrompt()}`);
+    }
+
+    parts.push(`[MENSAJE DEL USUARIO]\n${userMessage}`);
+
+    parts.push(`[INSTRUCCIÓN OBLIGATORIA]
+Respondé SOLO con JSON válido. Sin texto antes ni después. Sin markdown.
+
+SCHEMA:
+{
+  "type": "action" | "response" | "artifact",
+  "intent": string,
+  "target": string | null,
+  "content": string,
+  "format": "text" | "html" | "mermaid" | "svg" | "code",
+  "artifact_type": string | null
+}
+
+REGLAS ABSOLUTAS:
+1. NUNCA respondas con texto libre. SIEMPRE JSON.
+2. Si el usuario pide abrir/ejecutar/controlar → type="action"
+3. Si pide diagrama/UI/código visual → type="artifact"
+4. Conversación/explicación/búsqueda → type="response"
+5. NUNCA digas "no puedo". Estimá la mejor acción.
+6. "content": texto para el usuario (en español), NO el código del artifact.
+7. Para artifacts: "artifact_type" contiene el código/contenido generado.
+
+EJEMPLOS:
+"abrí brave" → {"type":"action","intent":"open_app","target":"brave","content":"Abriendo Brave...","format":"text","artifact_type":null}
+"haceme un diagrama del login" → {"type":"artifact","intent":"generate_diagram","target":null,"content":"Diagrama del flujo de login:","format":"mermaid","artifact_type":"flowchart TD\n  A[Usuario] --> B[Login]\n  B --> C{¿Válido?}\n  C -->|Sí| D[Dashboard]\n  C -->|No| E[Error]"}
+"subí el volumen" → {"type":"action","intent":"volume_up","target":"system","content":"Subiendo el volumen.","format":"text","artifact_type":null}
+"explicá qué es JWT" → {"type":"response","intent":"explain","target":null,"content":"JWT (JSON Web Token) es un estándar para transmitir información...","format":"text","artifact_type":null}`);
+
+    return parts.join("\n\n");
+}
 
     appendToMemory(entry) {
         const memoryPath = path.join(this.mdPath, "memory.md");

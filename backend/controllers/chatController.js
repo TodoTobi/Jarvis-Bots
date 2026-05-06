@@ -79,22 +79,79 @@ class ChatController {
             logger.info(`Intent: ${intentObject.intent}`);
 
             /* 3. Fix chat_response loop — always use original user message as query */
-            if (
-                intentObject.intent === "chat_response" ||
-                intentObject.intent.startsWith("chat_") ||
-                intentObject.intent === "talk_jarvis"
-            ) {
-                intentObject.parameters = {
-                    ...intentObject.parameters,
-                    query: trimmed,
-                    _originalMessage: trimmed,
-                };
-            } else {
-                // Always inject original message so bots can use it
-                if (!intentObject.parameters._originalMessage) {
-                    intentObject.parameters._originalMessage = trimmed;
-                }
-            }
+            // En chatController.js — reemplazá SOLO el bloque de fix chat_response (líneas ~60-80):
+
+// backend/controllers/chatController.js
+// Reemplazá SOLO el bloque desde "/* 3. Fix chat_response */" hasta "/* 4. Execute */"
+
+/* 3. Procesar schema estructurado del modelo */
+const structured = intentObject.parameters?._structured || null;
+
+// Si es response directo con content → devolver sin pasar por bots
+if (structured?.type === "response" && structured?.content?.length > 5) {
+    const reply = structured.content;
+    const classified = classify(reply);
+    
+    // Persistencia no-bloqueante
+    setImmediate(async () => {
+        try {
+            instructionLoader.appendToMemory(
+                `User: ${trimmed}\nIntent: explain/response\nResult: ${reply.substring(0, 100)}`
+            );
+        } catch {}
+    });
+
+    return res.json({
+        success: true,
+        reply,
+        intent: "chat_response",
+        bot: "WebBot",
+        conversation_id: null,
+        responseType: classified.responseType,
+        artifacts: classified.artifacts,
+        actions: classified.actions,
+        cleanReply: classified.cleanText,
+        elapsed: Date.now() - t0,
+    });
+}
+
+// Si es artifact con contenido en artifact_type → procesarlo
+if (structured?.type === "artifact" && structured?.artifact_type) {
+    const artifactContent = structured.artifact_type;
+    const fmt = structured.format || "mermaid";
+    const reply = `${structured.content || ""}\n\n\`\`\`${fmt}\n${artifactContent}\n\`\`\``;
+    const classified = classify(reply);
+
+    return res.json({
+        success: true,
+        reply,
+        intent: intentObject.intent,
+        bot: "WebBot",
+        conversation_id: null,
+        responseType: "artifact",
+        artifacts: classified.artifacts,
+        actions: classified.actions,
+        cleanReply: classified.cleanText,
+        elapsed: Date.now() - t0,
+    });
+}
+
+// Fix chat_response loop
+if (
+    intentObject.intent === "chat_response" ||
+    intentObject.intent.startsWith("chat_") ||
+    intentObject.intent === "talk_jarvis"
+) {
+    intentObject.parameters = {
+        ...intentObject.parameters,
+        query: trimmed,
+        _originalMessage: trimmed,
+    };
+} else {
+    if (!intentObject.parameters._originalMessage) {
+        intentObject.parameters._originalMessage = trimmed;
+    }
+}
 
             /* 4. Execute via BotManager */
             let result;

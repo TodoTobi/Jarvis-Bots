@@ -86,35 +86,46 @@ function callGemini(body, apiKey) {
 
 /* ── PDF con extracción de texto → Gemma local ──────────────────────────── */
 
+// REEMPLAZÁ esta función completa:
 async function analyzePDFWithGemmaText(filePath, query, port) {
-    // 1. Extraer texto del PDF
-    const extractedText = await pdfExtractor.extractPDFText(filePath);
+    const { extractPDFText, buildPDFPrompt } = require("../utils/pdfExtractor");
+    
+    const extractedText = await extractPDFText(filePath);
 
-    if (!extractedText) {
+    if (!extractedText || extractedText.length < 20) {
         throw new Error(
             "No se pudo extraer texto del PDF.\n" +
-            "Instalá pdf-parse: npm install pdf-parse\n" +
-            "O bien instalá poppler: apt install poppler-utils"
+            "Opciones:\n" +
+            "  1. npm install pdf-parse (recomendado)\n" +
+            "  2. Instalar poppler: choco install poppler (Windows)\n" +
+            "  3. pip install pdfminer.six"
         );
     }
 
-    // 2. Construir prompt con el texto extraído
-    const prompt = pdfExtractor.buildPDFPrompt(extractedText, query);
+    const prompt = buildPDFPrompt(extractedText, query);
+    logger.info(`analyzePDFWithGemmaText: ${extractedText.length} chars → Gemma chat`);
 
-    logger.info(`analyzePDFWithGemmaText: ${extractedText.length} chars → Gemma`);
-
-    // 3. Enviar como texto plano a Gemma (NO como image_url)
+    // CRÍTICO: usar /api/gemma/chat (texto plano), NUNCA /api/gemma/analyze (image_url)
+    const axios = require("axios");
     const response = await axios.post(
         `http://localhost:${port}/api/gemma/chat`,
         {
             message: prompt,
-            context: "Eres Jarvis, un analizador de documentos. Respondés en español rioplatense con análisis detallado.",
+            context: "Sos Jarvis analizando un documento. Respondés en español rioplatense con análisis detallado y estructurado.",
         },
         { timeout: 120000 }
     );
 
-    const reply = response.data?.reply || "Sin respuesta";
-    return { success: true, reply, intent: "document_analysis", bot: "GemmaBot" };
+    const reply = response.data?.reply;
+    if (!reply) throw new Error("Gemma no devolvió respuesta");
+
+    return {
+        success: true,
+        reply,
+        intent: "document_analysis",
+        bot: "GemmaBot",
+        pages: Math.ceil(extractedText.length / 2000),
+    };
 }
 
 /* ── PDF con Gemini (fallback si Gemma falla) ───────────────────────────── */
