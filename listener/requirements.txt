@@ -1,0 +1,13 @@
+# listener/requirements.txt — Dependencias del listener nativo de SISTEMA
+#
+# Instalación:
+#   pip install -r requirements.txt
+#
+# Nota: pyaudio en Windows requiere un paso extra si falla:
+#   pip install pipwin
+#   pipwin install pyaudio
+#   (alternativa: descargar el .whl desde https://www.lfd.uci.edu/~gohlke/pythonlibs/)
+
+SpeechRecognition==3.10.4
+pyaudio==0.2.14
+python-dotenv==1.0.1

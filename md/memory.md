@@ -1,67 +1,82 @@
 # Memory
 
-d API Key: 2026-04-20T01:58:07.803Z — STT Groq error: Invalid API Key
-- STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type: 2026-04-19T23:09:44.427Z — STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
-- WhatsAppBot: error generando QR:: 2026-04-19T22:59:19.570Z — WhatsAppBot: error generando QR:
-
-
-## 2026-04-20T02:57:27.772Z
-## DoctorBot Scan [2026-04-20T02:57:27.772Z]
-- TerminalBot: Error: TerminalBot: 'command' es requerido
+ ModelService: Cannot reach LM Studio — : 2026-05-21T19:10:53.167Z — ModelService: Cannot reach LM Studio — 
 - [Error] TerminalBot: TerminalBot: 'command' es requerido: 2026-04-20T02:53:38.684Z — [Error] TerminalBot: TerminalBot: 'command' es requerido
 - STT Groq error: Invalid API Key: 2026-04-20T01:58:07.803Z — STT Groq error: Invalid API Key
-- STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type: 2026-04-19T23:09:44.427Z — STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
-- WhatsAppBot: error generando QR:: 2026-04-19T22:59:19.570Z — WhatsAppBot: error generando QR:
 
 
-## 2026-04-20T02:57:57.762Z
-## DoctorBot Scan [2026-04-20T02:57:57.762Z]
-- TerminalBot: Error: TerminalBot: 'command' es requerido
+## 2026-05-21T21:18:24.833Z
+## DoctorBot Scan [2026-05-21T21:18:24.833Z]
+- ModelService: Cannot reach LM Studio — : 2026-05-21T19:10:53.167Z — ModelService: Cannot reach LM Studio — 
 - [Error] TerminalBot: TerminalBot: 'command' es requerido: 2026-04-20T02:53:38.684Z — [Error] TerminalBot: TerminalBot: 'command' es requerido
 - STT Groq error: Invalid API Key: 2026-04-20T01:58:07.803Z — STT Groq error: Invalid API Key
-- STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type: 2026-04-19T23:09:44.427Z — STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
-- WhatsAppBot: error generando QR:: 2026-04-19T22:59:19.570Z — WhatsAppBot: error generando QR:
 
 
-## 2026-04-20T02:58:27.769Z
-## DoctorBot Scan [2026-04-20T02:58:27.769Z]
-- TerminalBot: Error: TerminalBot: 'command' es requerido
+## 2026-05-21T21:18:43.167Z
+## DoctorBot Scan [2026-05-21T21:18:43.167Z]
+- ModelService: Cannot reach LM Studio — : 2026-05-21T19:10:53.167Z — ModelService: Cannot reach LM Studio — 
 - [Error] TerminalBot: TerminalBot: 'command' es requerido: 2026-04-20T02:53:38.684Z — [Error] TerminalBot: TerminalBot: 'command' es requerido
 - STT Groq error: Invalid API Key: 2026-04-20T01:58:07.803Z — STT Groq error: Invalid API Key
-- STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type: 2026-04-19T23:09:44.427Z — STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
-- WhatsAppBot: error generando QR:: 2026-04-19T22:59:19.570Z — WhatsAppBot: error generando QR:
 
 
-## 2026-04-20T02:58:44.219Z
-User: pero que tenga vista previa el codigo de la landing apge
-Intent: chat_response
-Result: Para incluir la vista previa del código de la landing page, puedo proporcionarte los tres componentes (HTML, CSS y JavaScript) separados en bloques distintos.
-
-Ten en cuenta que mi interfaz actual no 
-
-
-## 2026-04-20T02:58:58.227Z
-## DoctorBot Scan [2026-04-20T02:58:58.227Z]
-- TerminalBot: Error: TerminalBot: 'command' es requerido
+## 2026-05-21T21:19:54.022Z
+## DoctorBot Scan [2026-05-21T21:19:54.022Z]
+- ModelService: Cannot reach LM Studio — : 2026-05-21T19:10:53.167Z — ModelService: Cannot reach LM Studio — 
 - [Error] TerminalBot: TerminalBot: 'command' es requerido: 2026-04-20T02:53:38.684Z — [Error] TerminalBot: TerminalBot: 'command' es requerido
 - STT Groq error: Invalid API Key: 2026-04-20T01:58:07.803Z — STT Groq error: Invalid API Key
-- STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type: 2026-04-19T23:09:44.427Z — STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
-- WhatsAppBot: error generando QR:: 2026-04-19T22:59:19.570Z — WhatsAppBot: error generando QR:
 
 
-## 2026-04-20T02:59:13.485Z
-## DoctorBot Scan [2026-04-20T02:59:13.485Z]
-- TerminalBot: Error: TerminalBot: 'command' es requerido
+## 2026-05-21T21:20:23.906Z
+## DoctorBot Scan [2026-05-21T21:20:23.906Z]
+- ModelService: Cannot reach LM Studio — : 2026-05-21T19:10:53.167Z — ModelService: Cannot reach LM Studio — 
 - [Error] TerminalBot: TerminalBot: 'command' es requerido: 2026-04-20T02:53:38.684Z — [Error] TerminalBot: TerminalBot: 'command' es requerido
 - STT Groq error: Invalid API Key: 2026-04-20T01:58:07.803Z — STT Groq error: Invalid API Key
-- STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type: 2026-04-19T23:09:44.427Z — STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
-- WhatsAppBot: error generando QR:: 2026-04-19T22:59:19.570Z — WhatsAppBot: error generando QR:
 
 
-## 2026-04-20T02:59:27.768Z
-## DoctorBot Scan [2026-04-20T02:59:27.768Z]
-- TerminalBot: Error: TerminalBot: 'command' es requerido
+## 2026-05-21T21:20:53.905Z
+## DoctorBot Scan [2026-05-21T21:20:53.905Z]
+- ModelService: Cannot reach LM Studio — : 2026-05-21T19:10:53.167Z — ModelService: Cannot reach LM Studio — 
 - [Error] TerminalBot: TerminalBot: 'command' es requerido: 2026-04-20T02:53:38.684Z — [Error] TerminalBot: TerminalBot: 'command' es requerido
 - STT Groq error: Invalid API Key: 2026-04-20T01:58:07.803Z — STT Groq error: Invalid API Key
-- STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type: 2026-04-19T23:09:44.427Z — STT Gemma error: Groq STT error 401: {"error":{"message":"Invalid API Key","type":"invalid_request_error","code":"invalid_api_key"}}
-- WhatsAppBot: error generando QR:: 2026-04-19T22:59:19.570Z — WhatsAppBot: error generando QR:
+
+
+## 2026-05-21T21:21:23.896Z
+## DoctorBot Scan [2026-05-21T21:21:23.896Z]
+- ModelService: Cannot reach LM Studio — : 2026-05-21T19:10:53.167Z — ModelService: Cannot reach LM Studio — 
+- [Error] TerminalBot: TerminalBot: 'command' es requerido: 2026-04-20T02:53:38.684Z — [Error] TerminalBot: TerminalBot: 'command' es requerido
+- STT Groq error: Invalid API Key: 2026-04-20T01:58:07.803Z — STT Groq error: Invalid API Key
+
+
+## 2026-05-21T21:21:54.468Z
+## DoctorBot Scan [2026-05-21T21:21:54.468Z]
+- ModelService: Cannot reach LM Studio — : 2026-05-21T19:10:53.167Z — ModelService: Cannot reach LM Studio — 
+- [Error] TerminalBot: TerminalBot: 'command' es requerido: 2026-04-20T02:53:38.684Z — [Error] TerminalBot: TerminalBot: 'command' es requerido
+- STT Groq error: Invalid API Key: 2026-04-20T01:58:07.803Z — STT Groq error: Invalid API Key
+
+
+## 2026-05-21T21:22:31.768Z
+## DoctorBot Scan [2026-05-21T21:22:31.768Z]
+- ModelService: Cannot reach LM Studio — : 2026-05-21T19:10:53.167Z — ModelService: Cannot reach LM Studio — 
+- [Error] TerminalBot: TerminalBot: 'command' es requerido: 2026-04-20T02:53:38.684Z — [Error] TerminalBot: TerminalBot: 'command' es requerido
+- STT Groq error: Invalid API Key: 2026-04-20T01:58:07.803Z — STT Groq error: Invalid API Key
+
+
+## 2026-05-21T21:22:39.922Z
+## DoctorBot Scan [2026-05-21T21:22:39.922Z]
+- ModelService: Cannot reach LM Studio — : 2026-05-21T19:10:53.167Z — ModelService: Cannot reach LM Studio — 
+- [Error] TerminalBot: TerminalBot: 'command' es requerido: 2026-04-20T02:53:38.684Z — [Error] TerminalBot: TerminalBot: 'command' es requerido
+- STT Groq error: Invalid API Key: 2026-04-20T01:58:07.803Z — STT Groq error: Invalid API Key
+
+
+## 2026-05-21T21:23:02.463Z
+## DoctorBot Scan [2026-05-21T21:23:02.463Z]
+- ModelService: Cannot reach LM Studio — : 2026-05-21T19:10:53.167Z — ModelService: Cannot reach LM Studio — 
+- [Error] TerminalBot: TerminalBot: 'command' es requerido: 2026-04-20T02:53:38.684Z — [Error] TerminalBot: TerminalBot: 'command' es requerido
+- STT Groq error: Invalid API Key: 2026-04-20T01:58:07.803Z — STT Groq error: Invalid API Key
+
+
+## 2026-05-21T21:23:32.504Z
+## DoctorBot Scan [2026-05-21T21:23:32.504Z]
+- ModelService: Cannot reach LM Studio — : 2026-05-21T19:10:53.167Z — ModelService: Cannot reach LM Studio — 
+- [Error] TerminalBot: TerminalBot: 'command' es requerido: 2026-04-20T02:53:38.684Z — [Error] TerminalBot: TerminalBot: 'command' es requerido
+- STT Groq error: Invalid API Key: 2026-04-20T01:58:07.803Z — STT Groq error: Invalid API Key

@@ -379,3 +379,6 @@ Require stack:
 [2026-04-20T01:58:07.803Z] [ERROR] STT Groq error: Invalid API Key
 [2026-04-20T02:14:51.807Z] [ERROR] [Error] TerminalBot: TerminalBot: 'command' es requerido
 [2026-04-20T02:53:38.684Z] [ERROR] [Error] TerminalBot: TerminalBot: 'command' es requerido
+[2026-05-21T18:42:59.116Z] [ERROR] ModelService: Cannot reach LM Studio — 
+[2026-05-21T18:44:38.058Z] [ERROR] ModelService: Cannot reach LM Studio — 
+[2026-05-21T19:10:53.167Z] [ERROR] ModelService: Cannot reach LM Studio — 
