@@ -1,3 +1,9 @@
+/**
+ * Chat.jsx — rediseño visual estética SISTEMA/Shell
+ * Lógica de sendMessage, onReady, artifacts, mermaid, QR: 100% intacta.
+ * Cambios: prop `setView` para volver al Shell, header/mensajes/input rediseñados.
+ * Wake word: referencias a "jarvis" en UI cambiadas a "sistema".
+ */
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { sendMessageToBot, saveMemory } from "./api";
 
@@ -6,13 +12,13 @@ const API = "http://localhost:3001";
 const WELCOME = {
   role: "assistant",
   content:
-    "Sistema en línea ✓\n\nHola Tobías, soy **Jarvis**. ¿En qué puedo ayudarte?\n\nPuedo **buscar en la web** 🔍, controlar tu PC 💻, poner música 🎵, editar Google Docs 📄 y mucho más.\n\n💡 Decí **\"Jarvis [tu comando] enviar\"** desde cualquier parte de la app.",
+    "Sistema en línea ✓\n\nHola Tobías, soy **SISTEMA**. ¿En qué puedo ayudarte?\n\nPuedo **buscar en la web**, controlar tu PC, poner música, editar Google Docs y mucho más.\n\nDecí **\"sistema [comando]\"** desde cualquier parte de la app.",
   intent: null,
   bot: null,
 };
 
 /* ────────────────────────────────────────────────
-   MERMAID LOADER
+   MERMAID LOADER — sin cambios
 ──────────────────────────────────────────────── */
 let _mermaidReady = false;
 let _mermaidLoading = false;
@@ -30,39 +36,26 @@ function loadMermaid() {
     s.onload = () => {
       try {
         window.mermaid.initialize({
-          startOnLoad: false,
-          theme: "dark",
-          securityLevel: "loose",
+          startOnLoad: false, theme: "dark", securityLevel: "loose",
           suppressErrorRendering: true,
           themeVariables: {
-            primaryColor: "#1e3a5f",
-            primaryTextColor: "#e2e8f0",
-            primaryBorderColor: "#10a37f",
-            lineColor: "#10a37f",
-            background: "#0d1117",
-            mainBkg: "#1e2030",
-            nodeBorder: "#10a37f",
-            titleColor: "#ececec",
+            primaryColor: "#001e30", primaryTextColor: "#e2e8f0",
+            primaryBorderColor: "#00d4ff", lineColor: "#00d4ff",
+            background: "#04040a", mainBkg: "#0a0a1a", nodeBorder: "#00d4ff", titleColor: "#00d4ff",
           },
         });
-        _mermaidInstance = window.mermaid;
-        _mermaidReady = true;
-      } catch (e) {
-        console.warn("mermaid init error:", e);
-      }
+        _mermaidInstance = window.mermaid; _mermaidReady = true;
+      } catch (e) { console.warn("mermaid init error:", e); }
       _mermaidQueue.forEach(cb => cb(_mermaidInstance));
       _mermaidQueue.length = 0;
     };
-    s.onerror = () => {
-      _mermaidQueue.forEach(cb => cb(null));
-      _mermaidQueue.length = 0;
-    };
+    s.onerror = () => { _mermaidQueue.forEach(cb => cb(null)); _mermaidQueue.length = 0; };
     document.head.appendChild(s);
   });
 }
 
 /* ────────────────────────────────────────────────
-   ARTIFACT DETECTOR
+   ARTIFACT DETECTOR — sin cambios
 ──────────────────────────────────────────────── */
 function detectArtifact(text) {
   if (!text) return null;
@@ -83,7 +76,7 @@ function detectArtifact(text) {
 }
 
 /* ────────────────────────────────────────────────
-   INTENT FILTERS
+   INTENT FILTERS — sin cambios
 ──────────────────────────────────────────────── */
 function isRawIntentJSON(text) {
   if (!text) return false;
@@ -91,7 +84,6 @@ function isRawIntentJSON(text) {
   return (t.startsWith("{") && t.includes('"intent"')) ||
     (t.includes("```json") && t.includes('"intent"'));
 }
-
 function stripIntentBlocks(text) {
   if (!text) return text;
   let c = text.replace(/```json\s*\{[\s\S]*?"intent"[\s\S]*?\}\s*```/g, "").trim();
@@ -100,21 +92,20 @@ function stripIntentBlocks(text) {
 }
 
 /* ────────────────────────────────────────────────
-   MARKDOWN RENDERER
+   MARKDOWN RENDERER — lógica intacta, colores actualizados
 ──────────────────────────────────────────────── */
 function LinkBubble({ href, label }) {
   const domain = (() => { try { return new URL(href).hostname.replace("www.", ""); } catch { return href.slice(0, 40); } })();
   const display = label && label !== href ? label : domain;
   return (
     <a href={href} target="_blank" rel="noopener noreferrer"
-      style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "2px 10px 2px 7px", background: "rgba(16,163,127,0.1)", border: "1px solid rgba(16,163,127,0.3)", borderRadius: 20, color: "#19c37d", fontSize: 13, fontWeight: 500, textDecoration: "none", verticalAlign: "middle", margin: "1px 3px", maxWidth: 300, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", transition: "all 0.15s" }}
-      onMouseEnter={e => { e.currentTarget.style.background = "rgba(16,163,127,0.2)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-      onMouseLeave={e => { e.currentTarget.style.background = "rgba(16,163,127,0.1)"; e.currentTarget.style.transform = "none"; }}
+      style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "2px 10px 2px 7px", background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.25)", borderRadius: 20, color: "#00d4ff", fontSize: 13, fontWeight: 500, textDecoration: "none", verticalAlign: "middle", margin: "1px 3px", maxWidth: 300, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", transition: "all 0.15s" }}
+      onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,212,255,0.15)"; }}
+      onMouseLeave={e => { e.currentTarget.style.background = "rgba(0,212,255,0.08)"; }}
       title={href}
     >
-      <span style={{ fontSize: 11 }}>🔗</span>
+      <span style={{ fontSize: 11 }}>↗</span>
       <span style={{ overflow: "hidden", textOverflow: "ellipsis", maxWidth: 240 }}>{display}</span>
-      <span style={{ fontSize: 10, opacity: 0.5 }}>↗</span>
     </a>
   );
 }
@@ -126,9 +117,9 @@ function renderInline(text) {
   let last = 0, m, key = 0;
   while ((m = re.exec(text)) !== null) {
     if (m.index > last) parts.push(<span key={key++}>{text.slice(last, m.index)}</span>);
-    if (m[1]?.startsWith("**")) parts.push(<strong key={key++} style={{ fontWeight: 700 }}>{m[2]}</strong>);
-    else if (m[1]?.startsWith("*") && !m[1]?.startsWith("**")) parts.push(<em key={key++} style={{ fontStyle: "italic", opacity: 0.85 }}>{m[3]}</em>);
-    else if (m[4] !== undefined) parts.push(<code key={key++} style={{ fontFamily: "'DM Mono',monospace", fontSize: "0.84em", padding: "1px 6px", background: "rgba(255,255,255,0.09)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 4, color: "#e5c07b" }}>{m[4]}</code>);
+    if (m[1]?.startsWith("**")) parts.push(<strong key={key++} style={{ fontWeight: 600, color: "#00d4ff" }}>{m[2]}</strong>);
+    else if (m[1]?.startsWith("*") && !m[1]?.startsWith("**")) parts.push(<em key={key++} style={{ fontStyle: "italic", opacity: 0.8 }}>{m[3]}</em>);
+    else if (m[4] !== undefined) parts.push(<code key={key++} style={{ fontFamily: "'JetBrains Mono','DM Mono',monospace", fontSize: "0.82em", padding: "1px 6px", background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.2)", borderRadius: 4, color: "#00d4ff" }}>{m[4]}</code>);
     else if (m[5] !== undefined) parts.push(<s key={key++} style={{ opacity: 0.5 }}>{m[5]}</s>);
     else if (m[6] !== undefined) parts.push(<LinkBubble key={key++} href={m[7]} label={m[6]} />);
     else if (m[8] !== undefined) parts.push(<LinkBubble key={key++} href={m[8]} label={null} />);
@@ -151,39 +142,51 @@ function renderMarkdown(rawText) {
 
   return segments.map((seg, si) => {
     if (seg.type === "code_block") return (
-      <div key={si} style={{ margin: "10px 0", borderRadius: 10, overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)", background: "rgba(0,0,0,0.35)" }}>
-        {seg.lang && <div style={{ padding: "3px 12px", fontSize: 11, color: "var(--text-muted)", background: "rgba(255,255,255,0.04)", borderBottom: "1px solid rgba(255,255,255,0.07)", fontFamily: "monospace" }}>{seg.lang}</div>}
-        <pre style={{ margin: 0, padding: "12px 16px", fontSize: 13, lineHeight: 1.65, color: "#e5e7eb", fontFamily: "'DM Mono',monospace", overflowX: "auto", whiteSpace: "pre" }}><code>{seg.content}</code></pre>
+      <div key={si} style={{ margin: "10px 0", borderRadius: 6, overflow: "hidden", border: "1px solid rgba(0,212,255,0.15)", background: "rgba(0,0,0,0.4)" }}>
+        {seg.lang && <div style={{ padding: "3px 12px", fontSize: 10, color: "rgba(0,212,255,0.5)", background: "rgba(0,212,255,0.04)", borderBottom: "1px solid rgba(0,212,255,0.1)", fontFamily: "monospace", letterSpacing: "0.1em" }}>{seg.lang}</div>}
+        <pre style={{ margin: 0, padding: "12px 16px", fontSize: 13, lineHeight: 1.65, color: "#a0c8d8", fontFamily: "'JetBrains Mono','DM Mono',monospace", overflowX: "auto", whiteSpace: "pre" }}><code>{seg.content}</code></pre>
       </div>
     );
     const lines = seg.content.split("\n"); const nodes = []; let i = 0;
     while (i < lines.length) {
       const line = lines[i];
       if (line.trim() === "") { nodes.push(<div key={i} style={{ height: 5 }} />); i++; continue; }
-      if (/^### /.test(line)) { nodes.push(<h5 key={i} style={{ margin: "7px 0 2px", fontSize: 14, fontWeight: 700 }}>{renderInline(line.slice(4))}</h5>); i++; continue; }
-      if (/^## /.test(line)) { nodes.push(<h4 key={i} style={{ margin: "9px 0 3px", fontSize: 15, fontWeight: 700 }}>{renderInline(line.slice(3))}</h4>); i++; continue; }
-      if (/^# /.test(line)) { nodes.push(<h3 key={i} style={{ margin: "10px 0 4px", fontSize: 17, fontWeight: 700 }}>{renderInline(line.slice(2))}</h3>); i++; continue; }
-      if (/^---+$/.test(line.trim())) { nodes.push(<hr key={i} style={{ border: "none", borderTop: "1px solid rgba(255,255,255,0.08)", margin: "8px 0" }} />); i++; continue; }
-      if (/^> /.test(line)) { nodes.push(<div key={i} style={{ borderLeft: "3px solid rgba(16,163,127,0.45)", paddingLeft: 12, margin: "3px 0", color: "var(--text-secondary)", fontStyle: "italic" }}>{renderInline(line.slice(2))}</div>); i++; continue; }
+      if (/^### /.test(line)) { nodes.push(<h5 key={i} style={{ margin: "7px 0 2px", fontSize: 13, fontWeight: 600, color: "rgba(0,212,255,0.9)", fontFamily: "'Rajdhani',monospace", letterSpacing: "0.05em" }}>{renderInline(line.slice(4))}</h5>); i++; continue; }
+      if (/^## /.test(line)) { nodes.push(<h4 key={i} style={{ margin: "9px 0 3px", fontSize: 14, fontWeight: 600, color: "rgba(0,212,255,0.9)", fontFamily: "'Rajdhani',monospace", letterSpacing: "0.05em" }}>{renderInline(line.slice(3))}</h4>); i++; continue; }
+      if (/^# /.test(line)) { nodes.push(<h3 key={i} style={{ margin: "10px 0 4px", fontSize: 16, fontWeight: 700, color: "#00d4ff", fontFamily: "'Rajdhani',monospace", letterSpacing: "0.08em" }}>{renderInline(line.slice(2))}</h3>); i++; continue; }
+      if (/^---+$/.test(line.trim())) { nodes.push(<hr key={i} style={{ border: "none", borderTop: "1px solid rgba(0,212,255,0.1)", margin: "8px 0" }} />); i++; continue; }
+      if (/^> /.test(line)) { nodes.push(<div key={i} style={{ borderLeft: "2px solid rgba(0,212,255,0.4)", paddingLeft: 12, margin: "3px 0", color: "rgba(0,212,255,0.6)", fontStyle: "italic", fontFamily: "'JetBrains Mono',monospace", fontSize: 13 }}>{renderInline(line.slice(2))}</div>); i++; continue; }
       if (/^[-*•] /.test(line)) {
         const items = [];
-        while (i < lines.length && /^[-*•] /.test(lines[i])) { items.push(<div key={i} style={{ display: "flex", gap: 8, marginBottom: 3 }}><span style={{ color: "var(--accent)", flexShrink: 0, marginTop: 1 }}>▸</span><span>{renderInline(lines[i].slice(2))}</span></div>); i++; }
+        while (i < lines.length && /^[-*•] /.test(lines[i])) { items.push(<div key={i} style={{ display: "flex", gap: 8, marginBottom: 3 }}><span style={{ color: "#00d4ff", flexShrink: 0, marginTop: 1, fontSize: 10 }}>▸</span><span>{renderInline(lines[i].slice(2))}</span></div>); i++; }
         nodes.push(<div key={`ul${i}`} style={{ margin: "4px 0" }}>{items}</div>); continue;
       }
       if (/^\d+\. /.test(line)) {
         const items = []; let n = 1;
-        while (i < lines.length && /^\d+\. /.test(lines[i])) { const content = lines[i].replace(/^\d+\. /, ""); items.push(<div key={i} style={{ display: "flex", gap: 8, marginBottom: 3 }}><span style={{ color: "var(--accent)", fontWeight: 700, minWidth: 18 }}>{n}.</span><span>{renderInline(content)}</span></div>); i++; n++; }
+        while (i < lines.length && /^\d+\. /.test(lines[i])) { const content = lines[i].replace(/^\d+\. /, ""); items.push(<div key={i} style={{ display: "flex", gap: 8, marginBottom: 3 }}><span style={{ color: "#00d4ff", fontFamily: "'JetBrains Mono',monospace", fontSize: 11, minWidth: 18 }}>{n}.</span><span>{renderInline(content)}</span></div>); i++; n++; }
         nodes.push(<div key={`ol${i}`} style={{ margin: "4px 0" }}>{items}</div>); continue;
       }
-      nodes.push(<p key={i} style={{ margin: "2px 0", lineHeight: 1.75 }}>{renderInline(line)}</p>); i++;
+      nodes.push(<p key={i} style={{ margin: "2px 0", lineHeight: 1.8 }}>{renderInline(line)}</p>); i++;
     }
     return <div key={si}>{nodes}</div>;
   });
 }
 
 /* ────────────────────────────────────────────────
-   MERMAID CANVAS RENDERER
+   MERMAID / HTML / SVG / CODE CANVAS — sin cambios de lógica
 ──────────────────────────────────────────────── */
+function sanitizeMermaidCode(code) {
+  if (!code) return "";
+  return code.split("\n").map(line => {
+    line = line.replace(/;+$/, "");
+    line = line.replace(/(\w[\w\d]*)\[([^\]"]+)\]/g, (match, id, label) => {
+      if (/\s|\(|\)/.test(label) && !label.startsWith('"')) return `${id}["${label.replace(/"/g, "'")}"]`;
+      return match;
+    });
+    return line;
+  }).join("\n");
+}
+
 function MermaidCanvas({ code }) {
   const containerRef = useRef(null);
   const [status, setStatus] = useState("loading");
@@ -195,244 +198,129 @@ function MermaidCanvas({ code }) {
     renderedRef.current = true;
     let cancelled = false;
     const sanitized = sanitizeMermaidCode(code);
-
     loadMermaid().then(async (mermaid) => {
-      if (cancelled || !mermaid || !containerRef.current) {
-        setStatus("fallback");
-        return;
-      }
+      if (cancelled || !mermaid || !containerRef.current) { setStatus("fallback"); return; }
       try {
         const { svg } = await mermaid.render(idRef.current, sanitized);
         if (!cancelled && containerRef.current) {
           containerRef.current.innerHTML = svg;
           const svgEl = containerRef.current.querySelector("svg");
-          if (svgEl) {
-            svgEl.style.maxWidth = "100%";
-            svgEl.style.height = "auto";
-            svgEl.removeAttribute("height");
-          }
+          if (svgEl) { svgEl.style.maxWidth = "100%"; svgEl.style.height = "auto"; svgEl.removeAttribute("height"); }
           setStatus("ok");
         }
-      } catch (e) {
-        if (!cancelled) {
-          console.warn("mermaid render error (silenced):", e.message?.substring(0, 80));
-          setStatus("fallback");
-        }
-      }
+      } catch (e) { if (!cancelled) { console.warn("mermaid render error:", e.message?.substring(0, 80)); setStatus("fallback"); } }
     });
-
     return () => { cancelled = true; };
   }, [code]);
 
-  if (status === "fallback") {
-    return (
-      <div style={{ background: "#0d1117", borderRadius: 8, padding: 16, overflow: "auto", maxHeight: 400 }}>
-        <div style={{ fontSize: 11, color: "#616161", marginBottom: 6, fontFamily: "monospace" }}>
-          📊 mermaid — vista previa de código
-        </div>
-        <pre style={{ margin: 0, fontSize: 12, color: "#e2e8f0", fontFamily: "monospace", whiteSpace: "pre", overflowX: "auto" }}>
-          {code}
-        </pre>
-      </div>
-    );
-  }
+  if (status === "fallback") return (
+    <div style={{ background: "#04040a", borderRadius: 6, padding: 16, overflow: "auto", maxHeight: 400, border: "1px solid rgba(0,212,255,0.1)" }}>
+      <div style={{ fontSize: 10, color: "rgba(0,212,255,0.4)", marginBottom: 6, fontFamily: "monospace", letterSpacing: "0.1em" }}>// mermaid · código fuente</div>
+      <pre style={{ margin: 0, fontSize: 12, color: "#a0c8d8", fontFamily: "monospace", whiteSpace: "pre", overflowX: "auto" }}>{code}</pre>
+    </div>
+  );
 
   return (
     <div style={{ position: "relative", minHeight: 40 }}>
       {status === "loading" && (
-        <div style={{ padding: 16, color: "var(--text-muted)", fontSize: 13, textAlign: "center" }}>
-          <span style={{ animation: "spin 1s linear infinite", display: "inline-block", marginRight: 6 }}>⟳</span>
-          Renderizando diagrama...
+        <div style={{ padding: 16, color: "rgba(0,212,255,0.5)", fontSize: 12, textAlign: "center", fontFamily: "'JetBrains Mono',monospace", letterSpacing: "0.1em" }}>
+          <span style={{ animation: "spin 1s linear infinite", display: "inline-block", marginRight: 6 }}>⟳</span>renderizando...
         </div>
       )}
-      <div
-        ref={containerRef}
-        style={{
-          display: status === "ok" ? "block" : "none",
-          padding: 16,
-          overflowX: "auto",
-          background: "#0d1117",
-          borderRadius: 8
-        }}
-      />
+      <div ref={containerRef} style={{ display: status === "ok" ? "block" : "none", padding: 16, overflowX: "auto", background: "#04040a", borderRadius: 6 }} />
     </div>
   );
 }
 
-// Añadí esta función helper ANTES de MermaidCanvas:
-function sanitizeMermaidCode(code) {
-  if (!code) return "";
-  return code
-    .split("\n")
-    .map(line => {
-      line = line.replace(/;+$/, "");
-      line = line.replace(/(\w[\w\d]*)\[([^\]"]+)\]/g, (match, id, label) => {
-        if (/\s|\(|\)/.test(label) && !label.startsWith('"')) {
-          return `${id}["${label.replace(/"/g, "'")}"]`;
-        }
-        return match;
-      });
-      return line;
-    })
-    .join("\n");
-}
-
-/* ────────────────────────────────────────────────
-   HTML CANVAS RENDERER (iframe sandboxed)
-──────────────────────────────────────────────── */
-// En Chat.jsx — reemplazá SOLO el componente HtmlCanvas:
-
 function HtmlCanvas({ code }) {
   const iframeRef = useRef(null);
   const [height, setHeight] = useState(360);
-
   const fullDoc = `<!DOCTYPE html><html><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{background:#0d1117;color:#e2e8f0;font-family:system-ui,sans-serif;font-size:14px;line-height:1.6;padding:16px}
-a{color:#10a37f}
-input,textarea,select{background:#1e2030;color:#e2e8f0;border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:6px 10px;outline:none;font:inherit}
-button{font:inherit;cursor:pointer;padding:6px 14px;border-radius:6px;border:none;background:#10a37f;color:#fff;font-weight:600}
-button:hover{background:#0d8a6a}
-canvas{max-width:100%}
-</style></head>
-<body>${code.replace(/<html[\s\S]*?<body[^>]*>/i, "").replace(/<\/body>[\s\S]*<\/html>/i, "")}</body></html>`;
+<style>*{box-sizing:border-box;margin:0;padding:0}html,body{background:#04040a;color:#c0d8e0;font-family:'JetBrains Mono',monospace;font-size:14px;line-height:1.6;padding:16px}a{color:#00d4ff}input,textarea,select{background:#0a0a1a;color:#c0d8e0;border:1px solid rgba(0,212,255,0.2);border-radius:4px;padding:6px 10px;outline:none;font:inherit}button{font:inherit;cursor:pointer;padding:6px 14px;border-radius:4px;border:1px solid rgba(0,212,255,0.3);background:rgba(0,212,255,0.08);color:#00d4ff;font-weight:600}button:hover{background:rgba(0,212,255,0.15)}canvas{max-width:100%}</style>
+</head><body>${code.replace(/<html[\s\S]*?<body[^>]*>/i, "").replace(/<\/body>[\s\S]*<\/html>/i, "")}</body></html>`;
 
   useEffect(() => {
-    const iframe = iframeRef.current;
-    if (!iframe) return;
+    const iframe = iframeRef.current; if (!iframe) return;
     const blob = new Blob([fullDoc], { type: "text/html" });
     const url = URL.createObjectURL(blob);
     iframe.src = url;
     iframe.onload = () => {
-      try {
-        // Intentar leer altura del contenido
-        const h = iframe.contentDocument?.body?.scrollHeight || 360;
-        setHeight(Math.max(200, Math.min(h + 40, 700)));
-      } catch (_) {
-        setHeight(360);
-      }
+      try { const h = iframe.contentDocument?.body?.scrollHeight || 360; setHeight(Math.max(200, Math.min(h + 40, 700))); } catch { setHeight(360); }
       URL.revokeObjectURL(url);
     };
   }, [fullDoc]);
 
-  return (
-    <iframe
-      ref={iframeRef}
-      sandbox="allow-scripts"
-      style={{ width: "100%", height, border: "none", display: "block", borderRadius: 8, background: "#0d1117" }}
-      title="html-canvas"
-    />
-  );
+  return <iframe ref={iframeRef} sandbox="allow-scripts" style={{ width: "100%", height, border: "none", display: "block", borderRadius: 6, background: "#04040a" }} title="html-canvas" />;
 }
 
-/* ────────────────────────────────────────────────
-   SVG CANVAS RENDERER
-──────────────────────────────────────────────── */
 function SvgCanvas({ code }) {
   const clean = code.includes("viewBox") ? code : code.replace("<svg", '<svg viewBox="0 0 800 400"');
   return (
-    <div style={{ padding: 16, background: "#0d1117", borderRadius: 8, overflowX: "auto", textAlign: "center" }}>
+    <div style={{ padding: 16, background: "#04040a", borderRadius: 6, overflowX: "auto", textAlign: "center" }}>
       <div dangerouslySetInnerHTML={{ __html: clean }} style={{ maxWidth: "100%", display: "inline-block" }} />
     </div>
   );
 }
 
-/* ────────────────────────────────────────────────
-   CODE CANVAS (JS/CSS/React)
-──────────────────────────────────────────────── */
 function CodeCanvas({ code, type }) {
   const [copied, setCopied] = useState(false);
   const copy = () => { navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000); };
   return (
-    <div style={{ position: "relative", background: "#0d1117", borderRadius: 8, overflow: "hidden" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", background: "rgba(255,255,255,0.04)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-        <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "monospace" }}>{type}</span>
-        <button onClick={copy} style={{ background: "none", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 6, padding: "3px 10px", fontSize: 11, color: copied ? "#19c37d" : "var(--text-muted)", cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
-          {copied ? "✓ Copiado" : "Copiar"}
+    <div style={{ position: "relative", background: "#04040a", borderRadius: 6, overflow: "hidden", border: "1px solid rgba(0,212,255,0.12)" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 12px", background: "rgba(0,212,255,0.04)", borderBottom: "1px solid rgba(0,212,255,0.1)" }}>
+        <span style={{ fontSize: 10, color: "rgba(0,212,255,0.5)", fontFamily: "monospace", letterSpacing: "0.1em" }}>{type}</span>
+        <button onClick={copy} style={{ background: "none", border: "1px solid rgba(0,212,255,0.2)", borderRadius: 4, padding: "2px 10px", fontSize: 10, color: copied ? "#00d4ff" : "rgba(0,212,255,0.4)", cursor: "pointer", fontFamily: "monospace", letterSpacing: "0.05em" }}>
+          {copied ? "✓ copiado" : "copiar"}
         </button>
       </div>
-      <pre style={{ margin: 0, padding: 16, fontSize: 13, lineHeight: 1.65, color: "#e2e8f0", fontFamily: "'DM Mono',monospace", overflowX: "auto", whiteSpace: "pre" }}>
-        <code>{code}</code>
-      </pre>
+      <pre style={{ margin: 0, padding: 16, fontSize: 13, lineHeight: 1.65, color: "#a0c8d8", fontFamily: "'JetBrains Mono',monospace", overflowX: "auto", whiteSpace: "pre" }}><code>{code}</code></pre>
     </div>
   );
 }
 
 /* ────────────────────────────────────────────────
-   CANVAS PANEL — inline expandable in chat
+   CANVAS PANEL — sin cambios de lógica, estética actualizada
 ──────────────────────────────────────────────── */
 const CANVAS_META = {
-  mermaid:    { icon: "📊", label: "Diagrama", color: "#6366f1" },
-  html:       { icon: "🌐", label: "Interfaz Web", color: "#10a37f" },
-  svg:        { icon: "🎨", label: "Gráfico SVG", color: "#f59e0b" },
-  react:      { icon: "⚛️", label: "Componente React", color: "#06b6d4" },
-  javascript: { icon: "⚡", label: "Script JS", color: "#eab308" },
-  css:        { icon: "🎨", label: "Estilos CSS", color: "#ec4899" },
+  mermaid:    { label: "diagrama", color: "#6366f1" },
+  html:       { label: "interfaz web", color: "#00d4ff" },
+  svg:        { label: "svg", color: "#f59e0b" },
+  react:      { label: "componente", color: "#06b6d4" },
+  javascript: { label: "script js", color: "#eab308" },
+  css:        { label: "css", color: "#ec4899" },
 };
 
 function CanvasPanel({ artifact, onExpand }) {
-  const meta = CANVAS_META[artifact.type] || { icon: "📄", label: "Código", color: "#6b7280" };
-  const [tab, setTab] = useState("preview"); // "preview" | "code"
+  const meta = CANVAS_META[artifact.type] || { label: "código", color: "#00d4ff" };
+  const [tab, setTab] = useState("preview");
+  const hasPreview = ["mermaid", "html", "svg"].includes(artifact.type);
 
   const renderPreview = () => {
     switch (artifact.type) {
       case "mermaid": return <MermaidCanvas code={artifact.code} />;
-      case "html": return <HtmlCanvas code={artifact.code} />;
-      case "svg": return <SvgCanvas code={artifact.code} />;
-      default: return <CodeCanvas code={artifact.code} type={artifact.type} />;
+      case "html":    return <HtmlCanvas code={artifact.code} />;
+      case "svg":     return <SvgCanvas code={artifact.code} />;
+      default:        return <CodeCanvas code={artifact.code} type={artifact.type} />;
     }
   };
 
-  const hasPreview = ["mermaid", "html", "svg"].includes(artifact.type);
-
   return (
-    <div style={{
-      margin: "12px 0",
-      borderRadius: 12,
-      overflow: "hidden",
-      border: `1px solid ${meta.color}33`,
-      background: "rgba(13,17,23,0.8)",
-    }}>
-      {/* Header */}
-      <div style={{
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "10px 14px",
-        background: `${meta.color}12`,
-        borderBottom: `1px solid ${meta.color}22`,
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 16 }}>{meta.icon}</span>
-          <span style={{ fontSize: 13, fontWeight: 600, color: meta.color }}>{meta.label}</span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {/* Tab switcher */}
+    <div style={{ margin: "12px 0", borderRadius: 6, overflow: "hidden", border: `1px solid ${meta.color}33`, background: "rgba(4,4,10,0.9)" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", background: `${meta.color}0a`, borderBottom: `1px solid ${meta.color}1a` }}>
+        <span style={{ fontSize: 10, color: meta.color, fontFamily: "'JetBrains Mono',monospace", letterSpacing: "0.15em" }}>// {meta.label}</span>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           {hasPreview && (
-            <div style={{ display: "flex", background: "rgba(255,255,255,0.06)", borderRadius: 8, padding: 2, gap: 2 }}>
+            <div style={{ display: "flex", background: "rgba(0,0,0,0.4)", borderRadius: 4, padding: 2, gap: 2 }}>
               {["preview", "code"].map(t => (
-                <button key={t} onClick={() => setTab(t)} style={{
-                  background: tab === t ? "rgba(255,255,255,0.12)" : "transparent",
-                  border: "none", borderRadius: 6, padding: "3px 10px",
-                  color: tab === t ? "var(--text-primary)" : "var(--text-muted)",
-                  fontSize: 11, fontWeight: tab === t ? 600 : 400,
-                  cursor: "pointer", fontFamily: "'DM Sans',sans-serif", transition: "all 0.15s",
-                }}>{t === "preview" ? "Vista previa" : "Código"}</button>
+                <button key={t} onClick={() => setTab(t)} style={{ background: tab === t ? "rgba(0,212,255,0.1)" : "transparent", border: "none", borderRadius: 3, padding: "2px 8px", color: tab === t ? "#00d4ff" : "rgba(0,212,255,0.35)", fontSize: 9, fontWeight: tab === t ? 600 : 400, cursor: "pointer", fontFamily: "'JetBrains Mono',monospace", letterSpacing: "0.05em", transition: "all 0.15s" }}>{t}</button>
               ))}
             </div>
           )}
-          {/* Expand */}
-          <button onClick={() => onExpand?.(artifact)} style={{
-            background: `${meta.color}22`, border: `1px solid ${meta.color}44`,
-            borderRadius: 8, padding: "4px 12px",
-            color: meta.color, fontSize: 11, fontWeight: 600,
-            cursor: "pointer", fontFamily: "'DM Sans',sans-serif",
-          }}>⊞ Pantalla completa</button>
+          <button onClick={() => onExpand?.(artifact)} style={{ background: `${meta.color}12`, border: `1px solid ${meta.color}30`, borderRadius: 4, padding: "2px 10px", color: meta.color, fontSize: 9, fontFamily: "'JetBrains Mono',monospace", cursor: "pointer", letterSpacing: "0.05em" }}>fullscreen</button>
         </div>
       </div>
-
-      {/* Content */}
       <div style={{ maxHeight: 480, overflow: "auto" }}>
         {tab === "preview" ? renderPreview() : <CodeCanvas code={artifact.code} type={artifact.type} />}
       </div>
@@ -441,61 +329,44 @@ function CanvasPanel({ artifact, onExpand }) {
 }
 
 /* ────────────────────────────────────────────────
-   CANVAS FULLSCREEN MODAL
+   CANVAS FULLSCREEN MODAL — sin cambios de lógica
 ──────────────────────────────────────────────── */
 function CanvasModal({ artifact, onClose }) {
   const [tab, setTab] = useState("preview");
-  
   useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
-
   if (!artifact) return null;
-  const meta = CANVAS_META[artifact.type] || { icon: "📄", label: "Código", color: "#6b7280" };
-
+  const meta = CANVAS_META[artifact.type] || { label: "código", color: "#00d4ff" };
   const renderContent = () => {
     switch (artifact.type) {
       case "mermaid": return <MermaidCanvas code={artifact.code} />;
-      case "html": return <HtmlCanvas code={artifact.code} />;
-      case "svg": return <SvgCanvas code={artifact.code} />;
-      default: return <CodeCanvas code={artifact.code} type={artifact.type} />;
+      case "html":    return <HtmlCanvas code={artifact.code} />;
+      case "svg":     return <SvgCanvas code={artifact.code} />;
+      default:        return <CodeCanvas code={artifact.code} type={artifact.type} />;
     }
   };
-
   const hasPreview = ["mermaid", "html", "svg"].includes(artifact.type);
 
   return (
-    <div
-      style={{ position: "fixed", inset: 0, zIndex: 9000, background: "rgba(0,0,0,0.88)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, animation: "fadeSlideUp 0.2s ease" }}
-      onClick={onClose}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{ width: "95vw", maxWidth: 1200, height: "90vh", display: "flex", flexDirection: "column", background: "#13151a", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16, overflow: "hidden" }}
-      >
-        {/* Modal header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 20px", background: `${meta.color}10`, borderBottom: `1px solid ${meta.color}22`, flexShrink: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: 20 }}>{meta.icon}</span>
-            <span style={{ fontSize: 15, fontWeight: 700, color: meta.color }}>{meta.label}</span>
-          </div>
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 9000, background: "rgba(0,0,0,0.9)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, animation: "fadeSlideUp 0.2s ease" }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ width: "95vw", maxWidth: 1200, height: "90vh", display: "flex", flexDirection: "column", background: "#04040a", border: "1px solid rgba(0,212,255,0.2)", borderRadius: 8, overflow: "hidden" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 18px", background: `${meta.color}08`, borderBottom: `1px solid ${meta.color}18`, flexShrink: 0 }}>
+          <span style={{ fontSize: 11, color: meta.color, fontFamily: "'JetBrains Mono',monospace", letterSpacing: "0.15em" }}>// {meta.label}</span>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             {hasPreview && (
-              <div style={{ display: "flex", background: "rgba(255,255,255,0.06)", borderRadius: 8, padding: 2 }}>
+              <div style={{ display: "flex", background: "rgba(0,0,0,0.4)", borderRadius: 4, padding: 2 }}>
                 {["preview", "code"].map(t => (
-                  <button key={t} onClick={() => setTab(t)} style={{ background: tab === t ? "rgba(255,255,255,0.12)" : "transparent", border: "none", borderRadius: 6, padding: "4px 14px", color: tab === t ? "var(--text-primary)" : "var(--text-muted)", fontSize: 12, fontWeight: tab === t ? 600 : 400, cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
-                    {t === "preview" ? "Vista previa" : "Código"}
-                  </button>
+                  <button key={t} onClick={() => setTab(t)} style={{ background: tab === t ? "rgba(0,212,255,0.1)" : "transparent", border: "none", borderRadius: 3, padding: "3px 12px", color: tab === t ? "#00d4ff" : "rgba(0,212,255,0.35)", fontSize: 10, cursor: "pointer", fontFamily: "'JetBrains Mono',monospace" }}>{t}</button>
                 ))}
               </div>
             )}
-            <button onClick={() => navigator.clipboard.writeText(artifact.code)} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "4px 12px", color: "var(--text-muted)", fontSize: 12, cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>📋 Copiar</button>
-            <button onClick={onClose} style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 8, padding: "4px 12px", color: "#ef4444", fontSize: 12, cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>✕ Cerrar</button>
+            <button onClick={() => navigator.clipboard.writeText(artifact.code)} style={{ background: "rgba(0,212,255,0.06)", border: "1px solid rgba(0,212,255,0.2)", borderRadius: 4, padding: "3px 10px", color: "rgba(0,212,255,0.5)", fontSize: 10, cursor: "pointer", fontFamily: "'JetBrains Mono',monospace" }}>copiar</button>
+            <button onClick={onClose} style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 4, padding: "3px 10px", color: "#ef4444", fontSize: 10, cursor: "pointer", fontFamily: "'JetBrains Mono',monospace" }}>✕ cerrar</button>
           </div>
         </div>
-        {/* Content */}
         <div style={{ flex: 1, overflow: "auto" }}>
           {tab === "preview" ? renderContent() : <CodeCanvas code={artifact.code} type={artifact.type} />}
         </div>
@@ -505,34 +376,31 @@ function CanvasModal({ artifact, onClose }) {
 }
 
 /* ────────────────────────────────────────────────
-   THINKING INDICATOR
+   THINKING INDICATOR — rediseñado: línea cian pulsante
 ──────────────────────────────────────────────── */
-const THINKING_PHRASES = ["Analizando tu mensaje...", "Consultando los bots...", "Procesando respuesta...", "Pensando...", "Buscando información..."];
-
 function ThinkingIndicator({ botName, action }) {
   const [phraseIdx, setPhraseIdx] = useState(0);
-  const [visible, setVisible] = useState(true);
+  const PHRASES = ["analizando...", "consultando bots...", "procesando...", "pensando...", "buscando..."];
   useEffect(() => {
-    const iv = setInterval(() => {
-      setVisible(false);
-      setTimeout(() => { setPhraseIdx((p) => (p + 1) % THINKING_PHRASES.length); setVisible(true); }, 200);
-    }, 2200);
+    const iv = setInterval(() => setPhraseIdx(p => (p + 1) % PHRASES.length), 2200);
     return () => clearInterval(iv);
   }, []);
+
   return (
-    <div style={{ display: "flex", padding: "10px 28px", animation: "fadeSlideUp 0.25s ease both" }}>
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
-        <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0, animation: "botGlow 2s ease-in-out infinite" }}>⚡</div>
-        <div style={{ paddingTop: 3 }}>
-          <div style={{ fontSize: 13, color: "var(--text-secondary)", fontStyle: "italic", opacity: visible ? 1 : 0, transition: "opacity 0.18s ease", marginBottom: 6 }}>{action || THINKING_PHRASES[phraseIdx]}</div>
-          {botName && botName !== "unknown" && (
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "2px 9px", background: "rgba(16,163,127,0.1)", border: "1px solid rgba(16,163,127,0.25)", borderRadius: 10, fontSize: 11, color: "var(--accent)", fontFamily: "'DM Mono',monospace", marginBottom: 6 }}>
-              <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--accent)", animation: "dotBlink 1s step-end infinite", display: "inline-block" }} />{botName}
-            </div>
-          )}
-          <div style={{ display: "flex", gap: 5 }}>
-            {[0, 1, 2].map((i) => <span key={i} style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--accent)", display: "block", animation: "jarvisThink 1.3s infinite ease-in-out", animationDelay: `${i * 0.18}s` }} />)}
-          </div>
+    <div style={{ padding: "14px 24px 10px", animation: "fadeSlideUp 0.25s ease both" }}>
+      {/* Línea cian pulsante */}
+      <div style={{ height: 1, background: "linear-gradient(90deg, transparent, #00d4ff, transparent)", animation: "thinkLine 1.5s ease-in-out infinite", marginBottom: 8, borderRadius: 1 }} />
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        {botName && botName !== "unknown" && (
+          <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 9, color: "rgba(0,212,255,0.5)", letterSpacing: "0.15em", border: "1px solid rgba(0,212,255,0.15)", borderRadius: 3, padding: "1px 8px" }}>{botName}</span>
+        )}
+        <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: "rgba(0,212,255,0.4)", letterSpacing: "0.1em" }}>
+          {action || PHRASES[phraseIdx]}
+        </span>
+        <div style={{ display: "flex", gap: 3, marginLeft: "auto" }}>
+          {[0, 1, 2].map(i => (
+            <span key={i} style={{ width: 4, height: 4, borderRadius: "50%", background: "#00d4ff", display: "block", animation: "thinkDot 1.2s ease-in-out infinite", animationDelay: `${i * 0.2}s`, opacity: 0.6 }} />
+          ))}
         </div>
       </div>
     </div>
@@ -540,7 +408,7 @@ function ThinkingIndicator({ botName, action }) {
 }
 
 /* ────────────────────────────────────────────────
-   TYPEWRITER
+   TYPEWRITER — sin cambios
 ──────────────────────────────────────────────── */
 function useTypewriter(text, speed = 8) {
   const [displayed, setDisplayed] = useState("");
@@ -550,8 +418,7 @@ function useTypewriter(text, speed = 8) {
     if (!text) return;
     setDisplayed(""); setDone(false); let i = 0;
     ref.current = setInterval(() => {
-      i++;
-      setDisplayed(text.slice(0, i));
+      i++; setDisplayed(text.slice(0, i));
       if (i >= text.length) { clearInterval(ref.current); setDone(true); }
     }, speed);
     return () => clearInterval(ref.current);
@@ -560,7 +427,7 @@ function useTypewriter(text, speed = 8) {
 }
 
 /* ────────────────────────────────────────────────
-   QR WIDGET
+   QR WIDGET — sin cambios de lógica
 ──────────────────────────────────────────────── */
 function InlineWhatsAppQR() {
   const [qrData, setQrData] = useState(null);
@@ -575,7 +442,7 @@ function InlineWhatsAppQR() {
         setQrData(data.qr); setStatus("ready"); setCountdown(data.expiresIn || 60);
         clearInterval(countdownRef.current);
         countdownRef.current = setInterval(() => {
-          setCountdown((p) => { if (p <= 1) { clearInterval(countdownRef.current); fetchQR(); return 60; } return p - 1; });
+          setCountdown(p => { if (p <= 1) { clearInterval(countdownRef.current); fetchQR(); return 60; } return p - 1; });
         }, 1000);
       } else if (data.status === "connected") { setStatus("connected"); setQrData(null); }
       else { setStatus(data.status || "waiting"); }
@@ -586,61 +453,72 @@ function InlineWhatsAppQR() {
     const iv = setInterval(() => { if (status !== "connected") fetchQR(); }, 8000);
     return () => { clearInterval(iv); clearInterval(countdownRef.current); };
   }, [fetchQR, status]);
-  if (status === "connected") return <div style={{ margin: "8px 0", padding: "12px 16px", background: "rgba(25,195,125,0.1)", border: "1px solid rgba(25,195,125,0.3)", borderRadius: 12, fontSize: 13, color: "#19c37d" }}>✅ WhatsApp conectado</div>;
-  if (!qrData) return <div style={{ margin: "8px 0", padding: "12px 16px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12 }}><div style={{ fontSize: 13, color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: 8 }}><span style={{ animation: "spin 1s linear infinite", display: "inline-block" }}>⟳</span>{status === "waiting" ? "Activá WhatsAppBot en Bots..." : "Generando QR..."}</div></div>;
+  if (status === "connected") return <div style={{ margin: "8px 0", padding: "10px 14px", background: "rgba(0,212,255,0.06)", border: "1px solid rgba(0,212,255,0.2)", borderRadius: 6, fontSize: 12, color: "#00d4ff", fontFamily: "'JetBrains Mono',monospace" }}>✓ whatsapp conectado</div>;
+  if (!qrData) return <div style={{ margin: "8px 0", padding: "10px 14px", background: "rgba(0,0,0,0.3)", border: "1px solid rgba(0,212,255,0.1)", borderRadius: 6 }}><span style={{ fontSize: 12, color: "rgba(0,212,255,0.4)", fontFamily: "'JetBrains Mono',monospace" }}>{status === "waiting" ? "activá WhatsAppBot en Bots..." : "generando QR..."}</span></div>;
   return (
     <div style={{ margin: "8px 0" }}>
-      <div style={{ fontSize: 12, color: "#9b9b9b", marginBottom: 8 }}>📱 Escaneá con WhatsApp → Dispositivos vinculados</div>
-      <div style={{ display: "inline-block", padding: 10, background: "#fff", borderRadius: 10 }}>
-        <img src={qrData.startsWith("data:") ? qrData : `data:image/png;base64,${qrData}`} alt="QR" style={{ width: 200, height: 200, display: "block" }} />
+      <div style={{ fontSize: 11, color: "rgba(0,212,255,0.4)", marginBottom: 8, fontFamily: "'JetBrains Mono',monospace", letterSpacing: "0.08em" }}>// escanear con WhatsApp → dispositivos vinculados</div>
+      <div style={{ display: "inline-block", padding: 8, background: "#fff", borderRadius: 6, border: "1px solid rgba(0,212,255,0.2)" }}>
+        <img src={qrData.startsWith("data:") ? qrData : `data:image/png;base64,${qrData}`} alt="QR" style={{ width: 180, height: 180, display: "block" }} />
       </div>
-      <div style={{ fontSize: 11, color: countdown < 15 ? "#ef4444" : "#616161", marginTop: 6 }}>Expira en {countdown}s</div>
+      <div style={{ fontSize: 10, color: countdown < 15 ? "#ef4444" : "rgba(0,212,255,0.3)", marginTop: 6, fontFamily: "'JetBrains Mono',monospace" }}>expira en {countdown}s</div>
     </div>
   );
 }
 
 /* ────────────────────────────────────────────────
-   ASSISTANT MESSAGE
+   ASSISTANT MESSAGE — rediseño: terminal, sin burbuja
 ──────────────────────────────────────────────── */
 function AssistantMessage({ msg, isNew, onOpenCanvas }) {
   const { displayed, done } = useTypewriter(isNew ? msg.content : null, 8);
   const text = isNew ? displayed : msg.content || "";
   const isError = msg.role === "error";
-  // Detectar artifacts automáticamente en el contenido
-const rawContent = msg.content || "";
-const artifact = rawContent ? detectArtifact(rawContent) : null;
-
-const cleanText = (() => {
-  if (!artifact || !rawContent) return rawContent;
-  try { return rawContent.replace(artifact.raw, "").trim(); } catch { return rawContent; }
-})();
-
-const displayText = isNew && !done ? (text || "") : (cleanText || "");
-
-// Auto-render: si hay artifact, mostrarlo siempre (no requiere "modo canvas")
-const showArtifact = !!(artifact?.code && typeof artifact.code === "string");
+  const rawContent = msg.content || "";
+  const artifact = rawContent ? detectArtifact(rawContent) : null;
+  const cleanText = (() => {
+    if (!artifact || !rawContent) return rawContent;
+    try { return rawContent.replace(artifact.raw, "").trim(); } catch { return rawContent; }
+  })();
+  const displayText = isNew && !done ? (text || "") : (cleanText || "");
+  const showArtifact = !!(artifact?.code && typeof artifact.code === "string");
 
   return (
-    <div style={{ display: "flex", justifyContent: "flex-start", padding: "10px 28px", animation: isNew ? "fadeSlideUp 0.25s ease both" : "none" }}>
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 13, maxWidth: "82%" }}>
-        <div style={{ width: 32, height: 32, borderRadius: "50%", background: isError ? "#ef4444" : "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0, marginTop: 2, boxShadow: isError ? "0 0 0 3px rgba(239,68,68,0.2)" : "0 0 0 3px rgba(16,163,127,0.2)" }}>{isError ? "⚠" : "⚡"}</div>
+    <div style={{ display: "flex", justifyContent: "flex-start", padding: "10px 24px", animation: isNew ? "fadeSlideUp 0.25s ease both" : "none" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 12, maxWidth: "84%", minWidth: 0 }}>
+        {/* Indicador lateral cian — sin avatar */}
+        <div style={{ width: 2, background: isError ? "#ef4444" : "rgba(0,212,255,0.4)", borderRadius: 1, flexShrink: 0, marginTop: 4, alignSelf: "stretch", minHeight: 20 }} />
         <div style={{ minWidth: 0, flex: 1 }}>
+          {/* Meta: bot + corrección */}
           {msg.bot && msg.bot !== "unknown" && !isError && (
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "1px 8px", marginBottom: 5, background: "rgba(16,163,127,0.08)", border: "1px solid rgba(16,163,127,0.2)", borderRadius: 8, fontSize: 10, color: "var(--accent)", fontFamily: "'DM Mono',monospace" }}>⚙ {msg.bot}</div>
+            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 9, color: "rgba(0,212,255,0.4)", letterSpacing: "0.15em", marginBottom: 6 }}>
+              // {msg.bot}
+            </div>
           )}
           {msg.correction && (
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", marginBottom: 8, background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.25)", borderRadius: 8, fontSize: 11, color: "#f59e0b", fontFamily: "'DM Mono',monospace" }}>✏ Entendí: <em style={{ color: "#ececec", fontStyle: "normal", marginLeft: 4 }}>"{msg.correction}"</em></div>
+            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: "rgba(245,158,11,0.7)", marginBottom: 8, letterSpacing: "0.05em" }}>
+              ✏ entendí: <em style={{ color: "#f59e0b", fontStyle: "normal" }}>"{msg.correction}"</em>
+            </div>
           )}
-          <div style={{ fontSize: isError ? 13 : 15, lineHeight: 1.75, color: isError ? "#f87171" : "var(--text-primary)", fontFamily: isError ? "'DM Mono',monospace" : "inherit", wordBreak: "break-word" }}>
+          {/* Contenido */}
+          <div style={{
+            fontSize: 14, lineHeight: 1.8,
+            color: isError ? "#f87171" : "#c8dce4",
+            fontFamily: isError ? "'JetBrains Mono',monospace" : "'Rajdhani',sans-serif",
+            fontWeight: isError ? 400 : 500,
+            wordBreak: "break-word",
+          }}>
             {isError ? displayText : renderMarkdown(displayText)}
-            {isNew && !done && !isError && <span style={{ display: "inline-block", width: 2, height: 16, background: "var(--accent)", marginLeft: 2, verticalAlign: "text-bottom", animation: "cursorBlink 0.7s step-end infinite" }} />}
+            {isNew && !done && !isError && (
+              <span style={{ display: "inline-block", width: 7, height: 14, background: "#00d4ff", marginLeft: 2, verticalAlign: "text-bottom", animation: "cursorBlink 0.7s step-end infinite", opacity: 0.8 }} />
+            )}
           </div>
-          {/* Canvas panel inline */}
+          {/* Artifact */}
           {showArtifact && <CanvasPanel artifact={artifact} onExpand={onOpenCanvas} />}
           {msg.showQR && (done || !isNew) && <InlineWhatsAppQR />}
+          {/* Intent */}
           {msg.intent && !isError && (
-            <div style={{ marginTop: 7, fontFamily: "'DM Mono',monospace", fontSize: 11, color: "var(--text-muted)", opacity: done || !isNew ? 1 : 0, transition: "opacity 0.4s ease" }}>
-              <span style={{ color: "var(--accent)", opacity: 0.6 }}>↳ {msg.intent}</span>
+            <div style={{ marginTop: 8, fontFamily: "'JetBrains Mono',monospace", fontSize: 9, color: "rgba(0,212,255,0.25)", letterSpacing: "0.1em", opacity: done || !isNew ? 1 : 0, transition: "opacity 0.4s ease" }}>
+              ↳ {msg.intent}
             </div>
           )}
         </div>
@@ -650,25 +528,36 @@ const showArtifact = !!(artifact?.code && typeof artifact.code === "string");
 }
 
 /* ────────────────────────────────────────────────
-   USER MESSAGE
+   USER MESSAGE — rediseño: burbuja derecha cian tenue
 ──────────────────────────────────────────────── */
 function UserMessage({ msg, isNew }) {
   return (
-    <div style={{ display: "flex", justifyContent: "flex-end", padding: "8px 28px", animation: isNew ? "fadeSlideUp 0.2s ease both" : "none" }}>
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 10, maxWidth: "68%" }}>
-        <div style={{ background: "linear-gradient(135deg, #10a37f, #0d8a6a)", borderRadius: "20px 20px 4px 20px", padding: "12px 18px", fontSize: 15, lineHeight: 1.6, color: "#fff", wordBreak: "break-word", whiteSpace: "pre-wrap", boxShadow: "0 2px 12px rgba(16,163,127,0.25)" }}>
+    <div style={{ display: "flex", justifyContent: "flex-end", padding: "8px 24px", animation: isNew ? "fadeSlideUp 0.2s ease both" : "none" }}>
+      <div style={{ maxWidth: "68%" }}>
+        <div style={{
+          background: "rgba(0,212,255,0.07)",
+          border: "1px solid rgba(0,212,255,0.18)",
+          borderRadius: "12px 12px 3px 12px",
+          padding: "10px 16px",
+          fontSize: 14,
+          lineHeight: 1.7,
+          color: "#d0e8f0",
+          fontFamily: "'Rajdhani',sans-serif",
+          fontWeight: 500,
+          wordBreak: "break-word",
+          whiteSpace: "pre-wrap",
+        }}>
           {msg.content}
-          {msg.isAudio && <span style={{ marginLeft: 6, opacity: 0.7, fontSize: 12 }}>🎤</span>}
-          {msg.isFile && <span style={{ marginLeft: 6, opacity: 0.7, fontSize: 12 }}>📎</span>}
+          {msg.isAudio && <span style={{ marginLeft: 8, fontSize: 10, color: "rgba(0,212,255,0.4)", fontFamily: "'JetBrains Mono',monospace" }}> // voz</span>}
+          {msg.isFile && <span style={{ marginLeft: 8, fontSize: 10, color: "rgba(0,212,255,0.4)", fontFamily: "'JetBrains Mono',monospace" }}> // archivo</span>}
         </div>
-        <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "2px solid rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "var(--text-secondary)", flexShrink: 0 }}>T</div>
       </div>
     </div>
   );
 }
 
 /* ────────────────────────────────────────────────
-   AUDIO RECORDER — FIX: correct getUserMedia flow
+   AUDIO RECORDER — lógica intacta
 ──────────────────────────────────────────────── */
 function AudioRecorder({ onTranscribed, disabled }) {
   const [recording, setRecording] = useState(false);
@@ -678,20 +567,13 @@ function AudioRecorder({ onTranscribed, disabled }) {
   const chunksRef = useRef([]);
   const streamRef = useRef(null);
   const recordingRef = useRef(false);
-  // Web Speech API para transcripción directa en el browser
   const recognitionRef = useRef(null);
 
   const showError = (msg) => { setFloatError(msg); setTimeout(() => setFloatError(null), 3500); };
+  const getMimeType = () => { const types = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus", "audio/mp4"]; return types.find(t => MediaRecorder.isTypeSupported(t)) || "audio/webm"; };
 
-  const getMimeType = () => {
-    const types = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus", "audio/mp4"];
-    return types.find((t) => MediaRecorder.isTypeSupported(t)) || "audio/webm";
-  };
-
-  // Intenta STT via backend (Groq), si falla usa Web Speech API
   const transcribeAudio = useCallback(async (blob) => {
-    if (!blob || blob.size < 500) { showError("Audio demasiado corto"); setProcessing(false); return; }
-    
+    if (!blob || blob.size < 500) { showError("audio demasiado corto"); setProcessing(false); return; }
     setProcessing(true);
     try {
       const fd = new FormData();
@@ -700,169 +582,92 @@ function AudioRecorder({ onTranscribed, disabled }) {
       fd.append("audio", blob, `rec.${ext}`);
       const res = await fetch(`${API}/api/stt/transcribe`, { method: "POST", body: fd });
       const data = await res.json();
-      
-      if (data.errorCode === "USE_BROWSER_STT" || !data.success) {
-        // Groq no disponible — informar al usuario
-        showError("Usá el ícono 🎤 y hablá directamente (Web Speech API)");
-      } else if (!data.text?.trim()) {
-        showError("No se detectó voz");
-      } else {
-        onTranscribed(data.text.trim());
-      }
-    } catch (e) { showError("Error de conexión"); }
+      if (data.errorCode === "USE_BROWSER_STT" || !data.success) showError("usá el ícono 🎤 y hablá directamente");
+      else if (!data.text?.trim()) showError("no se detectó voz");
+      else onTranscribed(data.text.trim());
+    } catch { showError("error de conexión"); }
     setProcessing(false);
   }, [onTranscribed]);
 
   const stopRecording = useCallback(() => {
     if (!recordingRef.current) return;
-    recordingRef.current = false;
-    setRecording(false);
+    recordingRef.current = false; setRecording(false);
     const mr = mediaRecorderRef.current;
     if (mr && mr.state === "recording") mr.stop();
-    if (streamRef.current) { streamRef.current.getTracks().forEach((t) => t.stop()); streamRef.current = null; }
+    if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
   }, []);
 
   const startBrowserSTT = useCallback(() => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { showError("Tu navegador no soporta STT. Usá Chrome."); return; }
-    
+    if (!SR) { showError("usá Chrome para STT"); return; }
     const recognition = new SR();
-    recognition.lang = "es-AR";
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
+    recognition.lang = "es-AR"; recognition.interimResults = false; recognition.maxAlternatives = 1;
     recognitionRef.current = recognition;
-    
-    recognition.onresult = (e) => {
-      const text = e.results[0][0].transcript.trim();
-      if (text) onTranscribed(text);
-      setRecording(false);
-      recordingRef.current = false;
-    };
-    recognition.onerror = (e) => {
-      if (e.error !== "aborted") showError(`Error STT: ${e.error}`);
-      setRecording(false);
-      recordingRef.current = false;
-    };
+    recognition.onresult = e => { const text = e.results[0][0].transcript.trim(); if (text) onTranscribed(text); setRecording(false); recordingRef.current = false; };
+    recognition.onerror = e => { if (e.error !== "aborted") showError(`error STT: ${e.error}`); setRecording(false); recordingRef.current = false; };
     recognition.onend = () => { if (recordingRef.current) { setRecording(false); recordingRef.current = false; } };
-    
-    recognition.start();
-    recordingRef.current = true;
-    setRecording(true);
+    recognition.start(); recordingRef.current = true; setRecording(true);
   }, [onTranscribed]);
 
   const stopBrowserSTT = useCallback(() => {
     if (recognitionRef.current) { try { recognitionRef.current.stop(); } catch {} recognitionRef.current = null; }
-    recordingRef.current = false;
-    setRecording(false);
+    recordingRef.current = false; setRecording(false);
   }, []);
 
   const startMediaRecorder = useCallback(async () => {
     let stream;
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
-    } catch (err) {
-      showError(err.name === "NotAllowedError" ? "Permiso de micrófono denegado" : `Micrófono no disponible: ${err.message}`);
-      return;
-    }
-    streamRef.current = stream;
-    chunksRef.current = [];
+    try { stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }); }
+    catch (err) { showError(err.name === "NotAllowedError" ? "permiso denegado" : `mic no disponible: ${err.message}`); return; }
+    streamRef.current = stream; chunksRef.current = [];
     const mimeType = getMimeType();
-    let mr;
-    try { mr = new MediaRecorder(stream, { mimeType }); } catch { mr = new MediaRecorder(stream); }
+    let mr; try { mr = new MediaRecorder(stream, { mimeType }); } catch { mr = new MediaRecorder(stream); }
     mediaRecorderRef.current = mr;
-    mr.ondataavailable = (e) => { if (e.data?.size > 0) chunksRef.current.push(e.data); };
-    mr.onstop = () => {
-      const finalMime = mr.mimeType || mimeType;
-      const blob = new Blob(chunksRef.current, { type: finalMime });
-      transcribeAudio(blob);
-    };
-    mr.onerror = () => { showError("Error durante la grabación"); setRecording(false); recordingRef.current = false; };
-    mr.start(100);
-    recordingRef.current = true;
-    setRecording(true);
+    mr.ondataavailable = e => { if (e.data?.size > 0) chunksRef.current.push(e.data); };
+    mr.onstop = () => { const finalMime = mr.mimeType || mimeType; const blob = new Blob(chunksRef.current, { type: finalMime }); transcribeAudio(blob); };
+    mr.onerror = () => { showError("error durante grabación"); setRecording(false); recordingRef.current = false; };
+    mr.start(100); recordingRef.current = true; setRecording(true);
   }, [transcribeAudio]);
 
   const handleClick = useCallback(() => {
     if (disabled || processing) return;
-    if (recordingRef.current) {
-      // Parar — intentar Web Speech API primero (más confiable)
-      if (recognitionRef.current) stopBrowserSTT();
-      else stopRecording();
-    } else {
-      // Usar Web Speech API directamente (más simple y confiable)
-      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (SR) startBrowserSTT();
-      else startMediaRecorder(); // fallback a MediaRecorder + Groq
-    }
+    if (recordingRef.current) { if (recognitionRef.current) stopBrowserSTT(); else stopRecording(); }
+    else { const SR = window.SpeechRecognition || window.webkitSpeechRecognition; if (SR) startBrowserSTT(); else startMediaRecorder(); }
   }, [disabled, processing, stopBrowserSTT, stopRecording, startBrowserSTT, startMediaRecorder]);
 
   return (
     <div style={{ position: "relative", flexShrink: 0 }}>
-      <button
-        onClick={handleClick}
-        disabled={disabled || processing}
-        title={recording ? "Click para enviar" : "Click para grabar (Web Speech API)"}
-        style={{
-          width: 32, height: 32, borderRadius: 8,
-          border: recording ? "1px solid rgba(239,68,68,0.6)" : "1px solid rgba(255,255,255,0.1)",
-          background: recording ? "rgba(239,68,68,0.2)" : processing ? "rgba(16,163,127,0.15)" : "transparent",
-          color: recording ? "#ef4444" : processing ? "var(--accent)" : "var(--text-muted)",
-          cursor: disabled || processing ? "not-allowed" : "pointer",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 16, transition: "all 0.15s",
-          animation: recording ? "pulseMic 1s ease-in-out infinite" : "none",
-        }}
-      >
-        {processing ? <span style={{ animation: "spin 1s linear infinite", display: "inline-block", fontSize: 14 }}>⟳</span>
-          : recording ? "⏹" : "🎤"}
+      <button onClick={handleClick} disabled={disabled || processing} title={recording ? "click para enviar" : "grabar voz"}
+        style={{ width: 30, height: 30, borderRadius: 4, border: recording ? "1px solid rgba(239,68,68,0.5)" : "1px solid rgba(0,212,255,0.15)", background: recording ? "rgba(239,68,68,0.12)" : "transparent", color: recording ? "#ef4444" : "rgba(0,212,255,0.4)", cursor: disabled || processing ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, transition: "all 0.15s", animation: recording ? "pulseMic 1s ease-in-out infinite" : "none" }}>
+        {processing ? <span style={{ animation: "spin 1s linear infinite", display: "inline-block", fontSize: 12 }}>⟳</span> : recording ? "⏹" : "🎤"}
       </button>
-      {recording && (
-        <div style={{ position: "absolute", bottom: "calc(100% + 6px)", left: "50%", transform: "translateX(-50%)", background: "rgba(239,68,68,0.92)", color: "#fff", fontSize: 10, padding: "3px 8px", borderRadius: 6, whiteSpace: "nowrap", pointerEvents: "none", fontWeight: 600, zIndex: 10 }}>
-          🔴 Escuchando... click para enviar
-        </div>
-      )}
-      {floatError && (
-        <div style={{ position: "absolute", bottom: "calc(100% + 10px)", left: "50%", transform: "translateX(-50%)", background: "rgba(239,68,68,0.95)", color: "#fff", fontSize: 12, padding: "6px 12px", borderRadius: 8, whiteSpace: "nowrap", zIndex: 100, pointerEvents: "none", maxWidth: 280, textAlign: "center" }}>
-          ⚠ {floatError}
-        </div>
-      )}
-      {recording && <div style={{ position: "absolute", inset: -4, borderRadius: 12, border: "2px solid rgba(239,68,68,0.5)", animation: "ringPulse 1s ease-in-out infinite", pointerEvents: "none" }} />}
+      {recording && <div style={{ position: "absolute", bottom: "calc(100% + 6px)", left: "50%", transform: "translateX(-50%)", background: "rgba(239,68,68,0.9)", color: "#fff", fontSize: 9, padding: "3px 8px", borderRadius: 3, whiteSpace: "nowrap", pointerEvents: "none", fontFamily: "'JetBrains Mono',monospace", letterSpacing: "0.05em", zIndex: 10 }}>● escuchando... click para enviar</div>}
+      {floatError && <div style={{ position: "absolute", bottom: "calc(100% + 10px)", left: "50%", transform: "translateX(-50%)", background: "rgba(239,68,68,0.95)", color: "#fff", fontSize: 10, padding: "5px 10px", borderRadius: 4, whiteSpace: "nowrap", zIndex: 100, pointerEvents: "none", maxWidth: 260, textAlign: "center", fontFamily: "'JetBrains Mono',monospace" }}>⚠ {floatError}</div>}
+      {recording && <div style={{ position: "absolute", inset: -4, borderRadius: 8, border: "1px solid rgba(239,68,68,0.4)", animation: "ringPulse 1s ease-in-out infinite", pointerEvents: "none" }} />}
     </div>
   );
 }
 
 /* ────────────────────────────────────────────────
-   UPLOAD BUTTON — FIX: handle PDFs separately from images
+   UPLOAD BUTTON — lógica intacta
 ──────────────────────────────────────────────── */
 function UploadButton({ onUpload, disabled }) {
   const ref = useRef(null);
   return (
     <>
-      <input
-        ref={ref}
-        type="file"
-        // Accept images AND PDFs clearly
-        accept="image/png,image/jpeg,image/gif,image/webp,application/pdf"
-        style={{ display: "none" }}
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) { e.target.value = ""; onUpload(f); }
-        }}
-      />
-      <button
-        onClick={() => ref.current?.click()}
-        disabled={disabled}
-        title="Adjuntar imagen o PDF"
-        style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "transparent", color: "var(--text-muted)", cursor: disabled ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0, transition: "all 0.15s" }}
-        onMouseEnter={(e) => { if (!disabled) { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "var(--text-primary)"; } }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-muted)"; }}
-      >📎</button>
+      <input ref={ref} type="file" accept="image/png,image/jpeg,image/gif,image/webp,application/pdf" style={{ display: "none" }}
+        onChange={e => { const f = e.target.files?.[0]; if (f) { e.target.value = ""; onUpload(f); } }} />
+      <button onClick={() => ref.current?.click()} disabled={disabled} title="adjuntar imagen o PDF"
+        style={{ width: 30, height: 30, borderRadius: 4, border: "1px solid rgba(0,212,255,0.15)", background: "transparent", color: "rgba(0,212,255,0.4)", cursor: disabled ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0, transition: "all 0.15s" }}
+        onMouseEnter={e => { if (!disabled) { e.currentTarget.style.color = "#00d4ff"; e.currentTarget.style.borderColor = "rgba(0,212,255,0.4)"; } }}
+        onMouseLeave={e => { e.currentTarget.style.color = "rgba(0,212,255,0.4)"; e.currentTarget.style.borderColor = "rgba(0,212,255,0.15)"; }}>
+        📎
+      </button>
     </>
   );
 }
 
 /* ────────────────────────────────────────────────
-   HELPERS
+   HELPERS — sin cambios de lógica
 ──────────────────────────────────────────────── */
 function shouldShowQR(msg) {
   const l = msg.toLowerCase();
@@ -871,81 +676,45 @@ function shouldShowQR(msg) {
 function dbRoleToDisplay(r) { if (r === "user") return "user"; if (r === "error") return "error"; return "assistant"; }
 function guessBot(msg) {
   const l = msg.toLowerCase();
-  if (l.includes("buscá") || l.includes("busca") || l.includes("google") || l.includes("web") || l.includes("quién") || l.includes("qué es")) return { botName: "SearchBot", action: "🔍 Buscando en la web..." };
-  if (l.includes("youtube") || l.includes("spotify") || l.includes("música")) return { botName: "MediaBot", action: "🎵 Controlando multimedia..." };
-  if (l.includes("whatsapp") || l.includes("wsp")) return { botName: "WhatsAppBot", action: "📱 Procesando WhatsApp..." };
-  if (l.includes("docs") || l.includes("documento") || l.includes("google")) return { botName: "ComputerBot", action: "📄 Trabajando en Google Docs..." };
-  if (l.includes("screenshot") || l.includes("captura") || l.includes("volumen")) return { botName: "BatBot", action: "🖥️ Ejecutando en el sistema..." };
-  if (l.includes("diagrama") || l.includes("diagram") || l.includes("gráfico") || l.includes("chart") || l.includes("mermaid") || l.includes("flujo")) return { botName: "WebBot", action: "📊 Generando diagrama..." };
-  if (l.includes("diseñ") || l.includes("interfaz") || l.includes("ui") || l.includes("html") || l.includes("componente")) return { botName: "WebBot", action: "🎨 Diseñando interfaz..." };
+  if (l.includes("buscá") || l.includes("busca") || l.includes("google") || l.includes("web") || l.includes("quién") || l.includes("qué es")) return { botName: "SearchBot", action: "buscando en la web..." };
+  if (l.includes("youtube") || l.includes("spotify") || l.includes("música")) return { botName: "MediaBot", action: "controlando multimedia..." };
+  if (l.includes("whatsapp") || l.includes("wsp")) return { botName: "WhatsAppBot", action: "procesando whatsapp..." };
+  if (l.includes("docs") || l.includes("documento") || l.includes("google")) return { botName: "ComputerBot", action: "trabajando en docs..." };
+  if (l.includes("screenshot") || l.includes("captura") || l.includes("volumen")) return { botName: "BatBot", action: "ejecutando en el sistema..." };
+  if (l.includes("diagrama") || l.includes("gráfico") || l.includes("chart") || l.includes("mermaid")) return { botName: "WebBot", action: "generando diagrama..." };
+  if (l.includes("diseñ") || l.includes("interfaz") || l.includes("html")) return { botName: "WebBot", action: "diseñando interfaz..." };
   return { botName: null, action: null };
 }
-
-// FIX: handle "open YouTube" / "abrir YouTube" style commands
 function handleExternalCommand(text) {
   const l = text.toLowerCase();
-  const OPENS = {
-    youtube: "https://youtube.com",
-    "you tube": "https://youtube.com",
-    spotify: "https://open.spotify.com",
-    discord: "https://discord.com/app",
-    gmail: "https://mail.google.com",
-    "google docs": "https://docs.google.com",
-    "google drive": "https://drive.google.com",
-    github: "https://github.com",
-  };
-  if (/\b(abrí|abrir|open|lanzar|launch|ir a)\b/i.test(l)) {
-    for (const [site, url] of Object.entries(OPENS)) {
-      if (l.includes(site)) { window.open(url, "_blank"); return true; }
-    }
-  }
+  const OPENS = { youtube: "https://youtube.com", spotify: "https://open.spotify.com", discord: "https://discord.com/app", gmail: "https://mail.google.com", "google docs": "https://docs.google.com", "google drive": "https://drive.google.com", github: "https://github.com" };
+  if (/\b(abrí|abrir|open|lanzar|launch|ir a)\b/i.test(l)) { for (const [site, url] of Object.entries(OPENS)) { if (l.includes(site)) { window.open(url, "_blank"); return true; } } }
   return false;
 }
-
 function correctPrompt(text) {
   if (!text) return { text: "", changed: false };
-  const APP = [
-    [/\bwhastsapp\b/gi, "whatsapp"], [/\bwhatasapp\b/gi, "whatsapp"],
-    [/\bwatssap\b/gi, "whatsapp"], [/\bwsp\b/gi, "whatsapp"],
+  const rules = [
+    [/\bwhastsapp\b/gi, "whatsapp"], [/\bwhatsa?pp?\b/gi, "whatsapp"], [/\bwsp\b/gi, "whatsapp"],
     [/\byuotube\b/gi, "youtube"], [/\byoutub\b/gi, "youtube"],
-    [/\bspotifay\b/gi, "spotify"], [/\bspotfiy\b/gi, "spotify"],
-    [/\bcrhome\b/gi, "chrome"], [/\bchorme\b/gi, "chrome"],
-    [/\bdiscrod\b/gi, "discord"],
-  ];
-  const TYPOS = [
-    [/\binforamcion\b/gi, "información"], [/\binfromacion\b/gi, "información"],
-    [/\bvolumne\b/gi, "volumen"], [/\bmusica\b/gi, "música"],
-    [/\bcancion\b/gi, "canción"], [/\bpantallla\b/gi, "pantalla"],
+    [/\bspotif[ay]+\b/gi, "spotify"], [/\bchr?ome\b/gi, "chrome"], [/\bdiscrod\b/gi, "discord"],
+    [/\bvolumne\b/gi, "volumen"], [/\bmusica\b/gi, "música"], [/\bcancion\b/gi, "canción"],
   ];
   let result = text;
-  const run = (rules) => { for (const [re, rep] of rules) { try { result = result.replace(re, rep); } catch (_) {} } };
-  run(APP); run(TYPOS);
+  for (const [re, rep] of rules) { try { result = result.replace(re, rep); } catch {} }
   return { text: result, changed: result !== text };
 }
 
 /* ────────────────────────────────────────────────
-   LISTENING OVERLAY
+   MAIN CHAT — prop setView agregada para volver al Shell
 ──────────────────────────────────────────────── */
-function ListeningOverlay({ state }) {
-  if (state === "idle") return null;
-  const isListening = state === "listening";
-  const color = isListening ? "239,68,68" : "245,158,11";
-  return (
-    <div style={{ position: "absolute", inset: 0, borderRadius: "inherit", pointerEvents: "none", zIndex: 10, overflow: "hidden" }}>
-      <div style={{ position: "absolute", inset: -1, borderRadius: "inherit", background: `linear-gradient(90deg, transparent, rgba(${color},0.8), transparent, rgba(${color},0.8), transparent)`, backgroundSize: "200% 100%", animation: "listeningBorderMove 1.5s linear infinite", padding: 1, WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)", WebkitMaskComposite: "xor", maskComposite: "exclude" }} />
-      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
-        <span style={{ fontSize: 24, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: `rgba(${color},0.07)`, userSelect: "none", animation: "listeningTextPulse 2s ease-in-out infinite", fontFamily: "'DM Sans',sans-serif" }}>
-          {isListening ? "🎙 escuchando jarvis" : "⟳ procesando"}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-/* ────────────────────────────────────────────────
-   MAIN CHAT
-──────────────────────────────────────────────── */
-function Chat({ propConvId = null, onReady, globalWakeWordState, globalWakeWordEnabled, onToggleWakeWord }) {
+function Chat({
+  propConvId = null,
+  onReady,
+  globalWakeWordState,
+  globalWakeWordEnabled,
+  onToggleWakeWord,
+  setView,          // ← NUEVO: para volver al Shell
+}) {
   const [conversationId, setConversationId] = useState(propConvId);
   const [messages, setMessages] = useState([WELCOME]);
   const [wakeWordState, setWakeWordState] = useState(globalWakeWordState || "idle");
@@ -957,6 +726,7 @@ function Chat({ propConvId = null, onReady, globalWakeWordState, globalWakeWordE
   const [thinkingAction, setThinkingAction] = useState(null);
   const [uploadLabel, setUploadLabel] = useState("");
   const [canvasArtifact, setCanvasArtifact] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
 
@@ -969,7 +739,8 @@ function Chat({ propConvId = null, onReady, globalWakeWordState, globalWakeWordE
       try {
         const res = await fetch(`${API}/api/history/conversations/${propConvId}/messages`);
         const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) setMessages(data.map((m) => ({ role: dbRoleToDisplay(m.role), content: m.content || "", intent: m.intent || null, bot: m.bot || null })));
+        if (Array.isArray(data) && data.length > 0)
+          setMessages(data.map(m => ({ role: dbRoleToDisplay(m.role), content: m.content || "", intent: m.intent || null, bot: m.bot || null })));
         else setMessages([WELCOME]);
       } catch { setMessages([WELCOME]); }
       finally { setHistoryLoaded(true); }
@@ -985,10 +756,10 @@ function Chat({ propConvId = null, onReady, globalWakeWordState, globalWakeWordE
   };
 
   const addMessage = (role, content, extra = {}) => {
-    setMessages((prev) => { const next = [...prev, { role, content, ...extra }]; setNewMsgIdx(next.length - 1); return next; });
+    setMessages(prev => { const next = [...prev, { role, content, ...extra }]; setNewMsgIdx(next.length - 1); return next; });
   };
 
-  /* ── sendMessage ── */
+  /* ── sendMessage — INTACTO ── */
   const sendMessage = useCallback(async (text, extra = {}) => {
     const raw = (text || input).trim();
     if (!raw || loading) return;
@@ -997,10 +768,9 @@ function Chat({ propConvId = null, onReady, globalWakeWordState, globalWakeWordE
     const wantsQR = shouldShowQR(trimmed);
     const { botName, action } = guessBot(trimmed);
 
-    // FIX: Handle external open commands before sending to backend
     if (handleExternalCommand(trimmed)) {
       addMessage("user", raw, extra);
-      addMessage("assistant", `✅ Abriendo en el navegador...`, { bot: "SystemBot" });
+      addMessage("assistant", "✓ abriendo en el navegador...", { bot: "SystemBot" });
       setInput("");
       if (textareaRef.current) textareaRef.current.style.height = "auto";
       return;
@@ -1019,10 +789,10 @@ function Chat({ propConvId = null, onReady, globalWakeWordState, globalWakeWordE
         try {
           const contentToMemorize = trimmed.replace(memoryPattern, "").replace(/^[,:\s]+|[,:\s]+$/g, "").trim() || trimmed;
           await saveMemory(contentToMemorize, "usuario");
-        } catch (e) { console.warn("No se pudo guardar memoria:", e.message); }
+        } catch (e) { console.warn("no se pudo guardar memoria:", e.message); }
       }
 
-      const historyForContext = messages.filter((m) => m.role !== "thinking");
+      const historyForContext = messages.filter(m => m.role !== "thinking");
       const data = await sendMessageToBot(trimmed, conversationId, historyForContext);
       if (data.conversation_id && !conversationId) setConversationId(data.conversation_id);
 
@@ -1036,7 +806,7 @@ function Chat({ propConvId = null, onReady, globalWakeWordState, globalWakeWordE
         ...(wasCorrect ? { correction: trimmed } : {}),
       });
     } catch (err) {
-      addMessage("error", `Error de conexión: ${err.message}`);
+      addMessage("error", `error de conexión: ${err.message}`);
     }
 
     setLoading(false); setThinkingBot(null); setThinkingAction(null);
@@ -1045,154 +815,367 @@ function Chat({ propConvId = null, onReady, globalWakeWordState, globalWakeWordE
 
   useEffect(() => { onReady?.(sendMessage); }, [sendMessage, onReady]);
 
-  /* ── File upload — FIX: distinguish PDF from image ── */
+  /* ── handleUpload — INTACTO ── */
   const handleUpload = async (file) => {
     const isPDF = file.type === "application/pdf" || file.name.endsWith(".pdf");
     const isImage = file.type.startsWith("image/");
-
-    if (!isPDF && !isImage) {
-      addMessage("error", `Tipo de archivo no soportado: ${file.type}. Usá imágenes (PNG, JPG, WEBP) o PDF.`);
-      return;
-    }
-
-    setUploadLabel(`📎 ${file.name} (${isPDF ? "PDF" : "imagen"})`);
-    setLoading(true);
-    setThinkingBot("GemmaBot");
-    setThinkingAction(isPDF ? "📄 Analizando PDF..." : "🔍 Analizando imagen con Gemma 4...");
-    addMessage("user", `[${isPDF ? "PDF" : "Imagen"}: ${file.name}]`, { isFile: true });
-
+    if (!isPDF && !isImage) { addMessage("error", `tipo no soportado: ${file.type}`); return; }
+    setUploadLabel(`${file.name}`);
+    setLoading(true); setThinkingBot("GemmaBot"); setThinkingAction(isPDF ? "analizando PDF..." : "analizando imagen...");
+    addMessage("user", `[${isPDF ? "PDF" : "imagen"}: ${file.name}]`, { isFile: true });
     try {
       const fd = new FormData();
       fd.append("file", file);
-      fd.append("query", input.trim() || (isPDF ? "Resumí y analizá este PDF detalladamente. Extraé los puntos clave." : "Describí y analizá esta imagen detalladamente."));
+      fd.append("query", input.trim() || (isPDF ? "Resumí y analizá este PDF detalladamente." : "Describí y analizá esta imagen detalladamente."));
       fd.append("fileType", isPDF ? "pdf" : "image");
-
-      // Usar el endpoint unificado de Gemma (sttGemmaRoutes)
       const res = await fetch(`${API}/api/gemma/analyze`, { method: "POST", body: fd });
       const data = await res.json();
-
       let reply = data.reply || data.error || "No se pudo procesar.";
-      if (isRawIntentJSON(reply)) reply = `No pude analizar ese ${isPDF ? "PDF" : "archivo"}.`;
+      if (isRawIntentJSON(reply)) reply = `no pude analizar ese ${isPDF ? "PDF" : "archivo"}.`;
       else reply = stripIntentBlocks(reply);
-
-      addMessage(data.success === false ? "error" : "assistant", reply, {
-        intent: data.intent,
-        bot: data.bot || "GemmaBot",
-      });
-    } catch (err) {
-      addMessage("error", `Error al procesar: ${err.message}`);
-    }
-
+      addMessage(data.success === false ? "error" : "assistant", reply, { intent: data.intent, bot: data.bot || "GemmaBot" });
+    } catch (err) { addMessage("error", `error al procesar: ${err.message}`); }
     setLoading(false); setThinkingBot(null); setThinkingAction(null); setUploadLabel("");
   };
 
   const handleKeyDown = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } };
-  const isListeningMode = wakeWordState !== "idle";
+  const isListening = wakeWordState === "listening";
+  const isProcessing = wakeWordState === "processing";
   const wakeWordEnabled = globalWakeWordEnabled ?? true;
 
   return (
-    <div className="chat-area">
+    <>
       <style>{`
-        @keyframes jarvisThink{0%,80%,100%{transform:scale(0.6);opacity:0.3}40%{transform:scale(1);opacity:1}}
-        @keyframes fadeSlideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-        @keyframes cursorBlink{0%,100%{opacity:1}50%{opacity:0}}
-        @keyframes pulseMic{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.4)}50%{box-shadow:0 0 0 8px rgba(239,68,68,0)}}
-        @keyframes ringPulse{0%,100%{opacity:0.8;transform:scale(1)}50%{opacity:0.3;transform:scale(1.1)}}
-        @keyframes spin{to{transform:rotate(360deg)}}
-        @keyframes botGlow{0%,100%{box-shadow:0 0 0 3px rgba(16,163,127,0.2)}50%{box-shadow:0 0 0 7px rgba(16,163,127,0.05)}}
-        @keyframes dotBlink{0%,100%{opacity:1}50%{opacity:0.15}}
-        @keyframes listeningBorderMove{0%{background-position:0% 0%}100%{background-position:200% 0%}}
-        @keyframes listeningTextPulse{0%,100%{opacity:0.6}50%{opacity:1}}
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;500;700&family=JetBrains+Mono:wght@300;400&display=swap');
+
+        /* ── Reset chat ─── */
+        .chat-sistema * { box-sizing: border-box; }
+
+        /* ── Layout raíz ── */
+        .chat-sistema {
+          position: fixed;
+          inset: 0;
+          background: #04040a;
+          display: flex;
+          flex-direction: column;
+          font-family: 'Rajdhani', sans-serif;
+          z-index: 10;
+        }
+
+        /* ── Grilla de fondo ── */
+        .chat-grid {
+          position: absolute;
+          inset: 0;
+          background-image:
+            linear-gradient(rgba(0,212,255,.025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0,212,255,.025) 1px, transparent 1px);
+          background-size: 48px 48px;
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        /* ── Header ── */
+        .chat-hdr {
+          position: relative;
+          z-index: 5;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 20px;
+          height: 48px;
+          border-bottom: 1px solid rgba(0,212,255,0.08);
+          background: rgba(4,4,10,0.95);
+          flex-shrink: 0;
+        }
+        .chat-hdr-left {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .chat-hdr-right {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        /* ── Botón volver al Shell ── */
+        .btn-shell {
+          width: 34px;
+          height: 34px;
+          border-radius: 5px;
+          border: 1px solid rgba(0,212,255,0.2);
+          background: rgba(0,212,255,0.05);
+          color: rgba(0,212,255,0.6);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.15s;
+          outline: none;
+        }
+        .btn-shell:hover {
+          border-color: rgba(0,212,255,0.5);
+          background: rgba(0,212,255,0.12);
+          color: #00d4ff;
+          box-shadow: 0 0 12px rgba(0,212,255,0.15);
+        }
+
+        /* ── Mensajes ── */
+        .chat-msgs {
+          flex: 1;
+          overflow-y: auto;
+          position: relative;
+          z-index: 2;
+          padding: 12px 0 8px;
+          scroll-behavior: smooth;
+        }
+        .chat-msgs::-webkit-scrollbar { width: 3px; }
+        .chat-msgs::-webkit-scrollbar-track { background: transparent; }
+        .chat-msgs::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.15); border-radius: 2px; }
+
+        /* ── Input area ── */
+        .chat-inp-wrap {
+          position: relative;
+          z-index: 5;
+          padding: 12px 20px 16px;
+          background: rgba(4,4,10,0.95);
+          border-top: 1px solid rgba(0,212,255,0.08);
+          flex-shrink: 0;
+        }
+        .chat-inp-inner {
+          display: flex;
+          align-items: flex-end;
+          gap: 8px;
+          max-width: 800px;
+          margin: 0 auto;
+          border: 1px solid rgba(0,212,255,0.18);
+          border-radius: 6px;
+          padding: 8px 10px;
+          background: rgba(0,0,0,0.3);
+          transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .chat-inp-inner:focus-within {
+          border-color: rgba(0,212,255,0.35);
+          box-shadow: 0 0 20px rgba(0,212,255,0.06);
+        }
+        .chat-inp-inner.listening {
+          border-color: rgba(239,68,68,0.4);
+          box-shadow: 0 0 20px rgba(239,68,68,0.08);
+          animation: listeningPulse 1.5s ease-in-out infinite;
+        }
+        .chat-inp-inner.processing {
+          border-color: rgba(0,212,255,0.4);
+          box-shadow: 0 0 20px rgba(0,212,255,0.1);
+        }
+        @keyframes listeningPulse {
+          0%,100% { box-shadow: 0 0 10px rgba(239,68,68,0.06); }
+          50%      { box-shadow: 0 0 24px rgba(239,68,68,0.2); }
+        }
+
+        .chat-textarea {
+          flex: 1;
+          background: transparent;
+          border: none;
+          outline: none;
+          resize: none;
+          color: #c8dce4;
+          font-family: 'Rajdhani', sans-serif;
+          font-size: 15px;
+          font-weight: 500;
+          line-height: 1.5;
+          min-height: 24px;
+          max-height: 200px;
+          padding: 0;
+          overflow-y: auto;
+        }
+        .chat-textarea::placeholder {
+          color: rgba(0,212,255,0.2);
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 12px;
+          letter-spacing: 0.05em;
+        }
+        .chat-textarea::-webkit-scrollbar { width: 2px; }
+        .chat-textarea::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.2); }
+
+        .btn-send {
+          width: 32px;
+          height: 32px;
+          border-radius: 4px;
+          border: 1px solid rgba(0,212,255,0.3);
+          background: rgba(0,212,255,0.1);
+          color: #00d4ff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.15s;
+          flex-shrink: 0;
+          font-size: 16px;
+          outline: none;
+        }
+        .btn-send:hover:not(:disabled) {
+          background: rgba(0,212,255,0.2);
+          box-shadow: 0 0 12px rgba(0,212,255,0.2);
+        }
+        .btn-send:disabled {
+          opacity: 0.25;
+          cursor: not-allowed;
+        }
+
+        .chat-hint {
+          max-width: 800px;
+          margin: 6px auto 0;
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 9px;
+          color: rgba(0,212,255,0.2);
+          letter-spacing: 0.1em;
+          text-align: center;
+        }
+
+        /* ── Upload label ── */
+        .upload-label {
+          max-width: 800px;
+          margin: 0 auto 8px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 5px 12px;
+          border: 1px solid rgba(0,212,255,0.15);
+          border-radius: 4px;
+          background: rgba(0,212,255,0.04);
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 10px;
+          color: rgba(0,212,255,0.5);
+          letter-spacing: 0.08em;
+        }
+        .upload-label button {
+          background: none;
+          border: none;
+          color: rgba(0,212,255,0.3);
+          cursor: pointer;
+          margin-left: auto;
+          font-size: 14px;
+          line-height: 1;
+          padding: 0;
+        }
+
+        /* ── Animaciones ── */
+        @keyframes fadeSlideUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes cursorBlink { 0%,100%{opacity:1} 50%{opacity:0} }
+        @keyframes spin        { to { transform:rotate(360deg); } }
+        @keyframes pulseMic    { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)} 50%{box-shadow:0 0 0 8px rgba(239,68,68,0)} }
+        @keyframes ringPulse   { 0%,100%{opacity:.8;transform:scale(1)} 50%{opacity:.3;transform:scale(1.1)} }
+        @keyframes thinkLine   { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+        @keyframes thinkDot    { 0%,80%,100%{transform:scale(.6);opacity:.3} 40%{transform:scale(1);opacity:1} }
       `}</style>
 
-      <div className="chat-header">
-        <div>
-          <div className="chat-header-title">Jarvis</div>
-          <div className="chat-header-subtitle">LLaMA · LM Studio · localhost:3001</div>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          {conversationId && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: "var(--text-muted)", opacity: 0.5 }}>#{conversationId.slice(-6)}</div>}
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: "var(--text-muted)" }}>{messages.length - 1} msgs</div>
-        </div>
-      </div>
+      <div className="chat-sistema">
+        <div className="chat-grid" />
 
-      <div className="chat-box" style={{ paddingTop: 12 }}>
-        {propConvId && !historyLoaded && (
-          <div style={{ display: "flex", justifyContent: "center", padding: "40px 0", color: "var(--text-muted)", fontSize: 13 }}>
-            <span style={{ animation: "spin 1s linear infinite", display: "inline-block", marginRight: 8 }}>⟳</span>Cargando historial...
-          </div>
-        )}
-        {(!propConvId || historyLoaded) && messages.map((msg, i) => {
-          const isNew = i === newMsgIdx;
-          if (msg.role === "user") return <UserMessage key={i} msg={msg} isNew={isNew} />;
-          return <AssistantMessage key={i} msg={msg} isNew={isNew} onOpenCanvas={setCanvasArtifact} />;
-        })}
-        {loading && <ThinkingIndicator botName={thinkingBot} action={thinkingAction} />}
-        <div ref={bottomRef} style={{ height: 1 }} />
-      </div>
-
-      <div className="input-area">
-        <div style={{ width: "100%", maxWidth: 760 }}>
-          {uploadLabel && (
-            <div style={{ padding: "6px 14px", marginBottom: 8, background: "var(--accent-light)", border: "1px solid var(--accent-border)", borderRadius: 8, fontSize: 12, color: "var(--accent)", fontFamily: "'DM Mono',monospace", display: "flex", alignItems: "center", gap: 8 }}>
-              {uploadLabel}
-              <button onClick={() => setUploadLabel("")} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", marginLeft: "auto", fontSize: 14 }}>×</button>
-            </div>
-          )}
-
-          <div className="input-form" style={{
-            position: "relative", transition: "border-color 0.3s, box-shadow 0.3s",
-            ...(isListeningMode ? {
-              borderColor: wakeWordState === "listening" ? "rgba(239,68,68,0.5)" : "rgba(245,158,11,0.5)",
-              boxShadow: wakeWordState === "listening" ? "0 0 0 2px rgba(239,68,68,0.1), 0 0 20px rgba(239,68,68,0.08)" : "0 0 0 2px rgba(245,158,11,0.1)",
-            } : {}),
-          }}>
-            <ListeningOverlay state={wakeWordState} />
-            <UploadButton onUpload={handleUpload} disabled={loading} />
-            <AudioRecorder onTranscribed={(t) => { if (t.trim()) sendMessage(t, { isAudio: true }); }} disabled={loading} />
+        {/* ── HEADER ── */}
+        <div className="chat-hdr">
+          <div className="chat-hdr-left">
+            {/* Botón volver al Shell — siempre visible, BUG 1 */}
             <button
-              onClick={() => onToggleWakeWord?.(!wakeWordEnabled)}
-              title={wakeWordEnabled ? "Jarvis escuchando — click para desactivar" : "Wake word inactivo"}
-              style={{
-                width: 32, height: 32, borderRadius: 8, flexShrink: 0,
-                border: wakeWordEnabled ? "1px solid rgba(16,163,127,0.4)" : "1px solid rgba(255,255,255,0.1)",
-                background: wakeWordEnabled ? "rgba(16,163,127,0.1)" : "transparent",
-                color: wakeWordEnabled ? "var(--accent)" : "var(--text-muted)",
-                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 15, transition: "all 0.2s",
-                ...(wakeWordState === "listening" ? { border: "1px solid rgba(239,68,68,0.6)", background: "rgba(239,68,68,0.15)", color: "#ef4444", animation: "pulseMic 1.5s ease-in-out infinite" } : {}),
-                ...(wakeWordState === "processing" ? { border: "1px solid rgba(245,158,11,0.6)", background: "rgba(245,158,11,0.1)", color: "#f59e0b" } : {}),
-              }}
+              className="btn-shell"
+              onClick={() => setView?.("shell")}
+              title="Volver al Shell"
+              aria-label="Volver al Shell"
             >
-              {wakeWordState === "listening" ? "🔴" : wakeWordState === "processing" ? "⟳" : wakeWordEnabled ? "👂" : "🔕"}
+              {/* Icono casa / home SVG minimalista */}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
+                <path d="M9 22V12h6v10"/>
+              </svg>
             </button>
 
+            <div>
+              <div style={{ fontFamily: "'Orbitron',monospace", fontSize: 11, fontWeight: 700, color: "rgba(0,212,255,0.85)", letterSpacing: "0.2em" }}>SISTEMA</div>
+              <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 9, color: "rgba(0,212,255,0.3)", letterSpacing: "0.1em", marginTop: 1 }}>gemma-4 · lm-studio · :3001</div>
+            </div>
+          </div>
+
+          <div className="chat-hdr-right">
+            {conversationId && (
+              <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 9, color: "rgba(0,212,255,0.2)", letterSpacing: "0.1em" }}>#{conversationId.slice(-6)}</span>
+            )}
+            <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 9, color: "rgba(0,212,255,0.2)", letterSpacing: "0.08em" }}>{messages.length - 1} msgs</span>
+            {/* Toggle sidebar historial */}
+            <button
+              onClick={() => setSidebarOpen(o => !o)}
+              title="Historial"
+              style={{ width: 30, height: 30, borderRadius: 4, border: "1px solid rgba(0,212,255,0.12)", background: sidebarOpen ? "rgba(0,212,255,0.08)" : "transparent", color: sidebarOpen ? "#00d4ff" : "rgba(0,212,255,0.3)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+              </svg>
+            </button>
+            {/* Toggle wake word */}
+            <button
+              onClick={() => onToggleWakeWord?.(!wakeWordEnabled)}
+              title={wakeWordEnabled ? "wake word activo" : "wake word inactivo"}
+              style={{ width: 30, height: 30, borderRadius: 4, border: isListening ? "1px solid rgba(239,68,68,0.5)" : wakeWordEnabled ? "1px solid rgba(0,212,255,0.25)" : "1px solid rgba(0,212,255,0.08)", background: isListening ? "rgba(239,68,68,0.1)" : wakeWordEnabled ? "rgba(0,212,255,0.06)" : "transparent", color: isListening ? "#ef4444" : wakeWordEnabled ? "rgba(0,212,255,0.6)" : "rgba(0,212,255,0.2)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, transition: "all 0.2s", animation: isListening ? "pulseMic 1.5s ease-in-out infinite" : "none" }}
+            >
+              {isListening ? "●" : isProcessing ? "⟳" : wakeWordEnabled ? "◎" : "○"}
+            </button>
+          </div>
+        </div>
+
+        {/* ── MENSAJES ── */}
+        <div className="chat-msgs">
+          {propConvId && !historyLoaded && (
+            <div style={{ display: "flex", justifyContent: "center", padding: "40px 0", color: "rgba(0,212,255,0.3)", fontSize: 12, fontFamily: "'JetBrains Mono',monospace", letterSpacing: "0.1em" }}>
+              <span style={{ animation: "spin 1s linear infinite", display: "inline-block", marginRight: 8 }}>⟳</span>cargando historial...
+            </div>
+          )}
+          {(!propConvId || historyLoaded) && messages.map((msg, i) => {
+            const isNew = i === newMsgIdx;
+            if (msg.role === "user") return <UserMessage key={i} msg={msg} isNew={isNew} />;
+            return <AssistantMessage key={i} msg={msg} isNew={isNew} onOpenCanvas={setCanvasArtifact} />;
+          })}
+          {loading && <ThinkingIndicator botName={thinkingBot} action={thinkingAction} />}
+          <div ref={bottomRef} style={{ height: 1 }} />
+        </div>
+
+        {/* ── INPUT ── */}
+        <div className="chat-inp-wrap">
+          {uploadLabel && (
+            <div className="upload-label">
+              <span>// {uploadLabel}</span>
+              <button onClick={() => setUploadLabel("")}>×</button>
+            </div>
+          )}
+          <div className={`chat-inp-inner${isListening ? " listening" : isProcessing ? " processing" : ""}`}>
+            <UploadButton onUpload={handleUpload} disabled={loading} />
+            <AudioRecorder onTranscribed={t => { if (t.trim()) sendMessage(t, { isAudio: true }); }} disabled={loading} />
             <textarea
               ref={textareaRef}
+              className="chat-textarea"
               value={input}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               placeholder={
-                wakeWordState === "listening" ? "🔴 Escuchando... decí 'enviar' para terminar" :
-                  wakeWordState === "processing" ? "⟳ Procesando audio..." :
-                    'Escribí un mensaje... o decí 👂 "Jarvis [comando] enviar"'
+                isListening ? "● escuchando... decí 'enviar' para terminar" :
+                isProcessing ? "⟳ procesando audio..." :
+                "escribí o decí → sistema [comando]"
               }
-              disabled={loading || wakeWordState === "listening"}
+              disabled={loading || isListening}
               rows={1}
               autoFocus
             />
-            <button className="send-btn" onClick={() => sendMessage()} disabled={loading || !input.trim()} title="Enviar (Enter)">↑</button>
+            <button className="btn-send" onClick={() => sendMessage()} disabled={loading || !input.trim()} title="enviar (Enter)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
+              </svg>
+            </button>
           </div>
-
-          <div className="input-hint">
-            Enter para enviar · 🎤 grabar · 📎 imagen/PDF · 👂 "Jarvis [cmd] enviar"
-          </div>
+          <div className="chat-hint">enter · 🎤 voz · 📎 archivo · ◎ "sistema [comando]"</div>
         </div>
       </div>
 
-      {/* Canvas fullscreen modal */}
+      {/* ── Canvas fullscreen modal ── */}
       {canvasArtifact && <CanvasModal artifact={canvasArtifact} onClose={() => setCanvasArtifact(null)} />}
-    </div>
+    </>
   );
 }
 

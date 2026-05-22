@@ -34,6 +34,7 @@ function App() {
 
     const pendingCommandRef = useRef(null);
     const chatSendRef = useRef(null);
+    const shellCommandRef = useRef(null);
 
     useEffect(() => {
         const check = async () => {
@@ -63,6 +64,17 @@ function App() {
 
     const handleWakeWordCommand = useCallback((text) => {
         console.log("[App] WakeWord comando recibido:", text);
+
+        if (text === "__SEND__") {
+            chatSendRef.current?.();
+            return;
+        }
+
+        if (view === "shell") {
+            shellCommandRef.current?.(text);
+            return;
+        }
+
         if (view === "chat" && chatSendRef.current) {
             chatSendRef.current(text, { isAudio: true });
         } else {
@@ -104,6 +116,7 @@ function App() {
                         }}
                         setView={setView}
                         systemStatus={{ backend: true }}
+                        onShellReady={(fn) => { shellCommandRef.current = fn; }}
                     />
                 );
             // ── Vistas existentes (sin cambios) ─────────────────
@@ -124,6 +137,7 @@ function App() {
                             setWakeWordEnabled(v);
                             localStorage.setItem("jarvis_wakeword", String(v));
                         }}
+                        setView={setView}
                     />
                 );
             case "dashboard":

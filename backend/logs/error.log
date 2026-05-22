@@ -382,3 +382,11 @@ Require stack:
 [2026-05-21T18:42:59.116Z] [ERROR] ModelService: Cannot reach LM Studio — 
 [2026-05-21T18:44:38.058Z] [ERROR] ModelService: Cannot reach LM Studio — 
 [2026-05-21T19:10:53.167Z] [ERROR] ModelService: Cannot reach LM Studio — 
+[2026-05-22T01:29:52.555Z] [ERROR] STT Groq error: Invalid API Key
+[2026-05-22T01:30:20.998Z] [ERROR] STT Groq error: Invalid API Key
+[2026-05-22T01:30:30.937Z] [ERROR] STT Groq error: Invalid API Key
+[2026-05-22T01:35:28.977Z] [ERROR] STT Groq error: Invalid API Key
+[2026-05-22T01:56:42.063Z] [ERROR] STT Groq error: Invalid API Key
+[2026-05-22T01:57:04.025Z] [ERROR] STT Groq error: Invalid API Key
+[2026-05-22T01:58:02.022Z] [ERROR] ModelService LLM error: Request failed with status code 400
+[2026-05-22T02:01:56.322Z] [ERROR] STT Groq error: Invalid API Key

@@ -1,378 +1,369 @@
 /**
- * WakeWord.jsx — v6 PHONETIC
- * ─────────────────────────────────────────────────────────────────────────────
- * Wake word : "jarvis" — acepta TODAS las variantes fonéticas:
- *             llarvis (rioplatense ll=y), yarvis, harvis, garvis,
- *             errores de STT, con/sin activador ("hey", "oye"), etc.
- *
- * Algoritmo de detección (doble capa):
- *   1. Lista WAKE_WORDS — substring match exacto (rápido)
- *   2. Levenshtein per-palabra — atrapa variantes no listadas (≤30% diferencia)
- *
- * Strip al transcribir: stripWakeWordLocal() limpia el wake word del texto
- *   usando los mismos aliases, de mayor a menor longitud.
- *
- * Stop words: "enviar", "listo", "mandar" → terminan la grabación
- * Silencio 3s → envía automáticamente
- * Máximo 30s por seguridad
- *
- * Se monta en App.jsx (nivel raíz) — funciona en CUALQUIER vista.
- * ─────────────────────────────────────────────────────────────────────────────
+ * WakeWord.jsx — v8 SISTEMA
+ * Fixes: BUG 5 (escucha se corta), BUG 6 ("enviar" no envía)
+ * Feature 1: síntesis de voz robótica (SpeechSynthesis)
+ * Wake word: "sistema" principal + legacy "jarvis"
  */
 
 import { useEffect, useRef, useState, useCallback } from "react";
 
 const API = "http://localhost:3001";
 
-/* ══════════════════════════════════════════════════════════════
-   DICCIONARIO FONÉTICO DE WAKE WORD
-   Los más largos van primero para que el substring match no corte parciales.
-   Cubre: pronunciación rioplatense (ll=y → llarvis), yeísmo (yarvis),
-   errores STT (harvis, garvis), variantes con activador (hey/oye).
-══════════════════════════════════════════════════════════════ */
 const WAKE_WORDS = [
-    // Con activador + variantes ll/y (más específicos primero)
-    "hey llarvis", "oye llarvis", "hei llarvis",
-    "hey yarvis",  "oye yarvis",  "ey yarvis",
-    "hey jarvis",  "oye jarvis",  "hei jarvis",
-    "ei jarvis",   "ay jarvis",   "ey jarvis",
-    "a ver jarvis",
-
-    // Pronunciación ll (rioplatense: ll y y suenan igual)
-    "llarvis",  "llarvi",  "llarviz",  "llarbis",
-
-    // Pronunciación y (yeísmo)
-    "yarvis",   "yarvi",   "yarviz",
-
-    // Pronunciación j (estándar)
-    "jarvis",   "jarvi",   "jarviz",   "jarves",
-    "jarvist",  "jarviss", "jarvys",
-
-    // Errores comunes de STT y pronunciación
-    "harvis",   "garvis",   "marvis",   "carvis",
-    "jarbes",
+  "oye sistema", "eh sistema", "hey sistema", "ok sistema",
+  "oye systema", "eh systema", "hey systema",
+  "el sistema",
+  "sistema", "systema", "cistema", "xistema",
+  "zistema", "sistemo", "sis tema",
+  "jarvis", "jarvi", "llarvis", "yarvis",
+  "hey jarvis", "oye jarvis",
 ];
 
-// Variantes core para comparación Levenshtein
-const WAKE_CORE = ["jarvis", "llarvis", "yarvis", "harvis"];
+const WAKE_CORE = ["sistema", "systema", "cistema", "jarvis"];
 
-/* ══════════════════════════════════════════════════════════════
-   LEVENSHTEIN — implementación mínima autónoma (sin imports)
-══════════════════════════════════════════════════════════════ */
+/* ── Levenshtein ─────────────────────────────────────────────── */
 function lev(a, b) {
-    if (a === b) return 0;
-    const la = a.length, lb = b.length;
-    let prev = Array.from({ length: lb + 1 }, (_, i) => i);
-    let curr = new Array(lb + 1);
-    for (let i = 1; i <= la; i++) {
-        curr[0] = i;
-        for (let j = 1; j <= lb; j++) {
-            const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-            curr[j] = Math.min(curr[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost);
-        }
-        [prev, curr] = [curr, prev];
+  if (a === b) return 0;
+  const la = a.length, lb = b.length;
+  let prev = Array.from({ length: lb + 1 }, (_, i) => i);
+  let curr = new Array(lb + 1);
+  for (let i = 1; i <= la; i++) {
+    curr[0] = i;
+    for (let j = 1; j <= lb; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      curr[j] = Math.min(curr[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost);
     }
-    return prev[lb];
+    [prev, curr] = [curr, prev];
+  }
+  return prev[lb];
 }
 
-/* ══════════════════════════════════════════════════════════════
-   DETECCIÓN DE WAKE WORD
-   Capa 1: substring exacto en WAKE_WORDS
-   Capa 2: Levenshtein contra variantes core (≤30% diferencia)
-══════════════════════════════════════════════════════════════ */
 function detectWakeWord(transcript) {
-    const t = transcript.toLowerCase().trim();
-
-    // Capa 1: match directo
-    if (WAKE_WORDS.some(w => t.includes(w))) return true;
-
-    // Capa 2: Levenshtein por palabra
-    const words = t.split(/[\s,\.!?]+/).filter(Boolean);
-    for (const word of words) {
-        for (const core of WAKE_CORE) {
-            const dist = lev(word, core);
-            const maxLen = Math.max(word.length, core.length);
-            if (maxLen > 0 && dist / maxLen <= 0.30) return true;
-        }
+  const t = transcript.toLowerCase().trim();
+  if (WAKE_WORDS.some(w => t.includes(w))) return true;
+  const words = t.split(/[\s,\.!?]+/).filter(Boolean);
+  for (const word of words) {
+    for (const core of WAKE_CORE) {
+      const dist = lev(word, core);
+      const maxLen = Math.max(word.length, core.length);
+      if (maxLen > 0 && dist / maxLen <= 0.30) return true;
     }
-    return false;
+  }
+  return false;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   STRIP WAKE WORD
-   Elimina el wake word del inicio del texto transcripto.
-   Itera de mayor a menor longitud para no cortar coincidencias parciales.
-══════════════════════════════════════════════════════════════ */
 function stripWakeWordLocal(text) {
-    if (!text) return text;
-    const sorted = WAKE_WORDS.slice().sort((a, b) => b.length - a.length);
-    for (const w of sorted) {
-        const esc = w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        const re = new RegExp("^(?:" + esc + ")[,\\.\\s!\\?]*", "i");
-        const result = text.replace(re, "").trim();
-        if (result !== text) return result;
-    }
-    return text;
+  if (!text) return text;
+  const sorted = WAKE_WORDS.slice().sort((a, b) => b.length - a.length);
+  for (const w of sorted) {
+    const esc = w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const re = new RegExp("^(?:" + esc + ")[,\\.\\s!\\?]*", "i");
+    const result = text.replace(re, "").trim();
+    if (result !== text) return result;
+  }
+  return text;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   STOP WORDS — terminan la grabación sin incluirse en el texto
-══════════════════════════════════════════════════════════════ */
-const STOP_WORDS = [
-    "enviar", "envíar", "envía", "envia",
-    "listo", "ok enviar", "mandar", "send",
-];
+/* BUG 6 FIX: detectar "enviar solo" antes de limpiar */
+const SEND_ONLY_RE = /^(enviar|envíar|envía|envia|listo|mandar|send|ok\s+enviar|envialo|envialo)[\s.,!?]*$/i;
+const STOP_WORDS   = ["enviar", "envíar", "envía", "envia", "listo", "ok enviar", "mandar", "send"];
 
-const SILENCE_MS = 3000;
-const MAX_MS     = 30000;
+/* BUG 5 FIX: aumentar silence y max */
+const SILENCE_MS = 4500;   // era 3000 — más tiempo antes de cortar
+const MAX_MS     = 45000;  // era 30000
+
+/* ══════════════════════════════════════════════════════════════
+   SÍNTESIS DE VOZ — Feature 1
+   Robótica: pitch bajo, rate medio, voz grave masculina
+══════════════════════════════════════════════════════════════ */
+function stripMarkdown(text) {
+  return text
+    .replace(/```[\s\S]*?```/g, "")        // code blocks
+    .replace(/`[^`]*`/g, "")              // inline code
+    .replace(/\*\*([^*]+)\*\*/g, "$1")   // bold
+    .replace(/\*([^*]+)\*/g, "$1")       // italic
+    .replace(/#{1,6}\s/g, "")            // headers
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1") // links
+    .replace(/https?:\/\/\S+/g, "")      // URLs
+    .replace(/[🔍📌🌐🔗❌⚠️]/gu, "")    // emojis
+    .replace(/\n{2,}/g, ". ")            // párrafos
+    .replace(/\n/g, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+let voiceCache = null;
+
+function getRoboticVoice() {
+  if (voiceCache) return voiceCache;
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices.length) return null;
+
+  // Preferir voces en inglés masculinas (suenan más robóticas)
+  const preferred = voices.find(v =>
+    v.lang.startsWith("en") && /male|david|mark|google uk english male/i.test(v.name)
+  ) || voices.find(v => v.lang.startsWith("en")) || voices[0];
+
+  voiceCache = preferred;
+  return preferred;
+}
+
+export function speakResponse(text, onStart, onEnd) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+
+  const clean = stripMarkdown(text);
+  if (!clean || clean.length < 2) { onEnd?.(); return; }
+
+  // Truncar si es muy largo para no hablar 2 minutos
+  const truncated = clean.length > 400 ? clean.substring(0, 400) + "." : clean;
+
+  const utter = new SpeechSynthesisUtterance(truncated);
+  utter.lang  = "en-US";   // inglés suena más robótico
+  utter.pitch = 0.75;      // grave
+  utter.rate  = 0.92;      // ligeramente lento
+  utter.volume = 1;
+
+  // Intentar asignar voz robótica
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length) {
+    const v = getRoboticVoice();
+    if (v) utter.voice = v;
+  } else {
+    // Las voces pueden no estar listas: esperar
+    window.speechSynthesis.onvoiceschanged = () => {
+      const v = getRoboticVoice();
+      if (v) utter.voice = v;
+    };
+  }
+
+  utter.onstart = () => onStart?.();
+  utter.onend   = () => onEnd?.();
+  utter.onerror = () => onEnd?.();
+
+  window.speechSynthesis.speak(utter);
+}
+
+export function stopSpeaking() {
+  window.speechSynthesis?.cancel();
+}
 
 /* ══════════════════════════════════════════════════════════════
    COMPONENTE
 ══════════════════════════════════════════════════════════════ */
 export default function WakeWord({
-    onCommand,
-    onStateChange,
-    onNavigateToChat,
-    disabled = false,
-    active = true,
+  onCommand,
+  onStateChange,
+  onNavigateToChat,
+  disabled = false,
+  active   = true,
 }) {
-    const [_state, _setState] = useState("idle");
+  const [_state, _setState] = useState("idle");
 
-    const stateRef         = useRef("idle");
-    const recognitionRef   = useRef(null);
-    const recIsRunning     = useRef(false);
-    const mediaRecorderRef = useRef(null);
-    const chunksRef        = useRef([]);
-    const silenceTimerRef  = useRef(null);
-    const maxTimerRef      = useRef(null);
-    const stoppedRef       = useRef(false);
+  const stateRef         = useRef("idle");
+  const recognitionRef   = useRef(null);
+  const recIsRunning     = useRef(false);
+  const mediaRecorderRef = useRef(null);
+  const chunksRef        = useRef([]);
+  const silenceTimerRef  = useRef(null);
+  const maxTimerRef      = useRef(null);
+  const stoppedRef       = useRef(false);
+  const sendFlagRef      = useRef(false); // BUG 6: flag para "enviar solo"
 
-    const setState = useCallback((s) => {
-        stateRef.current = s;
-        _setState(s);
-        onStateChange?.(s);
-    }, [onStateChange]);
+  const setState = useCallback((s) => {
+    stateRef.current = s;
+    _setState(s);
+    onStateChange?.(s);
+  }, [onStateChange]);
 
-    /* ── Timers ──────────────────────────────────────── */
-    const clearTimers = useCallback(() => {
-        clearTimeout(silenceTimerRef.current);
-        clearTimeout(maxTimerRef.current);
-    }, []);
+  const clearTimers = useCallback(() => {
+    clearTimeout(silenceTimerRef.current);
+    clearTimeout(maxTimerRef.current);
+  }, []);
 
-    const resetSilenceTimer = useCallback((stopFn) => {
-        clearTimeout(silenceTimerRef.current);
-        silenceTimerRef.current = setTimeout(() => {
-            console.log("[WakeWord] silencio → enviar");
-            stopFn();
-        }, SILENCE_MS);
-    }, []);
+  const resetSilenceTimer = useCallback((stopFn) => {
+    clearTimeout(silenceTimerRef.current);
+    silenceTimerRef.current = setTimeout(() => {
+      console.log("[WakeWord] silencio → enviar");
+      stopFn();
+    }, SILENCE_MS);
+  }, []);
 
-    /* ── Stop + transcribir ──────────────────────────── */
-    const stopAndTranscribe = useCallback(() => {
-        if (stoppedRef.current) return;
-        stoppedRef.current = true;
-        clearTimers();
-        try { recognitionRef.current?.stop(); } catch { }
-        recIsRunning.current = false;
-        const mr = mediaRecorderRef.current;
-        if (mr && mr.state === "recording") {
-            mr.stop();
-        } else {
-            setState("idle");
-        }
-    }, [clearTimers, setState]);
+  const stopAndTranscribe = useCallback(() => {
+    if (stoppedRef.current) return;
+    stoppedRef.current = true;
+    clearTimers();
+    try { recognitionRef.current?.stop(); } catch {}
+    recIsRunning.current = false;
+    const mr = mediaRecorderRef.current;
+    if (mr && mr.state === "recording") mr.stop();
+    else setState("idle");
+  }, [clearTimers, setState]);
 
-    /* ── Grabar audio ────────────────────────────────── */
-    const startRecording = useCallback(async () => {
-        if (stateRef.current !== "idle") return;
-        stoppedRef.current = false;
-        setState("listening");
-        onNavigateToChat?.();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const startIdleListening = useCallback(() => {
+    if (!active || disabled) return;
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR || stateRef.current !== "idle" || recIsRunning.current) return;
 
-        let stream;
-        try {
-            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        } catch (e) {
-            console.error("[WakeWord] mic error:", e);
-            setState("idle");
+    const rec = new SR();
+    rec.continuous = true; rec.interimResults = true;
+    rec.lang = "es-AR"; rec.maxAlternatives = 3;
+    recognitionRef.current = rec;
+
+    rec.onresult = (event) => {
+      if (stateRef.current !== "idle") return;
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        for (let j = 0; j < event.results[i].length; j++) {
+          const transcript = event.results[i][j].transcript.toLowerCase().trim();
+          if (detectWakeWord(transcript)) {
+            console.log("[WakeWord] ✓ wake word:", JSON.stringify(transcript));
+            try { rec.stop(); } catch {}
+            recIsRunning.current = false;
+            startRecording();
             return;
+          }
         }
+      }
+    };
 
-        const mimeTypes = [
-            "audio/webm;codecs=opus", "audio/webm",
-            "audio/ogg;codecs=opus", "audio/mp4",
-        ];
-        const mimeType = mimeTypes.find(t => MediaRecorder.isTypeSupported(t)) || "audio/webm";
+    rec.onend = () => {
+      recIsRunning.current = false;
+      if (active && !disabled && stateRef.current === "idle") setTimeout(startIdleListening, 400);
+    };
+    rec.onerror = (e) => {
+      recIsRunning.current = false;
+      if (e.error === "not-allowed") { console.error("[WakeWord] mic no permitido"); return; }
+      if (active && !disabled && stateRef.current === "idle") setTimeout(startIdleListening, 1500);
+    };
 
-        const mr = new MediaRecorder(stream, { mimeType });
-        mediaRecorderRef.current = mr;
-        chunksRef.current = [];
+    try { rec.start(); recIsRunning.current = true; }
+    catch { recIsRunning.current = false; setTimeout(startIdleListening, 1500); }
+  }, [active, disabled]); // startRecording se agrega abajo
 
-        mr.ondataavailable = (e) => {
-            if (e.data?.size > 0) chunksRef.current.push(e.data);
-        };
+  const startRecording = useCallback(async () => {
+    if (stateRef.current !== "idle") return;
+    stoppedRef.current = false;
+    sendFlagRef.current = false;
+    setState("listening");
 
-        mr.onstop = async () => {
-            stream.getTracks().forEach(t => t.stop());
-            setState("processing");
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (e) {
+      console.error("[WakeWord] mic error:", e);
+      setState("idle");
+      return;
+    }
 
-            const blob = new Blob(chunksRef.current, { type: mimeType });
-            if (blob.size < 800) {
-                setState("idle");
-                setTimeout(startIdleListening, 800);
-                return;
-            }
+    const mimeTypes = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus", "audio/mp4"];
+    const mimeType  = mimeTypes.find(t => MediaRecorder.isTypeSupported(t)) || "audio/webm";
+    const mr        = new MediaRecorder(stream, { mimeType });
+    mediaRecorderRef.current = mr;
+    chunksRef.current = [];
 
-            try {
-                const fd = new FormData();
-                const ext = mimeType.includes("mp4") ? "mp4" : mimeType.includes("ogg") ? "ogg" : "webm";
-                fd.append("audio", blob, `cmd.${ext}`);
+    mr.ondataavailable = (e) => { if (e.data?.size > 0) chunksRef.current.push(e.data); };
 
-                const res  = await fetch(`${API}/api/stt/transcribe`, { method: "POST", body: fd });
-                const data = await res.json();
+    mr.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      setState("processing");
 
-                if (data.success && data.text?.trim()) {
-                    let text = data.text.trim();
+      const blob = new Blob(chunksRef.current, { type: mimeType });
+      if (blob.size < 800) { setState("idle"); setTimeout(startIdleListening, 800); return; }
 
-                    // Limpiar wake word del inicio (cubre llarvis, yarvis, etc.)
-                    text = stripWakeWordLocal(text);
+      try {
+        const fd  = new FormData();
+        const ext = mimeType.includes("mp4") ? "mp4" : mimeType.includes("ogg") ? "ogg" : "webm";
+        fd.append("audio", blob, `cmd.${ext}`);
+        const res  = await fetch(`${API}/api/stt/transcribe`, { method: "POST", body: fd });
+        const data = await res.json();
 
-                    // Limpiar stop words del final
-                    text = text.replace(/\b(enviar|envíar|envía|envia|listo|ok\s+enviar|mandar|send)\b[\s.,!?]*$/i, "").trim();
+        if (data.success && data.text?.trim()) {
+          let text = data.text.trim();
 
-                    if (text && onCommand) {
-                        console.log("[WakeWord] comando detectado:", text);
-                        onCommand(text);
-                    }
-                }
-            } catch (e) {
-                console.error("[WakeWord] STT error:", e);
-            }
-
+          /* BUG 6 FIX: "enviar" solo → flag de envío, no comando */
+          if (SEND_ONLY_RE.test(text) || sendFlagRef.current) {
+            console.log("[WakeWord] 'enviar' detectado → onCommand con buffer vacío");
+            onCommand?.("__SEND__");
             setState("idle");
             setTimeout(startIdleListening, 800);
-        };
-
-        mr.start(200);
-
-        // SpeechRecognition en paralelo para stop words + silence timer
-        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (SR) {
-            const stopRec = new SR();
-            stopRec.continuous      = true;
-            stopRec.interimResults  = true;
-            stopRec.lang            = "es-AR";
-            stopRec.maxAlternatives = 2;
-            recognitionRef.current  = stopRec;
-            recIsRunning.current    = true;
-
-            stopRec.onresult = (event) => {
-                if (stoppedRef.current) return;
-                resetSilenceTimer(stopAndTranscribe);
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    for (let j = 0; j < event.results[i].length; j++) {
-                        const t = event.results[i][j].transcript.toLowerCase().trim();
-                        if (STOP_WORDS.some(sw => t.includes(sw))) {
-                            console.log("[WakeWord] stop word:", t);
-                            stopAndTranscribe();
-                            return;
-                        }
-                    }
-                }
-            };
-
-            stopRec.onerror = () => { recIsRunning.current = false; };
-            stopRec.onend   = () => { recIsRunning.current = false; };
-            try { stopRec.start(); } catch { }
-        }
-
-        resetSilenceTimer(stopAndTranscribe);
-        maxTimerRef.current = setTimeout(() => {
-            console.log("[WakeWord] max time → enviar");
-            stopAndTranscribe();
-        }, MAX_MS);
-
-    }, [setState, onCommand, onNavigateToChat, stopAndTranscribe, resetSilenceTimer]);
-
-    /* ── Idle: escuchar wake word ────────────────────── */
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const startIdleListening = useCallback(() => {
-        if (!active || disabled) return;
-        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SR || stateRef.current !== "idle" || recIsRunning.current) return;
-
-        const rec = new SR();
-        rec.continuous      = true;
-        rec.interimResults  = true;
-        rec.lang            = "es-AR";
-        rec.maxAlternatives = 3;   // más alternativas = más chances de detectar llarvis
-        recognitionRef.current = rec;
-
-        rec.onresult = (event) => {
-            if (stateRef.current !== "idle") return;
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                for (let j = 0; j < event.results[i].length; j++) {
-                    const transcript = event.results[i][j].transcript.toLowerCase().trim();
-
-                    if (detectWakeWord(transcript)) {
-                        console.log("[WakeWord] ✓ wake word detectado en:", JSON.stringify(transcript));
-                        try { rec.stop(); } catch { }
-                        recIsRunning.current = false;
-                        startRecording();
-                        return;
-                    }
-                }
-            }
-        };
-
-        rec.onend = () => {
-            recIsRunning.current = false;
-            if (active && !disabled && stateRef.current === "idle") {
-                setTimeout(startIdleListening, 400);
-            }
-        };
-
-        rec.onerror = (e) => {
-            recIsRunning.current = false;
-            if (e.error === "not-allowed") {
-                console.error("[WakeWord] micrófono no permitido");
-                return;
-            }
-            if (active && !disabled && stateRef.current === "idle") {
-                setTimeout(startIdleListening, 1500);
-            }
-        };
-
-        try {
-            rec.start();
-            recIsRunning.current = true;
-        } catch {
-            recIsRunning.current = false;
-            setTimeout(startIdleListening, 1500);
-        }
-    }, [active, disabled, startRecording]);
-
-    /* ── Efecto principal ────────────────────────────── */
-    useEffect(() => {
-        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SR) {
-            console.warn("[WakeWord] SpeechRecognition no disponible en este navegador");
             return;
+          }
+
+          text = stripWakeWordLocal(text);
+          // limpiar stop words al final pero solo si no es el único contenido
+          const cleaned = text.replace(/\b(enviar|envíar|envía|envia|listo|ok\s+enviar|mandar|send)\b[\s.,!?]*$/i, "").trim();
+          const final = cleaned || text;
+
+          if (final && onCommand) {
+            console.log("[WakeWord] comando:", final);
+            onCommand(final);
+          }
         }
-        if (!active || disabled) return;
+      } catch (e) { console.error("[WakeWord] STT error:", e); }
 
-        const timer = setTimeout(startIdleListening, 600);
+      setState("idle");
+      setTimeout(startIdleListening, 800);
+    };
 
-        return () => {
-            clearTimeout(timer);
-            clearTimers();
-            try { recognitionRef.current?.stop(); } catch { }
-            recIsRunning.current = false;
-            if (mediaRecorderRef.current?.state === "recording") {
-                try { mediaRecorderRef.current.stop(); } catch { }
+    mr.start(200);
+
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SR) {
+      const stopRec = new SR();
+      stopRec.continuous = true; stopRec.interimResults = true;
+      stopRec.lang = "es-AR"; stopRec.maxAlternatives = 2;
+      recognitionRef.current = stopRec; recIsRunning.current = true;
+
+      stopRec.onresult = (event) => {
+        if (stoppedRef.current) return;
+        resetSilenceTimer(stopAndTranscribe); // BUG 5: resetear con cualquier resultado
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          for (let j = 0; j < event.results[i].length; j++) {
+            const t = event.results[i][j].transcript.toLowerCase().trim();
+            /* BUG 6: detectar "enviar solo" en tiempo real */
+            if (SEND_ONLY_RE.test(t)) {
+              sendFlagRef.current = true;
+              stopAndTranscribe();
+              return;
             }
-        };
-    }, [active, disabled, startIdleListening, clearTimers]);
+            if (STOP_WORDS.some(sw => t.endsWith(sw))) {
+              stopAndTranscribe();
+              return;
+            }
+          }
+        }
+      };
 
-    return null; // componente invisible
+      /* BUG 5 FIX: si el STT se corta solo, reiniciarlo mientras siga en listening */
+      stopRec.onend = () => {
+        recIsRunning.current = false;
+        if (!stoppedRef.current && stateRef.current === "listening") {
+          // Reiniciar STT de detección de stop words
+          try { stopRec.start(); recIsRunning.current = true; } catch {}
+        }
+      };
+      stopRec.onerror = () => { recIsRunning.current = false; };
+      try { stopRec.start(); } catch {}
+    }
+
+    resetSilenceTimer(stopAndTranscribe);
+    maxTimerRef.current = setTimeout(() => { stopAndTranscribe(); }, MAX_MS);
+
+  }, [setState, onCommand, stopAndTranscribe, resetSilenceTimer, startIdleListening]);
+
+  useEffect(() => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { console.warn("[WakeWord] SpeechRecognition no disponible"); return; }
+    if (!active || disabled) return;
+    const timer = setTimeout(startIdleListening, 600);
+    return () => {
+      clearTimeout(timer); clearTimers();
+      try { recognitionRef.current?.stop(); } catch {}
+      recIsRunning.current = false;
+      if (mediaRecorderRef.current?.state === "recording") { try { mediaRecorderRef.current.stop(); } catch {} }
+    };
+  }, [active, disabled, startIdleListening, clearTimers]);
+
+  return null;
 }
