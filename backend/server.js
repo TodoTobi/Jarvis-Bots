@@ -33,6 +33,9 @@ const logger = require("./logs/logger");
 
 const app = express();
 
+const ttsRoutes = require("./routes/ttsRoutes");
+ 
+
 /* ── CORS ─────────────────────────────────────────────── */
 app.use(cors({
     origin: [
@@ -59,6 +62,8 @@ app.use("/api", deviceRoutes);
 app.use("/api", mdRoutes);
 app.use("/api", doctorRoutes);
 app.use("/api", historyRoutes);
+ 
+app.use("/api", ttsRoutes);
 
 // Gemma 4 — STT, análisis multimedia, canvas, terminal
 app.use("/api", sttGemmaRoutes);

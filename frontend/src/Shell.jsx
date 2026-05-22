@@ -15,7 +15,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Orb from "./components/Orb";
-import { speakResponse, stopSpeaking } from "./WakeWord";
+import { speakResponse, stopSpeaking } from "./useTTS";
 
 const API = "http://localhost:3001";
 
