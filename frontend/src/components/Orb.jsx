@@ -1,177 +1,174 @@
 /**
- * Orb.jsx — v2 SISTEMA
- * Cuarto estado: "speaking" — pulso irregular verde-cian mientras Sistema habla
- * Estados: idle | listening | processing | speaking
+ * Orb.jsx — Orbe central animado de SISTEMA
+ * Cuatro estados: idle | listening | processing | speaking
+ * CSS puro, sin librerías de animación externas.
+ * Props: state (string), small (bool), onClick (fn)
  */
 
 import React from "react";
 
-export default function Orb({ state = "idle", small = false }) {
-  const size = small ? 52 : 180;
-  const r    = small ? 20 : 72;
-  const cx   = size / 2;
-
+export default function Orb({ state = "idle", small = false, onClick }) {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
-
-        .orb-wrap {
+        .orb-root {
+          --orb-cyan:    #00d4ff;
+          --orb-cyan2:   #0099cc;
+          --orb-glow:    rgba(0,212,255,0.35);
+          --orb-glow-lg: rgba(0,212,255,0.12);
+          --orb-size:    220px;
+          --orb-ring:    3px;
           position: relative;
-          display: flex; align-items: center; justify-content: center;
+          width:  var(--orb-size);
+          height: var(--orb-size);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: ${onClick ? "pointer" : "default"};
           flex-shrink: 0;
         }
+        .orb-root.orb-small { --orb-size:64px; --orb-ring:2px; }
 
-        /* ── SVG ring ──────────────────────────────────────── */
-        .orb-ring {
-          position: absolute; inset: 0;
-          animation-timing-function: linear;
-          animation-iteration-count: infinite;
+        /* ── Halo ─────────────────────────────── */
+        .orb-halo {
+          position:absolute; inset:-30%; border-radius:50%;
+          background:radial-gradient(circle,var(--orb-glow-lg) 0%,transparent 70%);
+          animation:orb-halo-idle 4s ease-in-out infinite;
+          pointer-events:none;
         }
-        .orb-ring.idle       { animation: orb-spin-slow 8s linear infinite; }
-        .orb-ring.listening  { animation: orb-spin-med  2s linear infinite; }
-        .orb-ring.processing { animation: orb-spin-fast 0.6s linear infinite; }
-        .orb-ring.speaking   { animation: orb-spin-speak 1.4s linear infinite; }
+        .orb-root.orb-small      .orb-halo { display:none; }
+        .orb-root.orb-listening  .orb-halo { animation:orb-halo-listen  2s  ease-in-out infinite; }
+        .orb-root.orb-processing .orb-halo { animation:orb-halo-process 0.8s ease-in-out infinite; }
+        .orb-root.orb-speaking   .orb-halo { animation:orb-halo-speak   1.2s ease-in-out infinite; }
 
-        @keyframes orb-spin-slow  { to { transform: rotate(360deg);  } }
-        @keyframes orb-spin-med   { to { transform: rotate(360deg);  } }
-        @keyframes orb-spin-fast  { to { transform: rotate(360deg);  } }
-        @keyframes orb-spin-speak { to { transform: rotate(-360deg); } } /* inverso al hablar */
+        /* ── Anillo exterior ──────────────────── */
+        .orb-ro {
+          position:absolute; inset:0; border-radius:50%;
+          border:var(--orb-ring) solid transparent;
+          border-top-color:var(--orb-cyan); border-right-color:var(--orb-cyan2);
+          animation:orb-spin-slow 8s linear infinite; opacity:0.6;
+        }
+        .orb-root.orb-listening  .orb-ro { animation-duration:3s;  opacity:0.85; }
+        .orb-root.orb-processing .orb-ro { animation-duration:0.7s; opacity:1; border-color:var(--orb-cyan); }
+        .orb-root.orb-speaking   .orb-ro {
+          animation-duration:1.5s; opacity:0.9;
+          border-top-color:#00d4ff; border-right-color:#00ffaa;
+        }
 
-        /* ── Núcleo pulsante ───────────────────────────────── */
+        /* ── Anillo interior ──────────────────── */
+        .orb-ri {
+          position:absolute; inset:14%; border-radius:50%;
+          border:var(--orb-ring) solid transparent;
+          border-bottom-color:var(--orb-cyan); border-left-color:var(--orb-cyan2);
+          animation:orb-spin-rev 12s linear infinite; opacity:0.45;
+        }
+        .orb-root.orb-small      .orb-ri { display:none; }
+        .orb-root.orb-listening  .orb-ri { animation-duration:4s;  opacity:0.7; }
+        .orb-root.orb-processing .orb-ri { animation-duration:1s;  opacity:0.9; }
+        .orb-root.orb-speaking   .orb-ri { animation-duration:2.5s; opacity:0.75; }
+
+        /* ── Esfera ───────────────────────────── */
+        .orb-sp {
+          position:absolute; inset:18%; border-radius:50%;
+          background:radial-gradient(circle at 38% 35%,rgba(0,212,255,.22) 0%,rgba(0,20,40,.85) 55%,rgba(0,0,10,.95) 100%);
+          border:1px solid rgba(0,212,255,.18);
+          box-shadow:0 0 20px rgba(0,212,255,.08),inset 0 0 30px rgba(0,0,0,.6);
+          animation:orb-sphere-idle 5s ease-in-out infinite;
+        }
+        .orb-root.orb-listening  .orb-sp {
+          animation:orb-sphere-listen 2s ease-in-out infinite;
+          border-color:rgba(0,212,255,.4);
+          box-shadow:0 0 30px rgba(0,212,255,.25),inset 0 0 20px rgba(0,212,255,.08);
+        }
+        .orb-root.orb-processing .orb-sp {
+          animation:orb-sphere-process 0.9s ease-in-out infinite;
+          border-color:rgba(0,212,255,.6);
+          box-shadow:0 0 40px rgba(0,212,255,.4),inset 0 0 20px rgba(0,212,255,.15);
+        }
+        .orb-root.orb-speaking .orb-sp {
+          animation:orb-sphere-speak 1.2s ease-in-out infinite;
+          border-color:rgba(0,212,255,.5);
+          box-shadow:0 0 35px rgba(0,212,255,.3),inset 0 0 25px rgba(0,212,255,.1);
+        }
+
+        /* ── Label ────────────────────────────── */
+        .orb-lbl {
+          position:absolute; bottom:18%; left:50%; transform:translateX(-50%);
+          font-family:'Rajdhani','Orbitron',monospace;
+          font-size:clamp(8px,1.8vw,13px); font-weight:600;
+          letter-spacing:0.25em; color:var(--orb-cyan); opacity:0.7;
+          text-transform:uppercase; white-space:nowrap;
+          pointer-events:none; text-shadow:0 0 10px var(--orb-cyan);
+        }
+        .orb-root.orb-small .orb-lbl { display:none; }
+
+        /* ── Core ─────────────────────────────── */
         .orb-core {
-          border-radius: 50%;
-          background: radial-gradient(circle at 40% 35%, rgba(0,212,255,0.25) 0%, rgba(0,212,255,0.04) 100%);
-          border: 1px solid rgba(0,212,255,0.15);
-          display: flex; align-items: center; justify-content: center;
-          position: relative; z-index: 2;
-          transition: box-shadow 0.4s ease, border-color 0.4s ease;
+          position:absolute; width:28%; height:28%; border-radius:50%;
+          background:radial-gradient(circle,rgba(0,212,255,.9) 0%,rgba(0,212,255,.2) 60%,transparent 100%);
+          animation:orb-core-idle 4s ease-in-out infinite;
         }
+        .orb-root.orb-small      .orb-core { width:50%; height:50%; }
+        .orb-root.orb-listening  .orb-core { animation:orb-core-listen  1.5s ease-in-out infinite; }
+        .orb-root.orb-processing .orb-core { animation:orb-core-process 0.5s ease-in-out infinite; }
+        .orb-root.orb-speaking   .orb-core { animation:orb-core-speak   0.6s ease-in-out infinite; }
 
-        .orb-core.idle {
-          box-shadow: 0 0 20px rgba(0,212,255,0.08), inset 0 0 20px rgba(0,212,255,0.04);
-          animation: core-idle 4s ease-in-out infinite;
-        }
-        .orb-core.listening {
-          border-color: rgba(0,212,255,0.4);
-          box-shadow: 0 0 40px rgba(0,212,255,0.2), inset 0 0 20px rgba(0,212,255,0.1);
-          animation: core-listen 1.5s ease-in-out infinite;
-        }
-        .orb-core.processing {
-          border-color: rgba(0,212,255,0.6);
-          box-shadow: 0 0 60px rgba(0,212,255,0.35), inset 0 0 30px rgba(0,212,255,0.15);
-          animation: core-process 0.6s ease-in-out infinite;
-        }
-        .orb-core.speaking {
-          border-color: rgba(0,255,180,0.5);
-          box-shadow: 0 0 50px rgba(0,255,180,0.25), inset 0 0 25px rgba(0,255,180,0.1);
-          animation: core-speak 0.9s ease-in-out infinite;
-        }
+        /* ── Partículas ───────────────────────── */
+        .orb-p { position:absolute; width:3px; height:3px; border-radius:50%; background:var(--orb-cyan); box-shadow:0 0 6px var(--orb-cyan); pointer-events:none; }
+        .orb-p1 { animation:orb-orbit-1 6s   linear infinite; opacity:0.8; }
+        .orb-p2 { animation:orb-orbit-2 9s   linear infinite; opacity:0.5; }
+        .orb-p3 { animation:orb-orbit-3 4.5s linear infinite; opacity:0.6; }
+        .orb-root.orb-processing .orb-p1 { animation-duration:1.5s; }
+        .orb-root.orb-processing .orb-p2 { animation-duration:2s;   }
+        .orb-root.orb-processing .orb-p3 { animation-duration:1.2s; }
+        .orb-root.orb-speaking   .orb-p1 { animation-duration:2s;   }
+        .orb-root.orb-speaking   .orb-p2 { animation-duration:3s;   }
+        .orb-root.orb-speaking   .orb-p3 { animation-duration:1.8s; }
+        .orb-root.orb-small      .orb-p  { display:none; }
 
-        @keyframes core-idle {
-          0%, 100% { transform: scale(1);    opacity: 0.8; }
-          50%       { transform: scale(1.02); opacity: 1;   }
-        }
-        @keyframes core-listen {
-          0%, 100% { transform: scale(1);    }
-          50%       { transform: scale(1.06); }
-        }
-        @keyframes core-process {
-          0%, 100% { transform: scale(1);    }
-          50%       { transform: scale(1.12); }
-        }
-        @keyframes core-speak {
-          0%        { transform: scale(1);    }
-          25%       { transform: scale(1.08); }
-          50%       { transform: scale(1.03); }
-          75%       { transform: scale(1.10); }
-          100%      { transform: scale(1);    }
-        }
+        /* ═══════════════ KEYFRAMES ═══════════════ */
+        @keyframes orb-spin-slow { to { transform:rotate(360deg);  } }
+        @keyframes orb-spin-rev  { to { transform:rotate(-360deg); } }
 
-        /* ── Label ─────────────────────────────────────────── */
-        .orb-label {
-          font-family: 'Orbitron', monospace;
-          font-weight: 700; letter-spacing: 0.25em;
-          color: rgba(0,212,255,0.85); text-transform: uppercase;
-          text-align: center; user-select: none;
-        }
-        .orb-label.speaking { color: rgba(0,255,180,0.85); }
+        @keyframes orb-halo-idle    { 0%,100%{opacity:.4;transform:scale(1)}    50%{opacity:.7;transform:scale(1.05)} }
+        @keyframes orb-halo-listen  { 0%,100%{opacity:.5;transform:scale(1)}    50%{opacity:1; transform:scale(1.12)} }
+        @keyframes orb-halo-process { 0%,100%{opacity:.6;transform:scale(1)}    50%{opacity:1; transform:scale(1.18)} }
+        @keyframes orb-halo-speak   { 0%,100%{opacity:.5;transform:scale(1)} 33%{opacity:.9;transform:scale(1.08)} 66%{opacity:.4;transform:scale(.97)} }
 
-        /* ── Partículas orbitales (solo en listening/processing/speaking) ── */
-        .orb-particle {
-          position: absolute; border-radius: 50%;
-          background: #00d4ff;
-          animation: particle-orbit linear infinite;
-        }
-        .orb-particle.speaking { background: #00ffb4; }
+        @keyframes orb-sphere-idle    { 0%,100%{opacity:.9}  50%{opacity:1} }
+        @keyframes orb-sphere-listen  { 0%,100%{opacity:.85;transform:scale(1)} 50%{opacity:1;transform:scale(1.04)} }
+        @keyframes orb-sphere-process { 0%,100%{opacity:.9; transform:scale(1)} 50%{opacity:1;transform:scale(1.08)} }
+        @keyframes orb-sphere-speak   { 0%,100%{opacity:.9;transform:scale(1)} 25%{opacity:1;transform:scale(1.03)} 75%{opacity:.85;transform:scale(.98)} }
 
-        @keyframes particle-orbit {
-          from { transform: rotate(0deg)   translateX(var(--r)) rotate(0deg); }
-          to   { transform: rotate(360deg) translateX(var(--r)) rotate(-360deg); }
-        }
+        @keyframes orb-core-idle    { 0%,100%{opacity:.5;transform:scale(.9)} 50%{opacity:.9;transform:scale(1.1)} }
+        @keyframes orb-core-listen  { 0%,100%{opacity:.7;transform:scale(1)}  50%{opacity:1; transform:scale(1.35)} }
+        @keyframes orb-core-process { 0%,100%{opacity:.8;transform:scale(1)}  50%{opacity:1; transform:scale(1.6)}  }
+        @keyframes orb-core-speak   { 0%,100%{opacity:.8;transform:scale(1.1)} 50%{opacity:1;transform:scale(1.4)} }
+
+        @keyframes orb-orbit-1 { 0%{transform:rotate(0deg)   translateX(38%) scale(1)}   50%{transform:rotate(180deg) translateX(38%) scale(1.3)} 100%{transform:rotate(360deg) translateX(38%) scale(1)} }
+        @keyframes orb-orbit-2 { 0%{transform:rotate(120deg) translateX(32%) scale(.8)}  50%{transform:rotate(300deg) translateX(32%) scale(1.2)} 100%{transform:rotate(480deg) translateX(32%) scale(.8)} }
+        @keyframes orb-orbit-3 { 0%{transform:rotate(240deg) translateX(44%) scale(1)}   50%{transform:rotate(420deg) translateX(44%) scale(.7)}  100%{transform:rotate(600deg) translateX(44%) scale(1)} }
       `}</style>
 
-      <div className="orb-wrap" style={{ width: size, height: size }}>
-        {/* Ring SVG */}
-        <svg
-          className={`orb-ring ${state}`}
-          width={size} height={size}
-          viewBox={`0 0 ${size} ${size}`}
-          style={{ position: "absolute", inset: 0 }}
-        >
-          {/* Arco principal */}
-          <circle
-            cx={cx} cy={cx} r={r}
-            fill="none"
-            stroke={state === "speaking" ? "rgba(0,255,180,0.6)" : "rgba(0,212,255,0.6)"}
-            strokeWidth={small ? 1 : 1.5}
-            strokeDasharray={`${r * 1.8} ${r * 4.45}`}
-            strokeLinecap="round"
-          />
-          {/* Arco secundario tenue */}
-          <circle
-            cx={cx} cy={cx} r={r}
-            fill="none"
-            stroke={state === "speaking" ? "rgba(0,255,180,0.2)" : "rgba(0,212,255,0.2)"}
-            strokeWidth={small ? 0.5 : 1}
-            strokeDasharray={`${r * 0.8} ${r * 5.45}`}
-            strokeLinecap="round"
-            strokeDashoffset={`-${r * 2}`}
-          />
-        </svg>
-
-        {/* Core */}
-        <div
-          className={`orb-core ${state}`}
-          style={{ width: r * 1.4, height: r * 1.4 }}
-        >
-          {!small && (
-            <span
-              className={`orb-label ${state === "speaking" ? "speaking" : ""}`}
-              style={{ fontSize: r * 0.13 }}
-            >
-              SISTEMA
-            </span>
-          )}
-        </div>
-
-        {/* Partículas en estados activos */}
-        {!small && state !== "idle" && [0, 120, 240].map((deg, i) => (
-          <div
-            key={i}
-            className={`orb-particle ${state === "speaking" ? "speaking" : ""}`}
-            style={{
-              width: state === "processing" ? 4 : 3,
-              height: state === "processing" ? 4 : 3,
-              "--r": `${r + 8}px`,
-              top: "50%", left: "50%",
-              marginTop: -2, marginLeft: -2,
-              opacity: 0.7,
-              animationDuration: state === "processing" ? "0.8s" : state === "speaking" ? "1.2s" : "2s",
-              animationDelay: `${i * (state === "processing" ? 0.27 : state === "speaking" ? 0.4 : 0.67)}s`,
-            }}
-          />
-        ))}
+      <div
+        className={`orb-root orb-${state}${small ? " orb-small" : ""}`}
+        onClick={onClick}
+        role={onClick ? "button" : undefined}
+        aria-label={onClick ? `SISTEMA — estado: ${state}` : undefined}
+      >
+        <div className="orb-halo" />
+        <div className="orb-ro" />
+        <div className="orb-ri" />
+        <div className="orb-sp" />
+        {!small && (
+          <>
+            <div className="orb-p orb-p1" />
+            <div className="orb-p orb-p2" />
+            <div className="orb-p orb-p3" />
+            <div className="orb-lbl">SISTEMA</div>
+          </>
+        )}
+        <div className="orb-core" />
       </div>
     </>
   );

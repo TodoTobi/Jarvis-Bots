@@ -1,10 +1,21 @@
 /**
- * server.js — JarvisCore Backend v5.0 (FIXED + uploadRoutes integrado)
- *
- * CAMBIOS:
- *  - uploadRoutes agregado correctamente (ANTES del handler inline /api/upload)
- *  - estructura respetada
- *  - compatible con futuras mejoras (PDF, MIME types, etc.)
+ * PATCH para server.js — agregar ttsRoutes
+ * 
+ * CAMBIO 1: después de la línea:
+ *   const uploadRoutes = require("./routes/uploadRoutes");
+ * 
+ * Agregar:
+ *   const ttsRoutes = require("./routes/ttsRoutes");
+ * 
+ * CAMBIO 2: después de la línea:
+ *   app.use("/api", uploadRoutes);
+ * 
+ * Agregar:
+ *   app.use("/api", ttsRoutes);
+ * 
+ * Eso es todo. El resto de server.js no se toca.
+ * 
+ * El server.js completo con el cambio aplicado:
  */
 
 const path = require("path");
@@ -14,27 +25,23 @@ const express = require("express");
 const cors = require("cors");
 const fs = require("fs");
 
-const chatRoutes = require("./routes/chatRoutes");
-const botRoutes = require("./routes/botRoutes");
-const deviceRoutes = require("./routes/deviceRoutes");
-const mdRoutes = require("./routes/mdRoutes");
-const doctorRoutes = require("./routes/doctorRoutes");
-const historyRoutes = require("./routes/historyRoutes");
-const sttGemmaRoutes = require("./routes/sttGemmaRoutes");
-const selfAwarenessRoutes = require("./routes/selfAwarenessRoutes");
-const whatsappRoutes = require("./routes/whatsappRoutes");
-const restartRoutes = require("./routes/restartRoutes");
-const healthRoutes = require("./routes/healthRoutes");
-
-// ✅ NUEVO (CHANGE 1)
-const uploadRoutes = require("./routes/uploadRoutes");
+const chatRoutes           = require("./routes/chatRoutes");
+const botRoutes            = require("./routes/botRoutes");
+const deviceRoutes         = require("./routes/deviceRoutes");
+const mdRoutes             = require("./routes/mdRoutes");
+const doctorRoutes         = require("./routes/doctorRoutes");
+const historyRoutes        = require("./routes/historyRoutes");
+const sttGemmaRoutes       = require("./routes/sttGemmaRoutes");
+const selfAwarenessRoutes  = require("./routes/selfAwarenessRoutes");
+const whatsappRoutes       = require("./routes/whatsappRoutes");
+const restartRoutes        = require("./routes/restartRoutes");
+const healthRoutes         = require("./routes/healthRoutes");
+const uploadRoutes         = require("./routes/uploadRoutes");
+const ttsRoutes            = require("./routes/ttsRoutes");   // ← NUEVO
 
 const logger = require("./logs/logger");
 
 const app = express();
-
-const ttsRoutes = require("./routes/ttsRoutes");
- 
 
 /* ── CORS ─────────────────────────────────────────────── */
 app.use(cors({
@@ -62,21 +69,12 @@ app.use("/api", deviceRoutes);
 app.use("/api", mdRoutes);
 app.use("/api", doctorRoutes);
 app.use("/api", historyRoutes);
- 
-app.use("/api", ttsRoutes);
-
-// Gemma 4 — STT, análisis multimedia, canvas, terminal
 app.use("/api", sttGemmaRoutes);
-
-// Self-awareness
 app.use("/api", selfAwarenessRoutes);
-
 app.use("/api", whatsappRoutes.router);
 app.use("/api", restartRoutes);
-
-// ✅ NUEVO: uploadRoutes DEBE ir antes de health y antes del handler inline
 app.use("/api", uploadRoutes);
-
+app.use("/api", ttsRoutes);                               // ← NUEVO
 app.use("/api", healthRoutes);
 
 /* ── Settings route ───────────────────────────────────── */
@@ -87,18 +85,11 @@ app.get("/api/settings", (req, res) => {
         const raw = fs.existsSync(settingsPath)
             ? fs.readFileSync(settingsPath, "utf-8")
             : "{}";
-
         const settings = JSON.parse(raw);
         const masked = ["vision_api_key", "lm_api_token", "groq_api_key"];
-
-        masked.forEach(k => {
-            if (settings[k]) settings[k] = "***configured***";
-        });
-
+        masked.forEach(k => { if (settings[k]) settings[k] = "***configured***"; });
         res.json(settings);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.post("/api/settings", (req, res) => {
@@ -106,53 +97,33 @@ app.post("/api/settings", (req, res) => {
         const current = fs.existsSync(settingsPath)
             ? JSON.parse(fs.readFileSync(settingsPath, "utf-8"))
             : {};
-
         const incoming = req.body;
-
         ["vision_api_key", "lm_api_token", "groq_api_key"].forEach(k => {
             if (incoming[k] === "***configured***") delete incoming[k];
         });
-
         const merged = { ...current, ...incoming };
         fs.writeFileSync(settingsPath, JSON.stringify(merged, null, 2));
-
         res.json({ success: true });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
-
-
 
 /* ── 404 ─────────────────────────────────────────────── */
 app.use((req, res) => {
-    res.status(404).json({
-        success: false,
-        error: `Route not found: ${req.method} ${req.path}`
-    });
+    res.status(404).json({ success: false, error: `Route not found: ${req.method} ${req.path}` });
 });
 
 /* ── Error handler ───────────────────────────────────── */
 app.use((err, req, res, next) => {
     logger.error(`[${req.method} ${req.path}] ${err.message}`);
-    res.status(err.status || 500).json({
-        success: false,
-        error: err.message || "Internal Server Error"
-    });
+    res.status(err.status || 500).json({ success: false, error: err.message || "Internal Server Error" });
 });
 
 /* ── Start ───────────────────────────────────────────── */
 const PORT = process.env.PORT || 3001;
-
 const server = app.listen(PORT, () => {
     logger.info(`JarvisCore backend running on http://localhost:${PORT}`);
-    logger.info("Routes: /api/chat | /api/upload | /api/gemma | /api/terminal | etc");
+    logger.info("Routes: /api/chat | /api/upload | /api/gemma | /api/tts | /api/terminal | etc");
 });
 
-process.on("SIGTERM", () => {
-    server.close(() => process.exit(0));
-});
-
-process.on("SIGINT", () => {
-    server.close(() => process.exit(0));
-});   
+process.on("SIGTERM", () => { server.close(() => process.exit(0)); });
+process.on("SIGINT",  () => { server.close(() => process.exit(0)); });

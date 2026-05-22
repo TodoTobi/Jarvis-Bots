@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import WhatsAppQR from "./WhatsAppQR";
+import ShellBackButton from "./components/ShellBackButton";
 
 const API = "http://localhost:3001/api";
 
@@ -157,7 +158,7 @@ function BatCreator() {
 }
 
 /* ─── Main Settings ───────────────────────────────────── */
-function SettingsPage() {
+function SettingsPage({ setView }) {
     const [mode, setMode] = useState("simple");
     const [settings, setSettings] = useState({});
     const [saving, setSaving] = useState(false);
@@ -205,6 +206,7 @@ function SettingsPage() {
 
     return (
         <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "var(--main-bg)", overflow: "hidden" }}>
+            <ShellBackButton setView={setView} />
 
             {/* Header */}
             <div style={{ padding: "22px 28px 14px", borderBottom: "1px solid rgba(255,255,255,0.07)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>

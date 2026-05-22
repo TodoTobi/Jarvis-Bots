@@ -390,3 +390,16 @@ Require stack:
 [2026-05-22T01:57:04.025Z] [ERROR] STT Groq error: Invalid API Key
 [2026-05-22T01:58:02.022Z] [ERROR] ModelService LLM error: Request failed with status code 400
 [2026-05-22T02:01:56.322Z] [ERROR] STT Groq error: Invalid API Key
+[2026-05-22T23:35:43.179Z] [ERROR] ModelService: Cannot reach LM Studio — 
+[2026-05-22T23:37:14.843Z] [ERROR] STT Groq error: Invalid API Key
+[2026-05-22T23:38:20.710Z] [ERROR] [Error] NetBot: ❌ No se pudo conectar a 192.168.1.X:5555
+
+📱 Depuración Inalámbrica (Android 11+):
+  1. Ajustes → Opciones de desarrollador → Depuración inalámbrica
+  2. El PUERTO que aparece ahí es el correcto (ej: 37797)
+  3. Actualizá adb_port en backend/config/devices.json
+  4. Pedime "conectar al celular"
+
+⚠ El puerto actual (5555) puede no coincidir con el dispositivo.
+  El puerto cambia cada vez que reactivás la Depuración Inalámbrica.
+[2026-05-22T23:38:30.574Z] [ERROR] STT Groq error: Invalid API Key

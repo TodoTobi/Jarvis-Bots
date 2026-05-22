@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import ShellBackButton from "./components/ShellBackButton";
 
 const API = "http://localhost:3001/api";
 
@@ -13,7 +14,7 @@ const FILE_META = {
     bootstrap: { icon: "🚀", label: "Bootstrap", desc: "Secuencia de arranque y manejo de fallos" },
 };
 
-function InstructionsPage() {
+function InstructionsPage({ setView }) {
     const [files, setFiles] = useState([]);
     const [selected, setSelected] = useState(null);
     const [content, setContent] = useState("");
@@ -69,6 +70,7 @@ function InstructionsPage() {
 
     return (
         <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "var(--main-bg)", overflow: "hidden" }}>
+            <ShellBackButton setView={setView} />
 
             {/* Header */}
             <div style={{ padding: "24px 28px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)", flexShrink: 0 }}>

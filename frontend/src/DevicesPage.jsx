@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { getDevices, pingDevice, sendDeviceCommand } from "./api";
+import ShellBackButton from "./components/ShellBackButton";
 
 const DEVICE_ICONS = {
     android_tv: "📺",
@@ -17,7 +18,7 @@ const QUICK_ACTIONS = [
     { label: "Screenshot", action: "adb_screenshot", icon: "📸", query: "" }
 ];
 
-function DevicesPage() {
+function DevicesPage({ setView }) {
     const [devices, setDevices] = useState([]);
     const [pingResults, setPingResults] = useState({});
     const [loading, setLoading] = useState(true);
@@ -63,6 +64,7 @@ function DevicesPage() {
     if (loading) {
         return (
             <div className="bots-page">
+                <ShellBackButton setView={setView} />
                 <div className="bots-header">
                     <h1>📡 Dispositivos</h1>
                     <p>Cargando dispositivos...</p>
@@ -73,6 +75,7 @@ function DevicesPage() {
 
     return (
         <div className="bots-page">
+            <ShellBackButton setView={setView} />
             <div className="bots-header">
                 <h1>📡 Dispositivos en Red</h1>
                 <p>Control de TV, celulares y dispositivos en tu red local</p>

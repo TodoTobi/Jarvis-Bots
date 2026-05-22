@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import ShellBackButton from "./components/ShellBackButton";
 
 const API = "http://localhost:3001/api";
 
@@ -365,7 +366,7 @@ function FixAllResult({ result, onClose }) {
 /* ═══════════════════════════════════════
    MAIN DoctorPage
 ═══════════════════════════════════════ */
-function DoctorPage() {
+function DoctorPage({ setView }) {
     const [checks, setChecks] = useState([]);
     const [summary, setSummary] = useState(null);
     const [scanning, setScanning] = useState(false);
@@ -422,6 +423,7 @@ function DoctorPage() {
 
     return (
         <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "var(--main-bg)", overflow: "hidden", position: "relative" }}>
+            <ShellBackButton setView={setView} />
             <style>{`
                 @keyframes radarSweep { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
                 @keyframes scanBodyMove { 0%,100%{transform:translateY(-100%)} 50%{transform:translateY(100%)} }

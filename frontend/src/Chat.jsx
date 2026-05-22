@@ -6,6 +6,7 @@
  */
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { sendMessageToBot, saveMemory } from "./api";
+import Sidebar from "./Sidebar";
 
 const API = "http://localhost:3001";
 
@@ -1120,6 +1121,38 @@ function Chat({
             </button>
           </div>
         </div>
+
+        {/* ── SIDEBAR HISTORIAL — toggle desde header ── */}
+        {sidebarOpen && (
+          <div style={{
+            position: "fixed", top: 48, left: 0, bottom: 0,
+            width: 260, zIndex: 20,
+            background: "rgba(4,4,10,0.98)",
+            borderRight: "1px solid rgba(0,212,255,0.1)",
+            boxShadow: "4px 0 20px rgba(0,0,0,0.5)",
+          }}>
+            <Sidebar
+              view="chat"
+              setView={(v) => { setSidebarOpen(false); setView?.(v); }}
+              doctorErrors={0}
+              activeConvId={conversationId}
+              onSelectConv={(conv) => {
+                setSidebarOpen(false);
+                // Nav a la conversación dentro del mismo Chat
+                const id = typeof conv === "string" ? conv : conv?.id;
+                if (id && id !== conversationId) {
+                  // Recargar esta instancia de Chat con el nuevo convId
+                  // App.jsx maneja esto via handleSelectConversation
+                  setView?.("chat");
+                }
+              }}
+              onNewChat={() => {
+                setSidebarOpen(false);
+                setView?.("chat");
+              }}
+            />
+          </div>
+        )}
 
         {/* ── MENSAJES ── */}
         <div className="chat-msgs">

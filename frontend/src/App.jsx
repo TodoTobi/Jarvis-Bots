@@ -34,7 +34,6 @@ function App() {
 
     const pendingCommandRef = useRef(null);
     const chatSendRef = useRef(null);
-    const shellCommandRef = useRef(null);
 
     useEffect(() => {
         const check = async () => {
@@ -64,17 +63,6 @@ function App() {
 
     const handleWakeWordCommand = useCallback((text) => {
         console.log("[App] WakeWord comando recibido:", text);
-
-        if (text === "__SEND__") {
-            chatSendRef.current?.();
-            return;
-        }
-
-        if (view === "shell") {
-            shellCommandRef.current?.(text);
-            return;
-        }
-
         if (view === "chat" && chatSendRef.current) {
             chatSendRef.current(text, { isAudio: true });
         } else {
@@ -116,15 +104,14 @@ function App() {
                         }}
                         setView={setView}
                         systemStatus={{ backend: true }}
-                        onShellReady={(fn) => { shellCommandRef.current = fn; }}
                     />
                 );
             // ── Vistas existentes (sin cambios) ─────────────────
-            case "bots":        return <BotsPage />;
-            case "devices":     return <DevicesPage />;
-            case "instructions":return <InstructionsPage />;
-            case "settings":    return <SettingsPage />;
-            case "doctor":      return <DoctorPage />;
+            case "bots":         return <BotsPage        setView={setView} />;
+            case "devices":      return <DevicesPage     setView={setView} />;
+            case "instructions": return <InstructionsPage setView={setView} />;
+            case "settings":     return <SettingsPage    setView={setView} />;
+            case "doctor":       return <DoctorPage      setView={setView} />;
             case "chat":
                 return (
                     <Chat
