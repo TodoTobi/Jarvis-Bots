@@ -403,3 +403,5 @@ Require stack:
 ⚠ El puerto actual (5555) puede no coincidir con el dispositivo.
   El puerto cambia cada vez que reactivás la Depuración Inalámbrica.
 [2026-05-22T23:38:30.574Z] [ERROR] STT Groq error: Invalid API Key
+[2026-05-23T19:32:52.616Z] [ERROR] STT Groq error: Invalid API Key
+[2026-05-24T15:28:33.507Z] [ERROR] STT Groq error: Invalid API Key

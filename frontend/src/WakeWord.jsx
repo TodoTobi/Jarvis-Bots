@@ -131,22 +131,21 @@ export async function speakResponse(text, onStart, onEnd) {
     }
     window.speechSynthesis?.cancel();
 
-    const clean = cleanTextForTTS(text);
-    if (!clean || clean.length < 2) { onEnd?.(); return; }
+    if (!text || text.length < 2) { onEnd?.(); return; }
 
     onStart?.();
 
-    // Intentar ElevenLabs primero
+    // Intentar Kokoro TTS local primero
     try {
         const res = await fetch(`${API}/api/tts/speak`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: clean }),
+            body: JSON.stringify({ text }),
         });
 
         if (res.ok) {
-            const blob = await res.blob();
-            const url  = URL.createObjectURL(blob);
+            const blob  = await res.blob();
+            const url   = URL.createObjectURL(blob);
             const audio = new Audio(url);
             _currentAudio = audio;
 
@@ -161,30 +160,27 @@ export async function speakResponse(text, onStart, onEnd) {
                 onEnd?.();
             };
             await audio.play();
-            return; // éxito — no caer al fallback
+            return; // éxito
         }
-        // Si ElevenLabs responde con error, caer al fallback
-        console.warn(`[TTS] ElevenLabs ${res.status} — usando Web Speech fallback`);
+        console.warn(`[TTS] Kokoro ${res.status} — fallback a Web Speech`);
     } catch (err) {
-        console.warn("[TTS] ElevenLabs no disponible:", err.message);
+        console.warn("[TTS] Kokoro no disponible (¿start_tts.bat corriendo?):", err.message);
     }
 
     // Fallback: Web Speech API
     try {
+        const clean = cleanTextForTTS(text);
         const utter = new SpeechSynthesisUtterance(clean.substring(0, 250));
-        utter.lang  = "es-AR";
+        utter.lang  = "en-US";
         utter.pitch = 0.75;
         utter.rate  = 0.92;
-
-        // Elegir voz grave si hay disponibles
-        const voices = window.speechSynthesis.getVoices();
+        const voices    = window.speechSynthesis.getVoices();
         const deepVoice = voices.find(v =>
             (v.lang.startsWith("es") || v.lang.startsWith("en")) &&
             (v.name.toLowerCase().includes("male") || v.name.toLowerCase().includes("masc"))
         ) || voices.find(v => v.lang.startsWith("es")) || voices[0];
         if (deepVoice) utter.voice = deepVoice;
-
-        utter.onend   = () => onEnd?.();
+        utter.onend  = () => onEnd?.();
         utter.onerror = () => onEnd?.();
         window.speechSynthesis.speak(utter);
     } catch (err) {

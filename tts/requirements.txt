@@ -1,0 +1,8 @@
+# tts/requirements.txt — dependencias del servidor TTS local
+# Instalar con: pip install -r requirements.txt
+
+flask
+numpy
+soundfile
+scipy
+kokoro==0.7.16
